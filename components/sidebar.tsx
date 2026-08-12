@@ -29,27 +29,27 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   ];
 
   return (
-    <aside className="sidebar flex flex-col justify-between">
+    <aside className="sidebar flex flex-col justify-between p-4">
       <div>
         {/* Brand Header */}
-        <div className="flex items-center gap-3 px-2 py-3 mb-6">
+        <div className="flex items-center gap-2.5 px-1 py-2 mb-5">
           <div className="brand-mark flex-shrink-0">
-            <Zap className="w-5 h-5 text-white" />
+            <Zap className="w-4 h-4 text-white" />
           </div>
-          <div>
-            <div className="font-extrabold text-base tracking-tight leading-none text-gray-900">
+          <div className="min-w-0">
+            <div className="font-extrabold text-base tracking-tight leading-none text-gray-900 truncate">
               LeadDrive
             </div>
             <div className="flex items-center gap-1.5 mt-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[11px] font-semibold text-gray-500">v2.4 Engine Active</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0" />
+              <span className="text-[10px] font-semibold text-gray-500 truncate">v2.4 Engine Active</span>
             </div>
           </div>
         </div>
 
         {/* Navigation Section */}
         <div className="space-y-1">
-          <div className="px-3 pb-2 text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+          <div className="px-2 pb-2 text-[10px] font-extrabold tracking-wider text-gray-400 uppercase">
             Workspace
           </div>
           {navItems.map((item) => {
@@ -59,12 +59,18 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`nav-item ${isActive ? 'active bg-white/80 shadow-sm text-blue-600 font-bold border-white/80' : 'hover:bg-white/50 text-gray-600'}`}
+                className={`nav-item flex items-center gap-2 px-2.5 py-2 w-full text-xs font-semibold rounded-xl transition-all ${
+                  isActive
+                    ? 'active bg-white/90 shadow-sm text-blue-600 font-bold border border-white'
+                    : 'hover:bg-white/50 text-gray-600'
+                }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} />
-                <span className="flex-1 text-left">{item.label}</span>
+                <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} />
+                <span className="flex-1 text-left truncate">{item.label}</span>
                 {item.badge && (
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${isActive ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-extrabold uppercase tracking-wider whitespace-nowrap flex-shrink-0 ${
+                    isActive ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'
+                  }`}>
                     {item.badge}
                   </span>
                 )}
@@ -76,20 +82,20 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
 
       {/* Footer / User Badge */}
       <div className="pt-4 border-t border-gray-200/60 space-y-2">
-        <button className="nav-item hover:bg-white/50 text-gray-500 text-xs">
-          <HelpCircle className="w-4 h-4 text-gray-400" />
-          <span>Help & Documentation</span>
+        <button className="nav-item flex items-center gap-2 px-2.5 py-2 w-full text-xs text-gray-500 hover:bg-white/50">
+          <HelpCircle className="w-4 h-4 text-gray-400 flex-shrink-0" />
+          <span className="truncate">Help & Documentation</span>
         </button>
 
-        <div className="p-3 rounded-2xl bg-white/60 border border-white/80 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center text-xs shadow-sm">
+        <div className="p-2.5 rounded-xl bg-white/70 border border-white/80 flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center text-[11px] shadow-sm flex-shrink-0">
             IK
           </div>
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-w-0">
             <div className="text-xs font-bold text-gray-900 truncate">Irfan Khan</div>
             <div className="text-[10px] text-gray-500 truncate">Pro Workspace</div>
           </div>
-          <span className="w-2 h-2 rounded-full bg-emerald-500" title="Online" />
+          <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" title="Online" />
         </div>
       </div>
     </aside>
