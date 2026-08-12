@@ -1,11 +1,29 @@
-import { ArrowRight, Calendar, Check, Sparkles } from 'lucide-react';
+import { ArrowRight, Calendar, Check, MapPin, Sparkles } from 'lucide-react';
+import { getSupabaseAdmin } from '@/lib/supabase';
+import type { Lead } from '@/lib/types';
 
 export default async function DemoPage({ params }: { params: Promise<{ leadId: string }> }) {
   const { leadId } = await params;
-  const name = leadId
+  let lead: Partial<Lead> | null = null;
+
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(leadId);
+  if (isUuid) {
+    const supabase = getSupabaseAdmin();
+    if (supabase) {
+      const { data } = await supabase.from('leads').select('*').eq('id', leadId).single();
+      if (data) {
+        lead = data as Lead;
+      }
+    }
+  }
+
+  const name = lead?.company_name || leadId
     .replace(/^lead_/, '')
     .replace(/[_-]/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
+
+  const location = lead?.city || null;
+  const weakness = lead?.weakness || 'The current mobile first viewport hides the offer, proof, and booking action.';
 
   return (
     <main className="min-h-screen bg-[#fffdfa] text-[#171717]">
@@ -14,28 +32,36 @@ export default async function DemoPage({ params }: { params: Promise<{ leadId: s
           <nav className="flex items-center justify-between border-b border-black/10 pb-5">
             <div className="flex items-center gap-3">
               <span className="brand-mark">L</span>
-              <span className="font-serif text-2xl font-bold">{name || 'Client Demo'}</span>
+              <div>
+                <span className="font-serif text-2xl font-bold">{name}</span>
+                {location && (
+                  <span className="ml-3 inline-flex items-center gap-1 text-xs font-sans text-[#6f6a62]">
+                    <MapPin size={12} />
+                    {location}
+                  </span>
+                )}
+              </div>
             </div>
             <button className="btn secondary hidden sm:inline-flex">
               <Calendar size={15} />
-              Book
+              Book Call
             </button>
           </nav>
 
           <div className="max-w-3xl py-16">
             <p className="eyebrow mb-5">Personalized Conversion Concept</p>
             <h1 className="section-title mb-6">
-              A sharper first impression built to turn cold traffic into booked calls.
+              A sharper first impression built for {name}.
             </h1>
             <p className="max-w-xl text-lg leading-8 text-[#6f6a62]">
-              This live preview shows how the prospect could clarify the offer, surface proof, and make the next step impossible to miss on mobile and desktop.
+              {weakness} This custom preview shows how fixing this gap will turn cold visitors into booked calls.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <button className="btn">
                 See booking flow
                 <ArrowRight size={15} />
               </button>
-              <button className="btn secondary">View teardown</button>
+              <button className="btn secondary">View audit notes</button>
             </div>
           </div>
 

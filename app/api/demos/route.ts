@@ -13,7 +13,8 @@ export async function POST(req: Request) {
   const demoUrl = demo.deploymentUrl || demo.demoUrl || `/demo/${lead.id}`;
 
   const supabase = getSupabaseAdmin();
-  if (supabase && !lead.id.startsWith('lead_')) {
+  const isSupabaseLead = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lead.id);
+  if (supabase && isSupabaseLead) {
     await supabase
       .from('leads')
       .update({

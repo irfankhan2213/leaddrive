@@ -45,7 +45,7 @@ export async function createV0Demo(lead: Lead): Promise<V0DemoResult> {
     return {
       chatId: chat.id,
       versionId,
-      demoUrl: chat.latestVersion?.demoUrl,
+      demoUrl: chat.webUrl || `/demo/${lead.id}`,
       webUrl: chat.webUrl
     };
   }
@@ -66,16 +66,18 @@ export async function createV0Demo(lead: Lead): Promise<V0DemoResult> {
     return {
       chatId: chat.id,
       versionId,
-      demoUrl: chat.latestVersion?.demoUrl,
+      demoUrl: chat.webUrl || `/demo/${lead.id}`,
       webUrl: chat.webUrl
     };
   }
 
   const deployment = (await deploymentRes.json()) as { webUrl?: string; id?: string };
+  const publicDemoUrl = deployment.webUrl || chat.webUrl || chat.latestVersion?.demoUrl || `/demo/${lead.id}`;
+
   return {
     chatId: chat.id,
     versionId,
-    demoUrl: chat.latestVersion?.demoUrl || deployment.webUrl,
+    demoUrl: publicDemoUrl,
     deploymentUrl: deployment.webUrl,
     webUrl: chat.webUrl
   };

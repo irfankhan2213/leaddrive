@@ -115,15 +115,20 @@ export function buildPipeline(input: CampaignInput): PipelineResult {
 }
 
 export function buildDemoPrompt(lead: Lead): string {
-  return `Create a polished ${lead.demo_type.replace('_', ' ')} for ${lead.company_name}.
+  const demoTypeLabel = (lead.demo_type || 'website').replace('_', ' ');
+  const signalsList = Array.isArray(lead.signals)
+    ? lead.signals.map((signal) => `${signal.label}: ${signal.value}`).join('; ')
+    : 'None';
+
+  return `Create a polished ${demoTypeLabel} for ${lead.company_name}.
 
 Context:
-- Target niche: ${lead.niche}
+- Target niche: ${lead.niche || 'N/A'}
 - Target location: ${lead.city || 'Location not specified'}
 - Existing website: ${lead.website_url || 'No website found'}
-- Specific weakness to fix: ${lead.weakness}
-- Qualification reason: ${lead.qualification_reason}
-- Signals: ${lead.signals.map((signal) => `${signal.label}: ${signal.value}`).join('; ')}
+- Specific weakness to fix: ${lead.weakness || 'General conversion improvements'}
+- Qualification reason: ${lead.qualification_reason || 'N/A'}
+- Signals: ${signalsList}
 
 Design direction:
 - Make it look premium, credible, and conversion-focused.
