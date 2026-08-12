@@ -6,6 +6,7 @@ export type LeadStatus =
   | 'qualified'
   | 'skipped'
   | 'demo_ready'
+  | 'demo_failed'
   | 'outreach_sent'
   | 'replied'
   | 'converted';
@@ -13,6 +14,8 @@ export type LeadStatus =
 export type DemoType = 'website' | 'landing_page' | 'app_mockup';
 
 export type OutreachChannel = 'email' | 'linkedin';
+
+export type DemoProvider = 'local' | 'v0';
 
 export interface CampaignInput {
   audience: string;
@@ -86,4 +89,7 @@ export interface V0DemoResult {
   demoUrl?: string;
   deploymentUrl?: string;
   webUrl?: string;
+  provider?: 'v0' | 'local';
+  status?: 'ready' | 'failed';
+  error?: string;
 }

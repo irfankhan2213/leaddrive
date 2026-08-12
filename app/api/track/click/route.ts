@@ -13,7 +13,18 @@ export async function GET(req: Request) {
       event_type: 'clicked',
       event_data: { target }
     });
+    if (supabase) await incrementLeadCounter(supabase, leadId, 'clicks');
   }
 
   return NextResponse.redirect(target);
+}
+
+async function incrementLeadCounter(
+  supabase: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
+  leadId: string,
+  field: 'opens' | 'clicks' | 'replies'
+) {
+  const { data } = await supabase.from('leads').select(field).eq('id', leadId).single();
+  const current = Number((data as Record<string, unknown> | null)?.[field] || 0);
+  await supabase.from('leads').update({ [field]: current + 1 }).eq('id', leadId);
 }

@@ -17,6 +17,7 @@ export async function GET(req: Request) {
       event_type: 'opened',
       event_data: {}
     });
+    if (supabase) await incrementLeadCounter(supabase, leadId, 'opens');
   }
 
   return new NextResponse(pixel, {
@@ -25,4 +26,14 @@ export async function GET(req: Request) {
       'Cache-Control': 'no-store, max-age=0'
     }
   });
+}
+
+async function incrementLeadCounter(
+  supabase: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
+  leadId: string,
+  field: 'opens' | 'clicks' | 'replies'
+) {
+  const { data } = await supabase.from('leads').select(field).eq('id', leadId).single();
+  const current = Number((data as Record<string, unknown> | null)?.[field] || 0);
+  await supabase.from('leads').update({ [field]: current + 1 }).eq('id', leadId);
 }

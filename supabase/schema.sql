@@ -43,12 +43,15 @@ create table if not exists public.leads (
   v0_version_id text,
   outreach_subject text not null default '',
   outreach_body text not null default '',
+  reply_text text,
   opens integer not null default 0,
   clicks integer not null default 0,
   replies integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.leads add column if not exists reply_text text;
 
 create table if not exists public.outreach_events (
   id uuid primary key default gen_random_uuid(),
@@ -62,6 +65,7 @@ create index if not exists campaigns_created_at_idx on public.campaigns(created_
 create index if not exists leads_campaign_id_idx on public.leads(campaign_id);
 create index if not exists leads_fit_score_idx on public.leads(fit_score desc);
 create index if not exists leads_status_idx on public.leads(status);
+create index if not exists leads_city_idx on public.leads(city);
 create index if not exists outreach_events_lead_id_idx on public.outreach_events(lead_id);
 
 create or replace function public.set_updated_at()
