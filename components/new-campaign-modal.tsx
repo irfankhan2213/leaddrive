@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { FileInput, Globe2, Linkedin, MapPinned, Rocket, Sparkles, Upload, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { FileInput, Globe2, Linkedin, MapPinned, Rocket, Search, Sparkles, Upload, X } from 'lucide-react';
 import type { CampaignInput, LeadSource } from '@/lib/types';
+import { generateAlgorithmicKeywords } from '@/lib/pipeline';
 
 interface NewCampaignModalProps {
   isOpen: boolean;
@@ -31,6 +32,11 @@ export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCamp
     limit: 25
   });
 
+  // Real-time preview of multi-keyword search queries generated for campaign
+  const keywordPreview = useMemo(() => {
+    return generateAlgorithmicKeywords(form);
+  }, [form]);
+
   if (!isOpen) return null;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -54,8 +60,8 @@ export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCamp
             <Sparkles className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-lg font-extrabold text-gray-900 leading-tight">Launch New Campaign</h2>
-            <p className="text-xs text-gray-500 font-medium">Configure lead discovery & automated AI demos</p>
+            <h2 className="text-lg font-extrabold text-gray-900 leading-tight">Launch Multi-Keyword Campaign</h2>
+            <p className="text-xs text-gray-500 font-medium">Multi-query web scraping & AI personalized demos</p>
           </div>
         </div>
 
@@ -81,6 +87,24 @@ export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCamp
               className="field text-xs"
               placeholder="e.g. Austin, TX; Dallas, TX"
             />
+          </div>
+
+          {/* Multi-Keyword Expansion Preview */}
+          <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-100">
+            <div className="flex items-center gap-1.5 text-xs font-extrabold text-blue-900 mb-1.5">
+              <Search className="w-3.5 h-3.5 text-blue-600" />
+              <span>Multi-Keyword Search Query Expansion ({keywordPreview.length} queries)</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {keywordPreview.map((kw, i) => (
+                <span
+                  key={i}
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white text-blue-700 border border-blue-200/80 shadow-xs"
+                >
+                  {kw}
+                </span>
+              ))}
+            </div>
           </div>
 
           <div>
@@ -109,13 +133,13 @@ export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCamp
           </div>
 
           <div>
-            <label className="label">Source Data / Prospects List</label>
+            <label className="label">Source Data / Prospects List (Optional)</label>
             <textarea
-              rows={3}
+              rows={2}
               value={form.sourcePayload}
               onChange={(e) => setForm({ ...form, sourcePayload: e.target.value })}
               className="field text-xs resize-none"
-              placeholder="Paste URLs, CSV data, or Apollo search terms..."
+              placeholder="Paste custom URLs or leave blank for multi-keyword automated web discovery..."
             />
           </div>
 
@@ -132,7 +156,7 @@ export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCamp
               disabled={loading}
               className="btn text-xs px-6"
             >
-              {loading ? 'Launching Engine...' : 'Launch Campaign'}
+              {loading ? 'Scraping Multi-Keyword Engine...' : 'Scrape & Launch Campaign'}
             </button>
           </div>
         </form>

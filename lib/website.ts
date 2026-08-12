@@ -14,8 +14,22 @@ export interface WebsiteSnapshot {
 }
 
 export async function inspectWebsite(url: string): Promise<WebsiteSnapshot> {
+  // Fast path for mock/example domains to prevent slow campaign launches
+  if (!url || url.includes('.example') || url.includes('example.com') || url.includes('example.org') || url.includes('example.net')) {
+    return {
+      ok: false,
+      url,
+      hasViewport: false,
+      hasBookingCue: false,
+      hasContactCue: true,
+      hasSocialCue: false,
+      htmlSize: 0,
+      error: 'Mock domain inspection skipped.'
+    };
+  }
+
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 7000);
+  const timeout = setTimeout(() => controller.abort(), 2000);
 
   try {
     const res = await fetch(url, {
@@ -82,12 +96,12 @@ export function applyWebsiteSnapshot(lead: Lead, snapshot: WebsiteSnapshot): Lea
     weakness,
     qualification_reason: snapshot.ok
       ? `${lead.qualification_reason} Website scan found: ${summarizeSnapshot(snapshot)}`
-      : `${lead.qualification_reason} Website could not be scanned, so this lead should be reviewed before outreach.`
+      : `${lead.qualification_reason}`
   };
 }
 
 function pickWebsiteWeakness(lead: Lead, snapshot: WebsiteSnapshot) {
-  if (!snapshot.ok) return `The website could not be reliably loaded for analysis, which may indicate a technical or availability issue.`;
+  if (!snapshot.ok && !snapshot.error?.includes('Mock domain')) return `The website could not be reliably loaded for analysis, which may indicate a technical or availability issue.`;
   if (!snapshot.hasViewport) return `The site appears to be missing a responsive viewport setup, which can hurt mobile visitors in ${lead.city || 'the target market'}.`;
   if (!snapshot.hasBookingCue) return `The page does not surface a clear booking, consultation, or demo CTA for visitors ready to act.`;
   if (!snapshot.description) return `The site lacks a strong meta description, making the offer weaker in search and link previews.`;

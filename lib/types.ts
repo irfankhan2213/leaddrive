@@ -25,6 +25,7 @@ export interface CampaignInput {
   demoType: DemoType;
   channel: OutreachChannel;
   limit: number;
+  keywords?: string[];
 }
 
 export interface DigitalSignal {
@@ -52,8 +53,11 @@ export interface Lead {
   demo_type: DemoType;
   demo_prompt: string;
   demo_url?: string;
+  v0_chat_id?: string;
+  v0_version_id?: string;
   outreach_subject: string;
   outreach_body: string;
+  matched_keyword?: string;
   opens: number;
   clicks: number;
   replies: number;
@@ -75,6 +79,7 @@ export interface Campaign {
   outreach_sent: number;
   replies: number;
   conversions: number;
+  keywords?: string[];
   created_at: string;
 }
 

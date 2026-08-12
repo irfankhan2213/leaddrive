@@ -1,4 +1,4 @@
-import { ArrowRight, Calendar, Check, MapPin, Sparkles } from 'lucide-react';
+import { ArrowRight, Calendar, Check, ExternalLink, MapPin, Sparkles } from 'lucide-react';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import type { Lead } from '@/lib/types';
 
@@ -24,6 +24,7 @@ export default async function DemoPage({ params }: { params: Promise<{ leadId: s
 
   const location = lead?.city || null;
   const weakness = lead?.weakness || 'The current mobile first viewport hides the offer, proof, and booking action.';
+  const hasV0Demo = Boolean(lead?.demo_url && /^https?:\/\//i.test(lead.demo_url));
 
   return (
     <main className="min-h-screen bg-[#fffdfa] text-[#171717]">
@@ -48,19 +49,35 @@ export default async function DemoPage({ params }: { params: Promise<{ leadId: s
             </button>
           </nav>
 
-          <div className="max-w-3xl py-16">
-            <p className="eyebrow mb-5">Personalized Conversion Concept</p>
+          <div className="max-w-3xl py-12">
+            <div className="flex items-center gap-2 mb-4">
+              <span className="eyebrow">Personalized Conversion Concept</span>
+              {hasV0Demo && (
+                <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 flex items-center gap-1">
+                  <Sparkles size={11} />
+                  v0 AI Live Demo
+                </span>
+              )}
+            </div>
+
             <h1 className="section-title mb-6">
               A sharper first impression built for {name}.
             </h1>
             <p className="max-w-xl text-lg leading-8 text-[#6f6a62]">
               {weakness} This custom preview shows how fixing this gap will turn cold visitors into booked calls.
             </p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <button className="btn">
-                See booking flow
-                <ArrowRight size={15} />
-              </button>
+            <div className="mt-8 flex flex-wrap gap-3">
+              {hasV0Demo ? (
+                <a href={lead?.demo_url || '#'} target="_blank" rel="noreferrer" className="btn inline-flex items-center gap-2">
+                  <span>Launch Live v0 Demo</span>
+                  <ExternalLink size={15} />
+                </a>
+              ) : (
+                <button className="btn">
+                  See booking flow
+                  <ArrowRight size={15} />
+                </button>
+              )}
               <button className="btn secondary">View audit notes</button>
             </div>
           </div>
@@ -76,28 +93,57 @@ export default async function DemoPage({ params }: { params: Promise<{ leadId: s
         </div>
 
         <div className="preview-grid flex items-center justify-center p-6 md:p-10">
-          <div className="w-full max-w-md border border-white/20 bg-[#f8f5ef] p-4 shadow-[0_40px_100px_rgba(0,0,0,0.28)]">
-            <div className="mb-4 flex items-center justify-between border-b border-black/10 pb-3">
-              <div>
-                <p className="eyebrow">Mobile Preview</p>
-                <h2 className="font-serif text-3xl font-bold">Book in 30 seconds</h2>
+          {hasV0Demo ? (
+            <div className="w-full h-full max-h-[650px] border border-white/20 bg-gray-900 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+              <div className="bg-gray-800 px-4 py-3 flex items-center justify-between border-b border-gray-700 text-white">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-rose-500" />
+                  <span className="w-3 h-3 rounded-full bg-amber-500" />
+                  <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                  <span className="text-xs font-mono text-gray-300 ml-2 truncate max-w-[280px]">
+                    {lead?.demo_url}
+                  </span>
+                </div>
+                <a
+                  href={lead?.demo_url || '#'}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs font-bold text-blue-400 hover:underline flex items-center gap-1"
+                >
+                  <span>Open Tab</span>
+                  <ExternalLink size={12} />
+                </a>
               </div>
-              <Sparkles size={22} className="text-[#b28b31]" />
+              <iframe
+                src={lead?.demo_url || ''}
+                className="w-full flex-1 border-0 bg-white"
+                title={`${name} Live v0 AI Demo`}
+              />
             </div>
-            <div className="space-y-3">
-              <div className="h-40 bg-[#171717]" />
-              <div className="grid grid-cols-3 gap-2">
-                <div className="h-16 bg-[#eee8dd]" />
-                <div className="h-16 bg-[#eee8dd]" />
-                <div className="h-16 bg-[#eee8dd]" />
+          ) : (
+            <div className="w-full max-w-md border border-white/20 bg-[#f8f5ef] p-4 shadow-[0_40px_100px_rgba(0,0,0,0.28)]">
+              <div className="mb-4 flex items-center justify-between border-b border-black/10 pb-3">
+                <div>
+                  <p className="eyebrow">Mobile Preview</p>
+                  <h2 className="font-serif text-3xl font-bold">Book in 30 seconds</h2>
+                </div>
+                <Sparkles size={22} className="text-[#b28b31]" />
               </div>
-              <div className="border border-black/10 bg-white p-4">
-                <p className="text-sm font-semibold">Instant trust section</p>
-                <p className="mt-1 text-xs leading-5 text-[#6f6a62]">Reviews, outcomes, service clarity, and a single next step.</p>
+              <div className="space-y-3">
+                <div className="h-40 bg-[#171717]" />
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="h-16 bg-[#eee8dd]" />
+                  <div className="h-16 bg-[#eee8dd]" />
+                  <div className="h-16 bg-[#eee8dd]" />
+                </div>
+                <div className="border border-black/10 bg-white p-4">
+                  <p className="text-sm font-semibold">Instant trust section</p>
+                  <p className="mt-1 text-xs leading-5 text-[#6f6a62]">Reviews, outcomes, service clarity, and a single next step.</p>
+                </div>
+                <button className="btn w-full">Request appointment</button>
               </div>
-              <button className="btn w-full">Request appointment</button>
             </div>
-          </div>
+          )}
         </div>
       </section>
     </main>

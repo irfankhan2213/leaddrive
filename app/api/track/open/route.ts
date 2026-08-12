@@ -12,12 +12,14 @@ export async function GET(req: Request) {
 
   if (leadId) {
     const supabase = getSupabaseAdmin();
-    await supabase?.from('outreach_events').insert({
-      lead_id: leadId,
-      event_type: 'opened',
-      event_data: {}
-    });
-    if (supabase) await incrementLeadCounter(supabase, leadId, 'opens');
+    if (supabase) {
+      await supabase.from('outreach_events').insert({
+        lead_id: leadId,
+        event_type: 'opened',
+        event_data: {}
+      });
+      await incrementLeadCounter(supabase, leadId, 'opens');
+    }
   }
 
   return new NextResponse(pixel, {
@@ -33,7 +35,14 @@ async function incrementLeadCounter(
   leadId: string,
   field: 'opens' | 'clicks' | 'replies'
 ) {
-  const { data } = await supabase.from('leads').select(field).eq('id', leadId).single();
-  const current = Number((data as Record<string, unknown> | null)?.[field] || 0);
-  await supabase.from('leads').update({ [field]: current + 1 }).eq('id', leadId);
+  const { error } = await supabase.rpc('increment_lead_counter', {
+    lead_id_param: leadId,
+    field_param: field
+  });
+
+  if (error) {
+    const { data } = await supabase.from('leads').select(field).eq('id', leadId).single();
+    const current = Number((data as Record<string, unknown> | null)?.[field] || 0);
+    await supabase.from('leads').update({ [field]: current + 1 }).eq('id', leadId);
+  }
 }

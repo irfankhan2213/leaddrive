@@ -1,18 +1,15 @@
 'use client';
 
 import {
-  BarChart3,
-  Bot,
   HelpCircle,
   Kanban,
   LayoutDashboard,
-  Settings,
   Sparkles,
   Target,
   Zap
 } from 'lucide-react';
 
-export type NavTab = 'dashboard' | 'prospecting' | 'demos' | 'pipeline' | 'settings';
+export type NavTab = 'dashboard' | 'prospecting' | 'demos' | 'pipeline';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -24,8 +21,7 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     { id: 'dashboard', label: 'Command Center', icon: LayoutDashboard },
     { id: 'prospecting', label: 'Prospecting Hub', icon: Target, badge: 'High Craft' },
     { id: 'demos', label: 'AI Demo Lab', icon: Sparkles, badge: 'AI' },
-    { id: 'pipeline', label: 'Outreach Pipeline', icon: Kanban },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'pipeline', label: 'Outreach Pipeline', icon: Kanban }
   ];
 
   return (
@@ -89,11 +85,11 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
 
         <div className="p-2.5 rounded-xl bg-white/70 border border-white/80 flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center text-[11px] shadow-sm flex-shrink-0">
-            IK
+            LD
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold text-gray-900 truncate">Irfan Khan</div>
-            <div className="text-[10px] text-gray-500 truncate">Pro Workspace</div>
+            <div className="text-xs font-bold text-gray-900 truncate">LeadDrive User</div>
+            <div className="text-[10px] text-gray-500 truncate">Build Phase Workspace</div>
           </div>
           <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" title="Online" />
         </div>

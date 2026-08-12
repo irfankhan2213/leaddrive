@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
-import { analyzeLeadWithGemini } from '@/lib/gemini';
-import { buildDemoPrompt, buildOutreach, buildPipeline } from '@/lib/pipeline';
+import { analyzeLeadWithGemini, generateCampaignKeywords } from '@/lib/gemini';
+import { buildDemoPrompt, buildOutreach, buildPipeline, generateAlgorithmicKeywords } from '@/lib/pipeline';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { createV0Demo } from '@/lib/v0';
 import { applyWebsiteSnapshot, inspectWebsite } from '@/lib/website';
 import type { CampaignInput, Lead } from '@/lib/types';
 
@@ -36,7 +37,23 @@ export async function POST(req: Request) {
   const body = (await req.json()) as Partial<CampaignInput>;
   const input = normalizeCampaignInput(body);
   const baseUrl = getBaseUrl(req);
-  const pipeline = buildPipeline(input);
+
+  // Generate multi-keyword search queries for campaign scraping
+  const geminiEnabled = process.env.GEMINI_ENABLED === 'true';
+  let keywords: string[] = [];
+  if (geminiEnabled) {
+    try {
+      keywords = await generateCampaignKeywords(input.audience, input.locations, input.source);
+    } catch {
+      keywords = [];
+    }
+  }
+  if (keywords.length === 0) {
+    keywords = generateAlgorithmicKeywords(input);
+  }
+
+  const pipeline = buildPipeline(input, keywords);
+
   const inspectedLeads = await Promise.all(
     pipeline.leads.map(async (lead) => {
       if (!lead.website_url) return lead;
@@ -45,7 +62,6 @@ export async function POST(req: Request) {
     })
   );
 
-  const geminiEnabled = process.env.GEMINI_ENABLED === 'true';
   const analyzedLeads = await Promise.all(
     inspectedLeads.map(async (lead) => {
       if (!geminiEnabled) return lead;
@@ -59,10 +75,12 @@ export async function POST(req: Request) {
             ai.outreach_body?.replace('{{demo_url}}', `${baseUrl}/demo/${lead.id}`) ||
             buildOutreach({
               company: lead.company_name,
+              contactName: lead.contact_name,
               city: lead.city,
               weakness: ai.weakness || lead.weakness,
               demoUrl: `${baseUrl}/demo/${lead.id}`,
-              channel: input.channel
+              channel: input.channel,
+              niche: lead.niche
             })
         } satisfies Lead;
         return {
@@ -75,8 +93,38 @@ export async function POST(req: Request) {
     })
   );
 
-  pipeline.leads = analyzedLeads;
-  pipeline.campaign.qualified = analyzedLeads.filter((lead) => lead.fit_score >= 70).length;
+  // v0 is the sole site builder engine — build v0 site demos for qualified prospects
+  const leadsWithV0Demos = await Promise.all(
+    analyzedLeads.map(async (lead) => {
+      if (lead.fit_score < 70) return lead;
+      try {
+        const demo = await createV0Demo(lead);
+        const demoUrl = demo.deploymentUrl || demo.demoUrl || `${baseUrl}/demo/${lead.id}`;
+        return {
+          ...lead,
+          status: 'demo_ready' as const,
+          demo_url: demoUrl,
+          v0_chat_id: demo.chatId,
+          v0_version_id: demo.versionId,
+          outreach_body: buildOutreach({
+            company: lead.company_name,
+            contactName: lead.contact_name,
+            city: lead.city,
+            weakness: lead.weakness,
+            demoUrl,
+            channel: input.channel,
+            niche: lead.niche
+          })
+        };
+      } catch {
+        return lead;
+      }
+    })
+  );
+
+  pipeline.leads = leadsWithV0Demos;
+  pipeline.campaign.qualified = leadsWithV0Demos.filter((lead) => lead.fit_score >= 70).length;
+  pipeline.campaign.demos_generated = leadsWithV0Demos.filter((lead) => lead.status === 'demo_ready').length;
 
   const supabase = getSupabaseAdmin();
   if (!supabase) {
@@ -98,7 +146,8 @@ export async function POST(req: Request) {
       channel: pipeline.campaign.channel,
       status: pipeline.campaign.status,
       total_prospects: pipeline.campaign.total_prospects,
-      qualified: pipeline.campaign.qualified
+      qualified: pipeline.campaign.qualified,
+      demos_generated: pipeline.campaign.demos_generated
     })
     .select()
     .single();
@@ -107,7 +156,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: campaignError.message }, { status: 500 });
   }
 
-  const leads = analyzedLeads.map((lead) => ({
+  const leadsToSave = leadsWithV0Demos.map((lead) => ({
     campaign_id: campaign.id,
     company_name: lead.company_name,
     contact_name: lead.contact_name,
@@ -124,49 +173,41 @@ export async function POST(req: Request) {
     signals: lead.signals,
     demo_type: lead.demo_type,
     demo_prompt: lead.demo_prompt,
+    demo_url: lead.demo_url,
+    v0_chat_id: lead.v0_chat_id,
+    v0_version_id: lead.v0_version_id,
     outreach_subject: lead.outreach_subject,
     outreach_body: lead.outreach_body
   }));
 
-  const { data: savedLeads, error: leadsError } = await supabase.from('leads').insert(leads).select();
+  const { data: savedLeads, error: leadsError } = await supabase.from('leads').insert(leadsToSave).select();
   if (leadsError) {
     return NextResponse.json({ error: leadsError.message }, { status: 500 });
   }
 
-  const savedWithArtifacts = (savedLeads || []).map((savedLead) => ({
-    ...savedLead,
-    outreach_body: buildOutreach({
-      company: savedLead.company_name,
-      city: savedLead.city,
-      weakness: savedLead.weakness,
-      demoUrl: `${baseUrl}/demo/${savedLead.id}`,
-      channel: input.channel
-    })
-  }));
-
-  await Promise.all(
-    savedWithArtifacts.map((lead) =>
-      supabase.from('leads').update({ outreach_body: lead.outreach_body }).eq('id', lead.id)
-    )
-  );
-
   return NextResponse.json({
-    campaign,
-    leads: savedWithArtifacts,
+    campaign: {
+      ...campaign,
+      keywords: pipeline.campaign.keywords
+    },
+    leads: savedLeads || leadsWithV0Demos,
     persistence: 'supabase'
   });
 }
 
 function refreshLeadArtifacts(lead: Lead, input: CampaignInput, baseUrl: string): Lead {
+  const demoUrl = lead.demo_url || `${baseUrl}/demo/${lead.id}`;
   return {
     ...lead,
     demo_prompt: buildDemoPrompt(lead),
     outreach_body: buildOutreach({
       company: lead.company_name,
+      contactName: lead.contact_name,
       city: lead.city,
       weakness: lead.weakness,
-      demoUrl: `${baseUrl}/demo/${lead.id}`,
-      channel: input.channel
+      demoUrl,
+      channel: input.channel,
+      niche: lead.niche
     })
   };
 }
