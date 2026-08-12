@@ -4,12 +4,13 @@ import {
   HelpCircle,
   Kanban,
   LayoutDashboard,
+  Settings,
   Sparkles,
   Target,
   Zap
 } from 'lucide-react';
 
-export type NavTab = 'dashboard' | 'prospecting' | 'demos' | 'pipeline';
+export type NavTab = 'dashboard' | 'prospecting' | 'demos' | 'pipeline' | 'settings';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -21,7 +22,8 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
     { id: 'dashboard', label: 'Command Center', icon: LayoutDashboard },
     { id: 'prospecting', label: 'Prospecting Hub', icon: Target, badge: 'High Craft' },
     { id: 'demos', label: 'AI Demo Lab', icon: Sparkles, badge: 'AI' },
-    { id: 'pipeline', label: 'Outreach Pipeline', icon: Kanban }
+    { id: 'pipeline', label: 'Outreach Pipeline', icon: Kanban },
+    { id: 'settings', label: 'Settings', icon: Settings }
   ];
 
   return (
@@ -89,7 +91,7 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-xs font-bold text-gray-900 truncate">LeadDrive User</div>
-            <div className="text-[10px] text-gray-500 truncate">Build Phase Workspace</div>
+            <div className="text-[10px] text-gray-500 truncate">Pro Workspace</div>
           </div>
           <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" title="Online" />
         </div>

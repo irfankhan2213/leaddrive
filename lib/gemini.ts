@@ -3,15 +3,18 @@ import type { Lead } from '@/lib/types';
 export async function generateCampaignKeywords(
   audience: string,
   locations: string,
-  source: string
+  source: string,
+  customApiKey?: string,
+  customModel?: string
 ): Promise<string[]> {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = customApiKey || process.env.GEMINI_API_KEY;
   if (!apiKey) return [];
   const models = [
+    customModel,
     process.env.GEMINI_MODEL || 'gemini-2.5-flash',
     'gemini-2.0-flash',
     'gemini-2.5-flash-lite'
-  ];
+  ].filter(Boolean) as string[];
 
   const prompt = `Generate 5 to 8 highly specific commercial search keywords/phrases to scrape target prospects for a cold outreach campaign.
 
@@ -58,14 +61,19 @@ Return only JSON array of string keywords, for example:
   return [];
 }
 
-export async function analyzeLeadWithGemini(lead: Lead): Promise<Partial<Lead>> {
-  const apiKey = process.env.GEMINI_API_KEY;
+export async function analyzeLeadWithGemini(
+  lead: Lead,
+  customApiKey?: string,
+  customModel?: string
+): Promise<Partial<Lead>> {
+  const apiKey = customApiKey || process.env.GEMINI_API_KEY;
   if (!apiKey) return {};
   const models = [
+    customModel,
     process.env.GEMINI_MODEL || 'gemini-2.5-flash',
     'gemini-2.0-flash',
     'gemini-2.5-flash-lite'
-  ];
+  ].filter(Boolean) as string[];
 
   const prompt = `Analyze this prospect for a cold outreach demo campaign.
 

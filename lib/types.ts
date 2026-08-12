@@ -98,3 +98,16 @@ export interface V0DemoResult {
   status?: 'ready' | 'failed';
   error?: string;
 }
+
+export interface AppSettings {
+  aiProvider: 'gemini' | 'anthropic';
+  aiModel: string;
+  aiApiKey: string;
+  v0ApiKey: string;
+  v0Model: string;
+  resendApiKey?: string;
+  fromEmail?: string;
+  fromName?: string;
+  brandName?: string;
+  customInstructions?: string;
+}

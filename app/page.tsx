@@ -21,7 +21,8 @@ import {
   Zap
 } from 'lucide-react';
 import { sampleCampaign, sampleLeads } from '@/lib/mock-data';
-import type { Campaign, CampaignInput, Lead } from '@/lib/types';
+import type { AppSettings, Campaign, CampaignInput, Lead } from '@/lib/types';
+import { defaultSettings, getStoredSettings, saveStoredSettings } from '@/lib/settings';
 
 import { Sidebar, NavTab } from '@/components/sidebar';
 import { Header } from '@/components/header';
@@ -30,9 +31,11 @@ import { CampaignChart } from '@/components/campaign-chart';
 import { ActivityFeed } from '@/components/activity-feed';
 import { SourceTable } from '@/components/source-table';
 import { NewCampaignModal } from '@/components/new-campaign-modal';
+import { SettingsView } from '@/components/settings-view';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
+  const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [campaign, setCampaign] = useState<Campaign>({
     ...sampleCampaign,
     keywords: [
@@ -52,6 +55,8 @@ export default function Home() {
   const [notice, setNotice] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
   useEffect(() => {
+    setSettings(getStoredSettings());
+
     async function loadInitialData() {
       try {
         const res = await fetch('/api/campaigns');
@@ -70,6 +75,15 @@ export default function Home() {
     }
     loadInitialData();
   }, []);
+
+  function handleSaveSettings(updated: AppSettings) {
+    setSettings(updated);
+    saveStoredSettings(updated);
+    setNotice({
+      type: 'success',
+      text: `Updated settings! Active AI provider set to ${updated.aiProvider === 'gemini' ? 'Google Gemini' : 'Anthropic Claude'} (${updated.aiModel}).`
+    });
+  }
 
   const selectedLead = useMemo(
     () => leads.find((lead) => lead.id === selectedId) || leads[0],
@@ -120,7 +134,7 @@ export default function Home() {
       const res = await fetch('/api/campaigns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input)
+        body: JSON.stringify({ ...input, settings })
       });
       const data = (await res.json()) as { campaign: Campaign; leads: Lead[]; error?: string };
       if (data.error) throw new Error(data.error);
@@ -132,7 +146,7 @@ export default function Home() {
         setSelectedDemoLeadId(data.leads[0]?.id);
         setNotice({
           type: 'success',
-          text: `Scraped multi-keyword campaign with ${data.leads.length} lead${data.leads.length === 1 ? '' : 's'} across ${data.campaign.keywords?.length || 4} search queries!`
+          text: `Scraped multi-keyword campaign with ${data.leads.length} lead${data.leads.length === 1 ? '' : 's'} using ${settings.aiProvider === 'gemini' ? 'Gemini' : 'Claude'} & v0!`
         });
       }
     } catch (err) {
@@ -142,14 +156,14 @@ export default function Home() {
     }
   }
 
-  async function handleGenerateDemo(targetLead: Lead, provider: 'v0' | 'local' = 'v0') {
+  async function handleGenerateDemo(targetLead: Lead) {
     setDemoGeneratingId(targetLead.id);
     setNotice(null);
     try {
       const res = await fetch('/api/demos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lead: targetLead, provider })
+        body: JSON.stringify({ lead: targetLead, settings })
       });
       const data = (await res.json()) as {
         demoUrl?: string;
@@ -173,13 +187,13 @@ export default function Home() {
       } else {
         setNotice({
           type: 'success',
-          text: `${data.provider === 'v0' ? 'v0 AI' : 'Personalized'} Demo generated for ${targetLead.company_name}!`
+          text: `v0 AI Demo generated for ${targetLead.company_name}!`
         });
       }
     } catch (err) {
       setNotice({
         type: 'error',
-        text: err instanceof Error ? err.message : 'Demo generation failed.'
+        text: err instanceof Error ? err.message : 'v0 Demo generation failed.'
       });
     } finally {
       setDemoGeneratingId(null);
@@ -213,7 +227,9 @@ export default function Home() {
               ? 'Prospecting Hub'
               : activeTab === 'demos'
               ? 'AI Demo Lab'
-              : 'Outreach Pipeline'
+              : activeTab === 'pipeline'
+              ? 'Outreach Pipeline'
+              : 'Settings & Integrations'
           }
           subtitle={
             activeTab === 'dashboard'
@@ -222,7 +238,9 @@ export default function Home() {
               ? 'Multi-query account intelligence, digital vulnerabilities, and customized pitches.'
               : activeTab === 'demos'
               ? 'Interactive AI-generated demo previews for high-intent prospects.'
-              : 'Track lead stages, deal flow, and booked meetings.'
+              : activeTab === 'pipeline'
+              ? 'Track lead stages, deal flow, and booked meetings.'
+              : 'Manage Gemini, Anthropic Claude, and v0 API keys and model preferences.'
           }
           onNewCampaignClick={() => setIsModalOpen(true)}
           searchQuery={searchQuery}
@@ -230,7 +248,7 @@ export default function Home() {
         />
 
         {/* Campaign Keywords Banner */}
-        {campaign.keywords && campaign.keywords.length > 0 && (
+        {activeTab !== 'settings' && campaign.keywords && campaign.keywords.length > 0 && (
           <div className="mb-4 p-3 rounded-2xl bg-blue-50/70 border border-blue-200/70 flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1 text-xs font-extrabold text-blue-900 mr-2">
               <Search className="w-3.5 h-3.5 text-blue-600" />
@@ -540,7 +558,7 @@ export default function Home() {
 
                     <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
                       <button
-                        onClick={() => handleGenerateDemo(selectedDemoLead, 'v0')}
+                        onClick={() => handleGenerateDemo(selectedDemoLead)}
                         disabled={demoGeneratingId === selectedDemoLead.id}
                         className="btn text-xs px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl flex items-center gap-2 shadow-lg disabled:opacity-50"
                       >
@@ -709,6 +727,11 @@ export default function Home() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* 5. SETTINGS & INTEGRATIONS TAB */}
+        {activeTab === 'settings' && (
+          <SettingsView settings={settings} onSave={handleSaveSettings} />
         )}
 
         {/* Interactive Modal for Launching New Campaigns */}

@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
+import { generateCampaignKeywordsAnthropic, analyzeLeadWithAnthropic } from '@/lib/anthropic';
 import { analyzeLeadWithGemini, generateCampaignKeywords } from '@/lib/gemini';
 import { buildDemoPrompt, buildOutreach, buildPipeline, generateAlgorithmicKeywords } from '@/lib/pipeline';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import { createV0Demo } from '@/lib/v0';
 import { applyWebsiteSnapshot, inspectWebsite } from '@/lib/website';
-import type { CampaignInput, Lead } from '@/lib/types';
+import type { AppSettings, CampaignInput, Lead } from '@/lib/types';
 
 export async function GET() {
   const supabase = getSupabaseAdmin();
@@ -34,16 +35,26 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as Partial<CampaignInput>;
+  const body = (await req.json()) as Partial<CampaignInput> & { settings?: AppSettings };
   const input = normalizeCampaignInput(body);
+  const settings = body.settings;
   const baseUrl = getBaseUrl(req);
 
-  // Generate multi-keyword search queries for campaign scraping
-  const geminiEnabled = process.env.GEMINI_ENABLED === 'true';
+  const aiProvider = settings?.aiProvider || 'gemini';
+  const aiApiKey = settings?.aiApiKey || (aiProvider === 'anthropic' ? process.env.ANTHROPIC_API_KEY : process.env.GEMINI_API_KEY);
+  const aiModel = settings?.aiModel;
+  const v0ApiKey = settings?.v0ApiKey || process.env.V0_API_KEY;
+  const v0Model = settings?.v0Model || process.env.V0_MODEL;
+
+  // Generate multi-keyword search queries for campaign scraping using configured AI model (Gemini or Anthropic)
   let keywords: string[] = [];
-  if (geminiEnabled) {
+  if (aiApiKey) {
     try {
-      keywords = await generateCampaignKeywords(input.audience, input.locations, input.source);
+      if (aiProvider === 'anthropic') {
+        keywords = await generateCampaignKeywordsAnthropic(input.audience, input.locations, input.source, aiApiKey, aiModel);
+      } else {
+        keywords = await generateCampaignKeywords(input.audience, input.locations, input.source, aiApiKey, aiModel);
+      }
     } catch {
       keywords = [];
     }
@@ -64,9 +75,13 @@ export async function POST(req: Request) {
 
   const analyzedLeads = await Promise.all(
     inspectedLeads.map(async (lead) => {
-      if (!geminiEnabled) return lead;
+      if (!aiApiKey) return lead;
       try {
-        const ai = await analyzeLeadWithGemini(lead);
+        const ai =
+          aiProvider === 'anthropic'
+            ? await analyzeLeadWithAnthropic(lead, aiApiKey, aiModel)
+            : await analyzeLeadWithGemini(lead, aiApiKey, aiModel);
+
         const merged = {
           ...lead,
           ...ai,
@@ -93,12 +108,12 @@ export async function POST(req: Request) {
     })
   );
 
-  // v0 is the sole site builder engine — build v0 site demos for qualified prospects
+  // v0 site builder — build v0 site demos for qualified prospects using user's v0 key/model
   const leadsWithV0Demos = await Promise.all(
     analyzedLeads.map(async (lead) => {
       if (lead.fit_score < 70) return lead;
       try {
-        const demo = await createV0Demo(lead);
+        const demo = await createV0Demo(lead, v0ApiKey, v0Model);
         const demoUrl = demo.deploymentUrl || demo.demoUrl || `${baseUrl}/demo/${lead.id}`;
         return {
           ...lead,

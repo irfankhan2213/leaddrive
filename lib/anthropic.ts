@@ -1,0 +1,116 @@
+import type { Lead } from '@/lib/types';
+
+export async function generateCampaignKeywordsAnthropic(
+  audience: string,
+  locations: string,
+  source: string,
+  apiKey: string,
+  model = 'claude-3-5-haiku-20241022'
+): Promise<string[]> {
+  if (!apiKey) return [];
+
+  const prompt = `Generate 5 to 8 highly specific commercial search keywords/phrases to scrape target prospects for a cold outreach campaign.
+
+Context:
+- Target audience: ${audience}
+- Locations: ${locations || 'General'}
+- Lead source: ${source}
+
+Return ONLY a JSON array of string keywords, for example:
+["keyword 1", "keyword 2", "keyword 3", "keyword 4", "keyword 5"]`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: model || 'claude-3-5-haiku-20241022',
+        max_tokens: 512,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) return [];
+
+    const payload = (await res.json()) as {
+      content?: Array<{ text?: string }>;
+    };
+    const text = payload.content?.[0]?.text || '[]';
+    const parsed = JSON.parse(extractJsonArray(text)) as string[];
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed.map((k) => String(k).trim()).filter(Boolean);
+    }
+  } catch {
+    return [];
+  }
+
+  return [];
+}
+
+export async function analyzeLeadWithAnthropic(
+  lead: Lead,
+  apiKey: string,
+  model = 'claude-3-5-haiku-20241022'
+): Promise<Partial<Lead>> {
+  if (!apiKey) return {};
+
+  const prompt = `Analyze this prospect for a cold outreach demo campaign.
+
+Return ONLY a JSON object:
+{
+  "fit_score": 1-100,
+  "weakness": "specific digital presence weakness",
+  "qualification_reason": "why this is or is not worth a personalized demo",
+  "outreach_subject": "short email subject",
+  "outreach_body": "under 100 words with demo link placeholder {{demo_url}}"
+}
+
+Prospect:
+${JSON.stringify(lead, null, 2)}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: model || 'claude-3-5-haiku-20241022',
+        max_tokens: 800,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!res.ok) return {};
+
+    const payload = (await res.json()) as {
+      content?: Array<{ text?: string }>;
+    };
+    const text = payload.content?.[0]?.text || '{}';
+    return JSON.parse(extractJson(text)) as Partial<Lead>;
+  } catch {
+    return {};
+  }
+}
+
+function extractJson(text: string) {
+  const trimmed = text.replace(/```json|```/g, '').trim();
+  const start = trimmed.indexOf('{');
+  const end = trimmed.lastIndexOf('}');
+  if (start === -1 || end === -1 || end < start) return '{}';
+  return trimmed.slice(start, end + 1);
+}
+
+function extractJsonArray(text: string) {
+  const trimmed = text.replace(/```json|```/g, '').trim();
+  const start = trimmed.indexOf('[');
+  const end = trimmed.lastIndexOf(']');
+  if (start === -1 || end === -1 || end < start) return '[]';
+  return trimmed.slice(start, end + 1);
+}

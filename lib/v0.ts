@@ -10,8 +10,12 @@ type V0ChatResponse = {
   latestVersion?: { id?: string; demoUrl?: string; status?: string };
 };
 
-export async function createV0Demo(lead: Lead): Promise<V0DemoResult> {
-  const apiKey = process.env.V0_API_KEY;
+export async function createV0Demo(
+  lead: Lead,
+  customV0ApiKey?: string,
+  customV0Model?: string
+): Promise<V0DemoResult> {
+  const apiKey = customV0ApiKey || process.env.V0_API_KEY;
 
   if (!apiKey || apiKey.trim() === '') {
     return {
@@ -19,11 +23,11 @@ export async function createV0Demo(lead: Lead): Promise<V0DemoResult> {
       webUrl: `/demo/${lead.id}`,
       provider: 'v0',
       status: 'ready',
-      error: 'V0_API_KEY is not configured in .env.local. Using local v0 preview renderer.'
+      error: 'V0_API_KEY is not configured in Settings or .env.local. Using local v0 preview renderer.'
     };
   }
 
-  const modelIds = getV0ModelCandidates(process.env.V0_MODEL);
+  const modelIds = getV0ModelCandidates(customV0Model || process.env.V0_MODEL);
   const prompt = compactV0Prompt(lead);
   let lastError = '';
   let chat: V0ChatResponse | null = null;
@@ -65,7 +69,7 @@ export async function createV0Demo(lead: Lead): Promise<V0DemoResult> {
           webUrl: `/demo/${lead.id}`,
           provider: 'v0',
           status: 'ready',
-          error: 'V0_API_KEY is unauthorized. Using fallback v0 preview renderer.'
+          error: 'V0_API_KEY is unauthorized. Check your V0 API Key in Settings.'
         };
       }
 
