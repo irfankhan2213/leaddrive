@@ -37,7 +37,7 @@ export function Header({
             placeholder="Search prospects, leads..."
             value={searchQuery}
             onChange={(e) => setSearchQuery?.(e.target.value)}
-            className="field pl-9 pr-3 text-xs bg-white/80"
+            className="field field-icon-left pr-3 text-xs bg-white/90 shadow-xs focus:bg-white"
           />
         </div>
 

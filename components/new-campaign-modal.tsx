@@ -49,17 +49,17 @@ export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCamp
 
   return (
     <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="panel bg-white max-w-xl w-full p-5 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 max-h-[88vh] flex flex-col">
+      <div className="panel bg-white max-w-xl w-full p-5 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 max-h-[88vh] flex flex-col overflow-hidden">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 z-10"
+          className="absolute top-4 right-4 p-1.5 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 z-10 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-2 mb-3 flex-shrink-0">
-          <div className="w-7 h-7 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold">
-            <Sparkles className="w-3.5 h-3.5" />
+          <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-500/20">
+            <Sparkles className="w-4 h-4" />
           </div>
           <div>
             <h2 className="text-base font-extrabold text-gray-900 leading-tight">Launch Multi-Keyword Campaign</h2>
@@ -68,7 +68,7 @@ export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCamp
         </div>
 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
-          <div className="flex-1 overflow-y-auto pr-1.5 space-y-3.5 scrollbar-thin">
+          <div className="flex-1 overflow-y-auto pr-1 space-y-3.5 pb-2 scrollbar-thin">
             <div>
               <label className="label">Target Audience & Niche</label>
               <input
@@ -192,18 +192,18 @@ export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCamp
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-3 mt-2 border-t border-gray-100 flex-shrink-0 bg-white">
+          <div className="-mx-5 -mb-5 px-5 py-3.5 bg-gray-50/90 border-t border-gray-100 flex items-center justify-end gap-3 flex-shrink-0 backdrop-blur-xs">
             <button
               type="button"
               onClick={onClose}
-              className="btn secondary text-xs py-2"
+              className="btn secondary text-xs py-2 px-4"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="btn text-xs px-6 py-2"
+              className="btn text-xs px-6 py-2 shadow-lg shadow-blue-500/20"
             >
               {loading ? 'Scraping Multi-Keyword Engine...' : `Scrape & Find ${form.limit} Leads`}
             </button>
