@@ -33,35 +33,57 @@ export function generateAlgorithmicKeywords(input: CampaignInput): string[] {
   const audience = input.audience.trim() || 'Service Business';
   const locations = parseLocations(input.locations);
   const locStr = locations[0] || '';
+  const currentYear = new Date().getFullYear();
 
-  const nicheWords = audience.replace(/high-ticket|local|companies|businesses|with outdated websites/gi, '').trim();
+  const cleanAudience = audience
+    .replace(/high-ticket|local|with outdated websites|with weak mobile booking/gi, '')
+    .trim();
 
-  const serviceModifiers = [
-    nicheWords,
-    `Top rated ${nicheWords}`,
-    `Emergency ${nicheWords}`,
-    `Commercial ${nicheWords}`,
-    `Boutique ${nicheWords}`,
-    `${nicheWords} specialists`,
-    `Premium ${nicheWords} services`
-  ];
+  const isTechOrStartup = /(ai|saas|tech|startup|app|software|crypto|b2b|digital|agency)/i.test(cleanAudience);
 
-  const keywords: string[] = [];
-  for (const mod of serviceModifiers) {
+  let queryPatterns: string[] = [];
+
+  if (isTechOrStartup) {
+    queryPatterns = [
+      `${cleanAudience} ${currentYear}`,
+      `${cleanAudience} SaaS`,
+      `new ${cleanAudience} tools`,
+      `recently registered ${cleanAudience}`,
+      `top ${cleanAudience} companies`,
+      `${cleanAudience} directory`,
+      `emerging ${cleanAudience} platforms`,
+      `funded ${cleanAudience}`
+    ];
+  } else {
+    queryPatterns = [
+      cleanAudience,
+      `top rated ${cleanAudience}`,
+      `best ${cleanAudience} providers`,
+      `${cleanAudience} specialists`,
+      `new ${cleanAudience} listings`,
+      `${cleanAudience} directory`,
+      `commercial ${cleanAudience}`,
+      `licensed ${cleanAudience}`
+    ];
+  }
+
+  const queries: string[] = [];
+  for (const pattern of queryPatterns) {
     if (locStr) {
-      keywords.push(`${mod} in ${locStr}`);
+      const alreadyHasLoc = pattern.toLowerCase().includes(locStr.toLowerCase());
+      queries.push(alreadyHasLoc ? pattern : `${pattern} in ${locStr}`);
     } else {
-      keywords.push(mod);
+      queries.push(pattern);
     }
   }
 
   if (locations.length > 1) {
     for (let i = 1; i < locations.length; i++) {
-      keywords.push(`${nicheWords} in ${locations[i]}`);
+      queries.push(`${cleanAudience} in ${locations[i]}`);
     }
   }
 
-  return [...new Set(keywords)].slice(0, 8);
+  return [...new Set(queries)].slice(0, 8);
 }
 
 export function parseProspects(

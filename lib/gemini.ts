@@ -16,15 +16,22 @@ export async function generateCampaignKeywords(
     'gemini-2.5-flash-lite'
   ].filter(Boolean) as string[];
 
-  const prompt = `Generate 5 to 8 highly specific commercial search keywords/phrases to scrape target prospects for a cold outreach campaign.
+  const currentYear = new Date().getFullYear();
+  const prompt = `Generate 5 to 8 highly realistic, high-intent discovery search queries to scrape cold prospects for an outreach campaign.
 
-Context:
-- Target audience: ${audience}
-- Locations: ${locations || 'General'}
+Target Context:
+- Target audience / niche: ${audience}
+- Locations: ${locations || 'Global'}
 - Lead source: ${source}
 
-Return only JSON array of string keywords, for example:
-["keyword 1", "keyword 2", "keyword 3", "keyword 4", "keyword 5"]`;
+Follow these query expansion strategies:
+1. Current year & timeline queries (e.g. "${audience} ${currentYear} in ${locations || 'US'}")
+2. Sub-niche & category variations (e.g. "${audience} SaaS", "new ${audience} tools")
+3. Registrations, directories & tracking lists (e.g. "recently registered ${audience}", "${audience} directory", "funded ${audience}")
+4. High-intent commercial queries (e.g. "top ${audience} companies in ${locations || 'US'}")
+
+Return ONLY a JSON array of 5 to 8 string search queries:
+["query 1", "query 2", "query 3", "query 4", "query 5"]`;
 
   for (const model of [...new Set(models)]) {
     try {
