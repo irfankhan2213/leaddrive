@@ -104,7 +104,7 @@ export async function POST(req: Request) {
         const merged = {
           ...lead,
           ...ai,
-          status: typeof ai.fit_score === 'number' && ai.fit_score >= 70 ? 'qualified' : lead.status,
+          status: typeof ai.fit_score === 'number' && ai.fit_score >= 70 ? ('qualified' as const) : lead.status,
           outreach_body:
             ai.outreach_body?.replace('{{demo_url}}', `${baseUrl}/demo/${lead.id}`) ||
             buildOutreach({
@@ -127,9 +127,35 @@ export async function POST(req: Request) {
     })
   );
 
-  pipeline.leads = analyzedLeads;
-  pipeline.campaign.qualified = analyzedLeads.filter((lead) => lead.fit_score >= 70).length;
-  pipeline.campaign.demos_generated = analyzedLeads.filter((lead) => lead.status === 'demo_ready').length;
+  const contactEnrichedLeads = analyzedLeads.map((lead) => {
+    const hasContact = Boolean(lead.email?.trim()) || Boolean(lead.phone?.trim()) || Boolean(lead.linkedin_url?.trim());
+
+    if (!hasContact) {
+      return {
+        ...lead,
+        status: 'skipped' as const,
+        qualification_reason: 'Skipped: No contact email or phone number found to reach prospect.',
+        signals: [
+          ...lead.signals.filter((s) => s.label !== 'Contact status'),
+          { label: 'Contact status', value: 'Missing email & phone number', severity: 'critical' }
+        ]
+      } satisfies Lead;
+    }
+
+    const fitScore = typeof lead.fit_score === 'number' ? lead.fit_score : 50;
+    const finalStatus = lead.status === 'demo_ready' ? 'demo_ready' : fitScore >= 70 ? ('qualified' as const) : ('scraped' as const);
+
+    return {
+      ...lead,
+      status: finalStatus
+    } satisfies Lead;
+  });
+
+  pipeline.leads = contactEnrichedLeads;
+  pipeline.campaign.qualified = contactEnrichedLeads.filter(
+    (lead) => lead.status === 'qualified' || (lead.status === 'demo_ready' && (Boolean(lead.email) || Boolean(lead.phone)))
+  ).length;
+  pipeline.campaign.demos_generated = contactEnrichedLeads.filter((lead) => lead.status === 'demo_ready').length;
 
   const supabase = getSupabaseAdmin();
   if (!supabase) {

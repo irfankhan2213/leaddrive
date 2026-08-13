@@ -164,6 +164,12 @@ export function dedupeProspects(prospects: DiscoveredProspect[]) {
     deduped.push(prospect);
   }
 
+  deduped.sort((a, b) => {
+    const aContact = (a.email ? 2 : 0) + (a.phone ? 1 : 0);
+    const bContact = (b.email ? 2 : 0) + (b.phone ? 1 : 0);
+    return bContact - aContact;
+  });
+
   return deduped;
 }
 

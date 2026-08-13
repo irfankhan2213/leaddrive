@@ -1,4 +1,4 @@
-import type { Campaign, CampaignInput, DigitalSignal, Lead, PipelineResult } from '@/lib/types';
+import type { Campaign, CampaignInput, DigitalSignal, Lead, LeadStatus, PipelineResult } from '@/lib/types';
 
 const sourceLabels = {
   google_maps: 'Google Maps',
@@ -153,7 +153,18 @@ export function buildPipeline(
   const leads = prospects.slice(0, input.limit || 25).map((prospect, index) => {
     const score = scoreProspect(prospect, input.audience);
     const weakness = generateTailoredWeakness(prospect, input.audience, input.demoType, score, index);
+    const hasContact = Boolean(prospect.email?.trim()) || Boolean(prospect.phone?.trim());
+
+    const status: LeadStatus = !hasContact
+      ? 'skipped'
+      : score >= 70
+      ? 'qualified'
+      : 'scraped';
+
     const signals = buildSignals(score, input, prospect.matched_keyword, weakness, prospect);
+    if (!hasContact) {
+      signals.push({ label: 'Contact status', value: 'Missing email & phone number', severity: 'critical' });
+    }
 
     const lead: Lead = {
       id: `lead_${Date.now()}_${index}_${Math.random().toString(36).slice(2, 7)}`,
@@ -169,13 +180,14 @@ export function buildPipeline(
       rating: prospect.rating,
       reviews_count: prospect.reviews_count,
       source_url: prospect.source_url,
-      status: score >= 70 ? 'qualified' : score >= 55 ? 'scraped' : 'skipped',
+      status,
       fit_score: score,
       weakness,
-      qualification_reason:
-        score >= 70
-          ? `Discovered via "${prospect.matched_keyword}". ${prospect.company_name} shows high commercial intent in ${prospect.city || 'their market'} but is losing leads due to ${weakness.toLowerCase()}`
-          : `Discovered via "${prospect.matched_keyword || input.audience}". Needs more proof before spending demo or outreach credits.`,
+      qualification_reason: !hasContact
+        ? `Skipped: No direct email or phone number found to contact prospect.`
+        : score >= 70
+        ? `Discovered via "${prospect.matched_keyword}". ${prospect.company_name} shows high commercial intent in ${prospect.city || 'their market'} but is losing leads due to ${weakness.toLowerCase()}`
+        : `Discovered via "${prospect.matched_keyword || input.audience}". Contact info verified. Needs demo before outreach.`,
       signals,
       demo_type: input.demoType,
       demo_prompt: '',
