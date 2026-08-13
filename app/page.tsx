@@ -38,12 +38,7 @@ export default function Home() {
   const [settings, setSettings] = useState<AppSettings>(defaultSettings);
   const [campaign, setCampaign] = useState<Campaign>({
     ...sampleCampaign,
-    keywords: [
-      'High-ticket wellness clinics Austin TX',
-      'Medical aesthetics & med spa Austin',
-      'Botox & skin rejuvenation Dallas TX',
-      'Cosmetic laser clinic Houston TX'
-    ]
+    keywords: []
   });
   const [leads, setLeads] = useState<Lead[]>(sampleLeads);
   const [selectedId, setSelectedId] = useState<string | undefined>(sampleLeads[0]?.id);
@@ -70,7 +65,7 @@ export default function Home() {
           }
         }
       } catch {
-        // Fallback to sample data
+        // Keep the dashboard empty until real campaign data exists.
       }
     }
     loadInitialData();
@@ -146,7 +141,7 @@ export default function Home() {
         setSelectedDemoLeadId(data.leads[0]?.id);
         setNotice({
           type: 'success',
-          text: `Scraped multi-keyword campaign with ${data.leads.length} lead${data.leads.length === 1 ? '' : 's'} using ${settings.aiProvider === 'gemini' ? 'Gemini' : 'Claude'} & v0!`
+          text: `Scraped and classified ${data.leads.length} real lead${data.leads.length === 1 ? '' : 's'}. v0 demos were not generated automatically.`
         });
       }
     } catch (err) {
@@ -299,7 +294,7 @@ export default function Home() {
               <MetricCard
                 label="Demos Built"
                 value={computedMetrics.demosBuilt}
-                badge="AI Active"
+                badge="Manual"
                 icon={Wand2}
               />
               <MetricCard
@@ -455,12 +450,12 @@ export default function Home() {
                           {selectedLead.contact_name?.[0] || 'C'}
                         </div>
                         <div>
-                          <div className="font-bold text-gray-900">{selectedLead.contact_name || 'Contact Person'}</div>
-                          <div className="text-[11px] text-gray-500 font-medium">Decision Maker</div>
+                          <div className="font-bold text-gray-900">{selectedLead.contact_name || selectedLead.company_name}</div>
+                          <div className="text-[11px] text-gray-500 font-medium">{selectedLead.contact_name ? 'Decision Maker' : 'Company contact'}</div>
                         </div>
                       </div>
                       <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
-                        Verified Contact
+                        {selectedLead.email || selectedLead.phone ? 'Contact Found' : 'Needs Contact'}
                       </span>
                     </div>
                   </div>

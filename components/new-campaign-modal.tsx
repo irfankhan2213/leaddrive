@@ -26,12 +26,12 @@ const limitPresets = [5, 10, 25, 50, 100, 250];
 export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCampaignModalProps) {
   const [form, setForm] = useState<CampaignInput>({
     audience: 'High-ticket wellness clinics with weak mobile booking',
-    locations: 'Austin, TX; Dallas, TX; Houston, TX',
-    source: 'url_list',
-    sourcePayload: 'Aurora Med Spa, Austin, TX, https://auroramedspa.example, hello@auroramedspa.example\nNorthstar Legal Group, Dallas, TX, https://northstarlegal.example\nFluxOps, Houston, TX, https://fluxops.example',
+    locations: 'Austin, TX',
+    source: 'google_maps',
+    sourcePayload: '',
     demoType: 'website',
     channel: 'email',
-    limit: 25
+    limit: 10
   });
 
   // Real-time preview of multi-keyword search queries generated for campaign
@@ -187,7 +187,7 @@ export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCamp
                 value={form.sourcePayload}
                 onChange={(e) => setForm({ ...form, sourcePayload: e.target.value })}
                 className="field text-xs resize-none py-1.5"
-                placeholder="Paste custom URLs or leave blank for multi-keyword automated web discovery..."
+                placeholder="Paste real CSV rows or URLs. Leave blank to scrape real leads from the selected source."
               />
             </div>
           </div>

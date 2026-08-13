@@ -31,6 +31,12 @@ create table if not exists public.leads (
   linkedin_url text,
   city text,
   email text,
+  phone text,
+  address text,
+  rating numeric,
+  reviews_count integer,
+  source_url text,
+  matched_keyword text,
   status text not null default 'new',
   fit_score integer not null default 0 check (fit_score >= 0 and fit_score <= 100),
   weakness text not null default '',
@@ -52,6 +58,12 @@ create table if not exists public.leads (
 );
 
 alter table public.leads add column if not exists reply_text text;
+alter table public.leads add column if not exists phone text;
+alter table public.leads add column if not exists address text;
+alter table public.leads add column if not exists rating numeric;
+alter table public.leads add column if not exists reviews_count integer;
+alter table public.leads add column if not exists source_url text;
+alter table public.leads add column if not exists matched_keyword text;
 
 create table if not exists public.outreach_events (
   id uuid primary key default gen_random_uuid(),
@@ -66,6 +78,7 @@ create index if not exists leads_campaign_id_idx on public.leads(campaign_id);
 create index if not exists leads_fit_score_idx on public.leads(fit_score desc);
 create index if not exists leads_status_idx on public.leads(status);
 create index if not exists leads_city_idx on public.leads(city);
+create index if not exists leads_rating_idx on public.leads(rating desc);
 create index if not exists outreach_events_lead_id_idx on public.outreach_events(lead_id);
 
 create or replace function public.set_updated_at()

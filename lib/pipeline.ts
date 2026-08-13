@@ -9,6 +9,19 @@ const sourceLabels = {
   url_list: 'URL list'
 };
 
+type ProspectSeed = {
+  company_name: string;
+  website_url?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  rating?: number;
+  reviews_count?: number;
+  matched_keyword?: string;
+  source_url?: string;
+};
+
 export function parseLocations(locations: string): string[] {
   return locations
     .split(/[\n;|]/)
@@ -54,7 +67,7 @@ export function generateAlgorithmicKeywords(input: CampaignInput): string[] {
 export function parseProspects(
   input: CampaignInput,
   keywords: string[]
-): Array<{ company_name: string; website_url?: string; email?: string; city?: string; matched_keyword?: string }> {
+): ProspectSeed[] {
   const campaignLocations = parseLocations(input.locations);
   const rows = input.sourcePayload
     .split(/\r?\n/)
@@ -62,55 +75,35 @@ export function parseProspects(
     .filter(Boolean)
     .slice(0, Math.max(1, input.limit || 25));
 
-  // If user supplied explicit CSV/URL lines in sourcePayload
-  if (rows.length > 0) {
-    return rows.map((row, index) => {
-      const cols = row.split(',').map((col) => col.trim());
-      const url = cols.find((col) => /^https?:\/\//i.test(col));
-      const email = cols.find((col) => /\S+@\S+\.\S+/.test(col));
-      const company = cols[0]?.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split(/[/?#]/)[0];
-      const city = inferProspectLocation(cols, campaignLocations, index);
-      const matched_keyword = keywords[index % keywords.length] || keywords[0];
+  return rows.map((row, index) => {
+    const cols = row.split(',').map((col) => col.trim()).filter(Boolean);
+    const firstUrl = cols.find((col) => /^https?:\/\//i.test(col));
+    const email = cols.find((col) => /\S+@\S+\.\S+/.test(col));
+    const phone = cols.find((col) => /\+?\d[\d\s().-]{7,}\d/.test(col));
+    const url = firstUrl || (/^https?:\/\//i.test(cols[0] || '') ? cols[0] : undefined);
+    const companyRaw =
+      /^https?:\/\//i.test(cols[0] || '') && url
+        ? new URL(url).hostname.replace(/^www\./i, '')
+        : cols[0];
+    const city = inferProspectLocation(cols, campaignLocations, index);
+    const matched_keyword = keywords[index % keywords.length] || keywords[0];
 
-      return {
-        company_name: titleCase(company || `Prospect ${index + 1}`),
-        website_url: url || (/^https?:\/\//i.test(cols[0] || '') ? cols[0] : undefined),
-        email,
-        city,
-        matched_keyword
-      };
-    });
-  }
-
-  // Multi-keyword prospect discovery engine
-  const limit = Math.max(1, Math.min(input.limit || 25, 250));
-  const discovered: Array<{ company_name: string; website_url?: string; email?: string; city?: string; matched_keyword?: string }> = [];
-
-  const companyPrefixes = ['Vanguard', 'Apex', 'Horizon', 'Summit', 'Crestview', 'Sterling', 'Nexus', 'Pinnacle', 'Radiant', 'Beacon', 'Zenith', 'Trinity'];
-  const companySuffixes = ['Group', 'Services', 'Partners', 'Studio', 'Clinic', 'Solutions', 'Co', 'Labs', 'Associates', 'Pro'];
-
-  for (let i = 0; i < limit; i++) {
-    const matched_keyword = keywords[i % keywords.length] || keywords[0] || input.audience;
-    const prefix = companyPrefixes[i % companyPrefixes.length];
-    const suffix = companySuffixes[(i + 3) % companySuffixes.length];
-    const nicheTerm = titleCase(input.audience.replace(/high-ticket|local|companies|businesses/gi, '').trim() || 'Service');
-    const company = `${prefix} ${nicheTerm} ${suffix}`;
-    const slug = company.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const city = campaignLocations[i % Math.max(1, campaignLocations.length)] || 'Austin, TX';
-
-    discovered.push({
-      company_name: company,
-      website_url: `https://${slug}.example.com`,
-      email: `contact@${slug}.example.com`,
+    return {
+      company_name: titleCase(companyRaw || ''),
+      website_url: url,
+      email,
+      phone,
       city,
       matched_keyword
-    });
-  }
-
-  return discovered;
+    };
+  }).filter((prospect) => prospect.company_name || prospect.website_url);
 }
 
-export function buildPipeline(input: CampaignInput, overrideKeywords?: string[]): PipelineResult {
+export function buildPipeline(
+  input: CampaignInput,
+  overrideKeywords?: string[],
+  overrideProspects?: ProspectSeed[]
+): PipelineResult {
   const primaryLocation = parseLocations(input.locations)[0];
   const keywords = overrideKeywords && overrideKeywords.length > 0 ? overrideKeywords : generateAlgorithmicKeywords(input);
 
@@ -133,28 +126,34 @@ export function buildPipeline(input: CampaignInput, overrideKeywords?: string[])
     created_at: new Date().toISOString()
   };
 
-  const leads = parseProspects(input, keywords).map((prospect, index) => {
-    const score = scoreProspect(prospect.website_url, input.audience, index);
-    const weakness = generateTailoredWeakness(prospect.company_name, input.audience, prospect.city, input.demoType, score, index);
-    const signals = buildSignals(score, input, prospect.matched_keyword, weakness);
+  const prospects = overrideProspects?.length ? overrideProspects : parseProspects(input, keywords);
+
+  const leads = prospects.slice(0, input.limit || 25).map((prospect, index) => {
+    const score = scoreProspect(prospect, input.audience);
+    const weakness = generateTailoredWeakness(prospect, input.audience, input.demoType, score, index);
+    const signals = buildSignals(score, input, prospect.matched_keyword, weakness, prospect);
 
     const lead: Lead = {
       id: `lead_${Date.now()}_${index}_${Math.random().toString(36).slice(2, 7)}`,
       campaign_id: campaign.id,
-      company_name: prospect.company_name,
-      contact_name: inferContactName(prospect.company_name, index),
+      company_name: prospect.company_name || prospect.website_url || 'Unnamed prospect',
       niche: input.audience,
       source: input.source,
       website_url: prospect.website_url,
       city: prospect.city,
       email: prospect.email,
+      phone: prospect.phone,
+      address: prospect.address,
+      rating: prospect.rating,
+      reviews_count: prospect.reviews_count,
+      source_url: prospect.source_url,
       status: score >= 70 ? 'qualified' : score >= 55 ? 'scraped' : 'skipped',
       fit_score: score,
       weakness,
       qualification_reason:
         score >= 70
           ? `Discovered via "${prospect.matched_keyword}". ${prospect.company_name} shows high commercial intent in ${prospect.city || 'their market'} but is losing leads due to ${weakness.toLowerCase()}`
-          : 'Needs manual review before sending AI demo credits.',
+          : `Discovered via "${prospect.matched_keyword || input.audience}". Needs more proof before spending demo or outreach credits.`,
       signals,
       demo_type: input.demoType,
       demo_prompt: '',
@@ -257,15 +256,20 @@ Would you be open to a 5-minute chat this week to review the concept?`;
 }
 
 function generateTailoredWeakness(
-  company: string,
+  prospect: ProspectSeed,
   audience: string,
-  city?: string,
   demoType?: CampaignInput['demoType'],
   score?: number,
   index = 0
 ): string {
+  const company = prospect.company_name;
+  const city = prospect.city;
   const loc = city || 'local';
   const lowerAudience = audience.toLowerCase();
+
+  if (!prospect.website_url) {
+    return `No official website was found from the lead source, so buyers searching in ${loc} may not have a clear place to review services or book.`;
+  }
 
   if (lowerAudience.includes('spa') || lowerAudience.includes('wellness') || lowerAudience.includes('clinic') || lowerAudience.includes('dental')) {
     const options = [
@@ -307,11 +311,6 @@ function generateTailoredWeakness(
   return generalOptions[index % generalOptions.length];
 }
 
-function inferContactName(company: string, index: number): string {
-  const names = ['Sarah Jenkins', 'Maya Lin', 'David Chen', 'Marcus Vance', 'Elena Rostova', 'Priya Patel', 'Alex Morgan', 'Brandon Cole'];
-  return names[index % names.length];
-}
-
 function getNicheStyleGuidelines(niche: string): { colorTheme: string } {
   const lower = niche.toLowerCase();
   if (lower.includes('med') || lower.includes('spa') || lower.includes('clinic')) {
@@ -326,25 +325,39 @@ function getNicheStyleGuidelines(niche: string): { colorTheme: string } {
   return { colorTheme: 'Modern Indigo & Slate Neutral palette (Hex #4F46E5, #0F172A, #F8FAFC)' };
 }
 
-function scoreProspect(url: string | undefined, audience: string, index: number): number {
+function scoreProspect(prospect: ProspectSeed, audience: string): number {
   const highTicket = /(law|legal|med|clinic|saas|agency|finance|real estate|consult|dental|roof|solar|b2b)/i.test(audience);
-  const hasWebsite = Boolean(url);
-  const base = highTicket ? 76 : 64;
-  const websitePenalty = hasWebsite ? 0 : -8;
-  const variation = [15, 8, -4, 12, -12, 3][index % 6];
-  return Math.max(28, Math.min(96, base + websitePenalty + variation));
+  const hasWebsite = Boolean(prospect.website_url);
+  const reviewStrength = (prospect.rating || 0) >= 4.3 && (prospect.reviews_count || 0) >= 15 ? 10 : 0;
+  const missingWebsiteOpportunity = hasWebsite ? 0 : 14;
+  const base = highTicket ? 52 : 44;
+  return Math.max(20, Math.min(92, Math.round(base + reviewStrength + missingWebsiteOpportunity + (hasWebsite ? 8 : 0))));
 }
 
-function buildSignals(score: number, input: CampaignInput, matchedKeyword?: string, weakness?: string): DigitalSignal[] {
-  const severity = score >= 78 ? 'critical' : 'warning';
+function buildSignals(
+  score: number,
+  input: CampaignInput,
+  matchedKeyword?: string,
+  weakness?: string,
+  prospect?: ProspectSeed
+): DigitalSignal[] {
   const locations = parseLocations(input.locations);
-  return [
+  const signals: DigitalSignal[] = [
     { label: 'Scraped query', value: matchedKeyword || input.audience, severity: 'positive' },
     { label: 'Vulnerability detected', value: weakness || 'Conversion bottleneck', severity: 'critical' },
     { label: 'Location filter', value: locations.length ? locations.join(', ') : 'Any location', severity: 'positive' },
     { label: 'Source channel', value: sourceLabels[input.source], severity: 'positive' },
-    { label: 'Personalization angle', value: '1-click live demo hook', severity: 'positive' }
+    { label: 'Website found', value: prospect?.website_url ? 'Yes' : 'No official website found', severity: prospect?.website_url ? 'positive' : 'critical' }
   ];
+  if (typeof prospect?.rating === 'number') {
+    signals.push({
+      label: 'Review rating',
+      value: `${prospect.rating}/5${prospect.reviews_count ? ` from ${prospect.reviews_count} reviews` : ''}`,
+      severity: prospect.rating >= 4 ? 'positive' : 'warning'
+    });
+  }
+  signals.push({ label: 'Personalization angle', value: '1-click live demo hook', severity: score >= 70 ? 'positive' : 'warning' });
+  return signals;
 }
 
 function titleCase(value: string): string {

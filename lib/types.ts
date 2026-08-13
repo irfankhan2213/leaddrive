@@ -45,6 +45,11 @@ export interface Lead {
   linkedin_url?: string;
   city?: string;
   email?: string;
+  phone?: string;
+  address?: string;
+  rating?: number;
+  reviews_count?: number;
+  source_url?: string;
   status: LeadStatus;
   fit_score: number;
   weakness: string;
