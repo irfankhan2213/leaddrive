@@ -16,12 +16,9 @@ export interface DiscoveredProspect {
 }
 
 export async function discoverProspects(input: CampaignInput, keywords: string[]): Promise<DiscoveredProspect[]> {
-  const rows = input.sourcePayload
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  if (rows.length > 0) return [];
+  if (input.source === 'csv' || input.source === 'url_list') {
+    return [];
+  }
 
   if (input.source === 'google_maps') {
     return discoverGoogleMapsProspects(input, keywords);

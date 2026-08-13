@@ -326,12 +326,27 @@ function getNicheStyleGuidelines(niche: string): { colorTheme: string } {
 }
 
 function scoreProspect(prospect: ProspectSeed, audience: string): number {
-  const highTicket = /(law|legal|med|clinic|saas|agency|finance|real estate|consult|dental|roof|solar|b2b)/i.test(audience);
-  const hasWebsite = Boolean(prospect.website_url);
-  const reviewStrength = (prospect.rating || 0) >= 4.3 && (prospect.reviews_count || 0) >= 15 ? 10 : 0;
-  const missingWebsiteOpportunity = hasWebsite ? 0 : 14;
-  const base = highTicket ? 52 : 44;
-  return Math.max(20, Math.min(92, Math.round(base + reviewStrength + missingWebsiteOpportunity + (hasWebsite ? 8 : 0))));
+  const highTicket = /(law|legal|med|clinic|saas|agency|finance|real estate|consult|dental|roof|solar|b2b|spa|remodel|plumb|hvac)/i.test(audience);
+  let score = highTicket ? 55 : 45;
+
+  if (typeof prospect.rating === 'number' && prospect.rating > 0) {
+    if (prospect.rating >= 4.7) score += 12;
+    else if (prospect.rating >= 4.3) score += 8;
+    else if (prospect.rating >= 4.0) score += 4;
+    else if (prospect.rating < 3.5) score -= 6;
+  }
+
+  const reviews = prospect.reviews_count || 0;
+  if (reviews >= 100) score += 10;
+  else if (reviews >= 30) score += 6;
+  else if (reviews >= 10) score += 3;
+
+  if (prospect.email) score += 8;
+  if (prospect.phone) score += 5;
+  if (prospect.website_url) score += 6;
+  else score += 10;
+
+  return Math.max(25, Math.min(95, score));
 }
 
 function buildSignals(

@@ -1,4 +1,5 @@
 import type { DigitalSignal, Lead } from '@/lib/types';
+import type { WebsiteSnapshot } from '@/lib/website';
 
 export interface PageSpeedAudit {
   ok: boolean;
@@ -9,11 +10,17 @@ export interface PageSpeedAudit {
   bestPractices?: number;
   audits: Record<string, { score?: number | null; title?: string; displayValue?: string }>;
   error?: string;
+  isEstimated?: boolean;
 }
 
-export async function runPageSpeedAudit(url: string): Promise<PageSpeedAudit> {
+export async function runPageSpeedAudit(url: string, fallbackSnapshot?: WebsiteSnapshot): Promise<PageSpeedAudit> {
   const apiKey = process.env.PAGESPEED_API_KEY;
-  if (!apiKey) return createPageSpeedError(url, 'PAGESPEED_API_KEY is not configured.');
+  if (!apiKey) {
+    if (fallbackSnapshot && fallbackSnapshot.ok) {
+      return estimateAuditFromSnapshot(fallbackSnapshot);
+    }
+    return createPageSpeedError(url, 'PAGESPEED_API_KEY is not configured.');
+  }
 
   const endpoint = new URL('https://www.googleapis.com/pagespeedonline/v5/runPagespeed');
   endpoint.searchParams.set('url', url);
@@ -24,10 +31,13 @@ export async function runPageSpeedAudit(url: string): Promise<PageSpeedAudit> {
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 30000);
+  const timeout = setTimeout(() => controller.abort(), 15000);
   try {
     const res = await fetch(endpoint, { signal: controller.signal });
-    if (!res.ok) return createPageSpeedError(url, `PageSpeed failed: ${res.status} ${await res.text()}`);
+    if (!res.ok) {
+      if (fallbackSnapshot && fallbackSnapshot.ok) return estimateAuditFromSnapshot(fallbackSnapshot);
+      return createPageSpeedError(url, `PageSpeed failed: ${res.status}`);
+    }
     const data = (await res.json()) as {
       id?: string;
       lighthouseResult?: {
@@ -47,10 +57,34 @@ export async function runPageSpeedAudit(url: string): Promise<PageSpeedAudit> {
       audits: data.lighthouseResult?.audits || {}
     };
   } catch (err) {
+    if (fallbackSnapshot && fallbackSnapshot.ok) return estimateAuditFromSnapshot(fallbackSnapshot);
     return createPageSpeedError(url, err instanceof Error ? err.message : 'PageSpeed request failed.');
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function estimateAuditFromSnapshot(snapshot: WebsiteSnapshot): PageSpeedAudit {
+  const ms = snapshot.responseTimeMs || 800;
+  const performance = ms < 400 ? 92 : ms < 800 ? 78 : ms < 1500 ? 60 : ms < 2500 ? 45 : 30;
+
+  let seo = 70;
+  if (snapshot.title) seo += 10;
+  if (snapshot.description) seo += 15;
+
+  const accessibility = snapshot.hasViewport ? 82 : 45;
+  const bestPractices = snapshot.url.startsWith('https') ? 85 : 55;
+
+  return {
+    ok: true,
+    finalUrl: snapshot.url,
+    performance,
+    seo: Math.min(100, seo),
+    accessibility,
+    bestPractices,
+    audits: {},
+    isEstimated: true
+  };
 }
 
 export function applyPageSpeedAudit(lead: Lead, audit: PageSpeedAudit): Lead {
@@ -64,12 +98,13 @@ export function applyPageSpeedAudit(lead: Lead, audit: PageSpeedAudit): Lead {
     };
   }
 
+  const tag = audit.isEstimated ? ' (estimated)' : '';
   const signals: DigitalSignal[] = [
     ...lead.signals,
-    scoreSignal('Performance', audit.performance),
-    scoreSignal('SEO', audit.seo),
-    scoreSignal('Accessibility', audit.accessibility),
-    scoreSignal('Best practices', audit.bestPractices)
+    scoreSignal(`Performance${tag}`, audit.performance),
+    scoreSignal(`SEO${tag}`, audit.seo),
+    scoreSignal(`Accessibility${tag}`, audit.accessibility),
+    scoreSignal(`Best practices${tag}`, audit.bestPractices)
   ];
   const factorWeaknesses = determineTechnicalWeaknesses(audit);
   const score = classifyFitScore(lead, audit, factorWeaknesses);
@@ -103,11 +138,11 @@ function determineTechnicalWeaknesses(audit: PageSpeedAudit) {
 
 function classifyFitScore(lead: Lead, audit: PageSpeedAudit, weaknesses: string[]) {
   const highTicket = /(law|legal|med|clinic|spa|dental|roof|solar|real estate|finance|consult|b2b|saas)/i.test(lead.niche);
-  const reviewStrength = (lead.rating || 0) >= 4.3 && (lead.reviews_count || 0) >= 15 ? 8 : 0;
+  const reviewStrength = (lead.rating || 0) >= 4.3 && (lead.reviews_count || 0) >= 15 ? 12 : 0;
   const weaknessOpportunity = Math.min(24, weaknesses.length * 7);
-  const performanceOpportunity = Math.max(0, 70 - (audit.performance || 70)) * 0.25;
+  const performanceOpportunity = Math.max(0, 75 - (audit.performance || 75)) * 0.3;
   const seoOpportunity = Math.max(0, 85 - (audit.seo || 85)) * 0.2;
-  const base = highTicket ? 54 : 44;
+  const base = highTicket ? 50 : 40;
 
   return Math.max(1, Math.min(100, Math.round(base + reviewStrength + weaknessOpportunity + performanceOpportunity + seoOpportunity)));
 }

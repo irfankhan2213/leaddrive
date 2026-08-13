@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     if (!lead.website_url) return refreshLeadArtifacts(lead, input, baseUrl);
     const snapshot = await inspectWebsite(lead.website_url);
     const withSnapshot = applyWebsiteSnapshot(lead, snapshot);
-    const pageSpeed = await runPageSpeedAudit(lead.website_url);
+    const pageSpeed = await runPageSpeedAudit(lead.website_url, snapshot);
     return refreshLeadArtifacts(applyPageSpeedAudit(withSnapshot, pageSpeed), input, baseUrl);
   });
 
