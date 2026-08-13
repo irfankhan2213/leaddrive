@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { FileInput, Globe2, Linkedin, MapPinned, Rocket, Search, Sparkles, Upload, X } from 'lucide-react';
+import { FileInput, Globe2, Linkedin, MapPinned, Rocket, Search, Sparkles, Upload, Users, X } from 'lucide-react';
 import type { CampaignInput, LeadSource } from '@/lib/types';
 import { generateAlgorithmicKeywords } from '@/lib/pipeline';
 
@@ -20,6 +20,8 @@ const sourceOptions: Array<{ value: LeadSource; label: string; icon: React.Eleme
   { value: 'product_hunt', label: 'Product Hunt', icon: Rocket },
   { value: 'apollo', label: 'Apollo', icon: FileInput }
 ];
+
+const limitPresets = [5, 10, 25, 50, 100, 250];
 
 export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCampaignModalProps) {
   const [form, setForm] = useState<CampaignInput>({
@@ -89,6 +91,51 @@ export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCamp
             />
           </div>
 
+          {/* Option: Max Prospects to Find */}
+          <div>
+            <label className="label flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-gray-900 font-extrabold">
+                <Users className="w-3.5 h-3.5 text-blue-600" />
+                <span>Max Leads to Find for Campaign</span>
+              </span>
+              <span className="text-[10px] text-gray-500 font-semibold">
+                Limit: {form.limit} lead{form.limit === 1 ? '' : 's'}
+              </span>
+            </label>
+            <div className="grid grid-cols-6 gap-1.5 mt-1">
+              {limitPresets.map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setForm({ ...form, limit: preset })}
+                  className={`py-2 rounded-xl text-xs font-bold border transition-all ${
+                    form.limit === preset
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                      : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  {preset}
+                </button>
+              ))}
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-[11px] text-gray-500 font-medium">Or custom count:</span>
+              <input
+                type="number"
+                min={1}
+                max={250}
+                value={form.limit}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    limit: Math.min(Math.max(Number(e.target.value) || 1, 1), 250)
+                  })
+                }
+                className="field text-xs w-24 font-extrabold text-blue-700"
+              />
+            </div>
+          </div>
+
           {/* Multi-Keyword Expansion Preview */}
           <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-100">
             <div className="flex items-center gap-1.5 text-xs font-extrabold text-blue-900 mb-1.5">
@@ -156,7 +203,7 @@ export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCamp
               disabled={loading}
               className="btn text-xs px-6"
             >
-              {loading ? 'Scraping Multi-Keyword Engine...' : 'Scrape & Launch Campaign'}
+              {loading ? 'Scraping Multi-Keyword Engine...' : `Scrape & Find ${form.limit} Leads`}
             </button>
           </div>
         </form>

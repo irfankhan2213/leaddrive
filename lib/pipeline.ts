@@ -83,7 +83,7 @@ export function parseProspects(
   }
 
   // Multi-keyword prospect discovery engine
-  const limit = Math.max(3, Math.min(input.limit || 12, 50));
+  const limit = Math.max(1, Math.min(input.limit || 25, 250));
   const discovered: Array<{ company_name: string; website_url?: string; email?: string; city?: string; matched_keyword?: string }> = [];
 
   const companyPrefixes = ['Vanguard', 'Apex', 'Horizon', 'Summit', 'Crestview', 'Sterling', 'Nexus', 'Pinnacle', 'Radiant', 'Beacon', 'Zenith', 'Trinity'];
