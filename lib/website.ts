@@ -14,28 +14,43 @@ export interface WebsiteSnapshot {
 }
 
 export async function inspectWebsite(url: string): Promise<WebsiteSnapshot> {
-  // Fast path for mock/example domains to prevent slow campaign launches
-  if (!url || url.includes('.example') || url.includes('example.com') || url.includes('example.org') || url.includes('example.net')) {
-    return {
-      ok: false,
-      url,
-      hasViewport: false,
-      hasBookingCue: false,
-      hasContactCue: true,
-      hasSocialCue: false,
-      htmlSize: 0,
-      error: 'Mock domain inspection skipped.'
-    };
+  // Security & Fast path: Validate URL scheme to prevent SSRF against internal resources (localhost, 169.254, 10.x, etc.)
+  let parsedUrl: URL;
+  try {
+    parsedUrl = new URL(url);
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      return createErrorSnapshot(url, 'Invalid protocol.');
+    }
+
+    const host = parsedUrl.hostname.toLowerCase();
+    if (
+      host === 'localhost' ||
+      host.startsWith('127.') ||
+      host.startsWith('10.') ||
+      host.startsWith('192.168.') ||
+      host.startsWith('169.254.') ||
+      host.endsWith('.local') ||
+      host.endsWith('.internal') ||
+      host.includes('.example') ||
+      host.includes('example.com') ||
+      host.includes('example.org') ||
+      host.includes('example.net')
+    ) {
+      return createErrorSnapshot(url, 'Domain inspection skipped for internal/mock host.');
+    }
+  } catch {
+    return createErrorSnapshot(url, 'Invalid URL format.');
   }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 2000);
 
   try {
-    const res = await fetch(url, {
+    const res = await fetch(parsedUrl.toString(), {
       signal: controller.signal,
+      redirect: 'follow',
       headers: {
-        'User-Agent': 'LeadDriveBot/0.1 (+https://localhost)',
+        'User-Agent': 'LeadDriveBot/0.1 (+https://leaddrive.app)',
         Accept: 'text/html,application/xhtml+xml'
       }
     });
@@ -54,19 +69,23 @@ export async function inspectWebsite(url: string): Promise<WebsiteSnapshot> {
       htmlSize: html.length
     };
   } catch (err) {
-    return {
-      ok: false,
-      url,
-      hasViewport: false,
-      hasBookingCue: false,
-      hasContactCue: false,
-      hasSocialCue: false,
-      htmlSize: 0,
-      error: err instanceof Error ? err.message : 'Fetch failed.'
-    };
+    return createErrorSnapshot(url, err instanceof Error ? err.message : 'Fetch failed.');
   } finally {
     clearTimeout(timeout);
   }
+}
+
+function createErrorSnapshot(url: string, error: string): WebsiteSnapshot {
+  return {
+    ok: false,
+    url,
+    hasViewport: false,
+    hasBookingCue: false,
+    hasContactCue: false,
+    hasSocialCue: false,
+    htmlSize: 0,
+    error
+  };
 }
 
 export function applyWebsiteSnapshot(lead: Lead, snapshot: WebsiteSnapshot): Lead {
@@ -101,7 +120,9 @@ export function applyWebsiteSnapshot(lead: Lead, snapshot: WebsiteSnapshot): Lea
 }
 
 function pickWebsiteWeakness(lead: Lead, snapshot: WebsiteSnapshot) {
-  if (!snapshot.ok && !snapshot.error?.includes('Mock domain')) return `The website could not be reliably loaded for analysis, which may indicate a technical or availability issue.`;
+  if (!snapshot.ok && !snapshot.error?.includes('inspection skipped')) {
+    return `The website could not be reliably loaded for analysis, which may indicate a technical or availability issue.`;
+  }
   if (!snapshot.hasViewport) return `The site appears to be missing a responsive viewport setup, which can hurt mobile visitors in ${lead.city || 'the target market'}.`;
   if (!snapshot.hasBookingCue) return `The page does not surface a clear booking, consultation, or demo CTA for visitors ready to act.`;
   if (!snapshot.description) return `The site lacks a strong meta description, making the offer weaker in search and link previews.`;

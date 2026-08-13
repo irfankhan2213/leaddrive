@@ -56,7 +56,7 @@ export async function GET(req: Request) {
         }
       );
       status.gemini.ok = res.ok;
-      status.gemini.error = res.ok ? null : `${res.status} ${await res.text()}`;
+      status.gemini.error = res.ok ? null : `HTTP ${res.status}: Gemini check failed.`;
     } catch (err) {
       status.gemini.ok = false;
       status.gemini.error = err instanceof Error ? err.message : 'Gemini check failed.';
@@ -72,7 +72,7 @@ export async function GET(req: Request) {
         }
       });
       status.v0.ok = res.ok;
-      status.v0.error = res.ok ? null : `${res.status} ${await res.text()}`;
+      status.v0.error = res.ok ? null : `HTTP ${res.status}: v0 check failed.`;
     } catch (err) {
       status.v0.ok = false;
       status.v0.error = err instanceof Error ? err.message : 'v0 check failed.';

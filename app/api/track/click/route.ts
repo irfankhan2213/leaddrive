@@ -25,8 +25,8 @@ export async function GET(req: Request) {
 }
 
 function sanitizeRedirectTarget(target: string, requestOrigin: string): string {
-  // Allow relative URLs starting with /
-  if (target.startsWith('/') && !target.startsWith('//')) {
+  // Allow relative URLs starting with / (rejecting // or backslash tricks)
+  if (target.startsWith('/') && !target.startsWith('//') && !target.includes('\\')) {
     return `${requestOrigin}${target}`;
   }
 
@@ -34,11 +34,12 @@ function sanitizeRedirectTarget(target: string, requestOrigin: string): string {
     const parsed = new URL(target);
     const appBase = process.env.APP_BASE_URL ? new URL(process.env.APP_BASE_URL).origin : null;
 
-    // Allow same-origin redirects, app base URL, or trusted demo hosts (e.g. v0.dev)
+    // Allow same-origin redirects, app base URL, or trusted demo hosts (e.g. v0.dev, vusercontent.net)
     const isAllowedOrigin =
       parsed.origin === requestOrigin ||
       (appBase && parsed.origin === appBase) ||
       parsed.hostname.endsWith('v0.dev') ||
+      parsed.hostname.endsWith('vusercontent.net') ||
       parsed.hostname.endsWith('vercel.app');
 
     if (isAllowedOrigin) return target;

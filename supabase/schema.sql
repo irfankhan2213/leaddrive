@@ -84,6 +84,23 @@ before update on public.leads
 for each row
 execute function public.set_updated_at();
 
+-- Atomic counter increment RPC function
+create or replace function public.increment_lead_counter(lead_id_param uuid, field_param text)
+returns void
+language plpgsql
+security definer
+as $$
+begin
+  if field_param = 'opens' then
+    update public.leads set opens = opens + 1 where id = lead_id_param;
+  elsif field_param = 'clicks' then
+    update public.leads set clicks = clicks + 1 where id = lead_id_param;
+  elsif field_param = 'replies' then
+    update public.leads set replies = replies + 1 where id = lead_id_param;
+  end if;
+end;
+$$;
+
 alter table public.campaigns enable row level security;
 alter table public.leads enable row level security;
 alter table public.outreach_events enable row level security;
