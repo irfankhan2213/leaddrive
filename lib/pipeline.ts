@@ -216,7 +216,7 @@ export function buildDemoPrompt(lead: Lead): string {
 
   const nicheStyle = getNicheStyleGuidelines(lead.niche || lead.company_name);
 
-  return `Create a high-converting, production-ready ${demoTypeLabel} landing page component for "${lead.company_name}" located in ${lead.city || 'their service area'}.
+  return `Build a massive, comprehensive, full-featured multi-section ${demoTypeLabel} landing page component for "${lead.company_name}" located in ${lead.city || 'their service area'}.
 
 TARGET PROSPECT INFORMATION:
 - Company Name: ${lead.company_name}
@@ -228,13 +228,19 @@ TARGET PROSPECT INFORMATION:
 - Qualification Rationale: "${lead.qualification_reason}"
 - Audit Signals: ${signalsList}
 
-REQUIRED DESIGN & COPY SPECIFICATIONS:
-1. Branding & Hero: Feature prominent title "${lead.company_name}" and hero headline tailored to ${lead.niche} buyers in ${lead.city || 'the area'}.
-2. Fix Vulnerability: Directly resolve "${lead.weakness}" by placing an instant 1-tap booking bar, live quote estimator, or clear CTA in the primary viewport.
-3. Industry Services Grid: Include 4 realistic service offerings specific to ${lead.niche} (e.g. pricing packages, service highlights, treatment cards).
-4. Local Social Proof: Render a realistic review badge ("Rated 4.9★ by 200+ clients in ${lead.city || 'the area'}").
-5. Color Palette: Use ${nicheStyle.colorTheme}.
-6. Code Standard: Output modern React + Next.js + Tailwind CSS with dark/light glassmorphism accents, Lucide icons, responsive layout, and zero generic placeholder copy.`;
+REQUIRED COMPREHENSIVE SECTIONS (Build a large, complete site):
+1. Navigation Bar: Sticky header with brand logo "${lead.company_name}", nav links (Services, Solutions, Pricing, Reviews, FAQ), phone number button, and "Book Consultation" CTA button.
+2. Hero Section: Prominent hero headline tailored to ${lead.niche} buyers in ${lead.city || 'the area'}, subheadline, double CTA ("Book 1-Click Appointment" + "View Pricing"), trust metrics ("Rated 4.9★ by 250+ clients in ${lead.city || 'the area'}").
+3. Problem & Solution Banner: Explicitly addresses "${lead.weakness}" and demonstrates how this modernized platform resolves it seamlessly.
+4. Extensive Services & Pricing Grid: Render 6 detailed service packages with features, pricing, duration, and direct booking buttons tailored to ${lead.niche}.
+5. Interactive Tool / Booking Widget: Live interactive 1-click appointment scheduler or instant quote estimator component directly in the page flow.
+6. Testimonials & Social Proof: 3 detailed client review cards with 5-star badges, client quotes, and verified local badges.
+7. FAQ Accordion: 4 expandable interactive FAQ items answering top client questions.
+8. Footer & Mobile Quick Bar: Full footer with sitemap links, copyright, and a fixed bottom mobile booking bar for instant mobile conversions.
+
+DESIGN & STYLE SPECIFICATIONS:
+- Color Palette: ${nicheStyle.colorTheme}.
+- Code Standard: Return a large, complete, self-contained React + Next.js + Tailwind CSS component with smooth hover states, Lucide icons, responsive layout, and rich realistic copy.`;
 }
 
 export function buildOutreach({

@@ -42,7 +42,7 @@ export async function createV0Demo(
         },
         body: JSON.stringify({
           system:
-            'You are v0, the AI site builder by Vercel. Generate complete, high-converting React + Next.js + Tailwind CSS landing page components for cold outreach prospects. Return responsive, beautifully styled code with hero section, service packages, local social proof, and mobile booking bar.',
+            'You are v0, the master AI web architect by Vercel. Generate complete, expansive, multi-section React + Next.js + Tailwind CSS landing page applications for cold outreach prospects. Return full, beautifully styled code with sticky Navbar, Hero section, Problem & Solution banner, 6 Service Cards with Pricing, Live Booking Tool/Estimator, Testimonials grid, FAQ Accordion, Footer, and a fixed mobile conversion bar.',
           message: prompt,
           chatPrivacy: 'unlisted',
           responseMode: 'sync',
@@ -125,22 +125,21 @@ function normalizeGatewayModelId(modelId: string) {
 }
 
 function compactV0Prompt(lead: Lead) {
-  const maxChars = Number(process.env.V0_MAX_PROMPT_CHARS || 1600);
+  const maxChars = Number(process.env.V0_MAX_PROMPT_CHARS || 3500);
   const fullPrompt =
     lead.demo_prompt ||
     buildDemoPrompt({
       ...lead,
-      signals: lead.signals?.slice(0, 4) || []
+      signals: lead.signals?.slice(0, 6) || []
     });
 
   const compact = `${fullPrompt}
 
-v0 Site Builder Constraints:
-- Build one complete high-converting landing page.
-- Clear hero title "${lead.company_name}".
-- Mobile booking bar at bottom.
-- No image generation.
-- Modern Tailwind CSS styling.`;
+v0 Site Builder Requirements:
+- Generate a large, expansive, complete landing page.
+- Clear brand title "${lead.company_name}".
+- Include Navbar, Hero, Problem/Solution, 6 Service Cards with Pricing, Interactive Scheduler, Testimonials, FAQ, Footer, and Fixed Mobile Booking Bar.
+- Modern Tailwind CSS styling with zero placeholder text.`;
 
-  return compact.length > maxChars ? `${compact.slice(0, maxChars)}\n\nBuild complete v0 site.` : compact;
+  return compact.length > maxChars ? `${compact.slice(0, maxChars)}\n\nBuild full multi-section v0 site.` : compact;
 }
