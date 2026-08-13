@@ -32,6 +32,7 @@ import { ActivityFeed } from '@/components/activity-feed';
 import { SourceTable } from '@/components/source-table';
 import { NewCampaignModal } from '@/components/new-campaign-modal';
 import { SettingsView } from '@/components/settings-view';
+import { HelpView } from '@/components/help-view';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
@@ -727,6 +728,11 @@ export default function Home() {
         {/* 5. SETTINGS & INTEGRATIONS TAB */}
         {activeTab === 'settings' && (
           <SettingsView settings={settings} onSave={handleSaveSettings} />
+        )}
+
+        {/* 6. HELP & DOCUMENTATION TAB */}
+        {activeTab === 'help' && (
+          <HelpView />
         )}
 
         {/* Interactive Modal for Launching New Campaigns */}

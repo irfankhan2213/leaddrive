@@ -10,7 +10,7 @@ import {
   Zap
 } from 'lucide-react';
 
-export type NavTab = 'dashboard' | 'prospecting' | 'demos' | 'pipeline' | 'settings';
+export type NavTab = 'dashboard' | 'prospecting' | 'demos' | 'pipeline' | 'settings' | 'help';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -80,8 +80,15 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
 
       {/* Footer / User Badge */}
       <div className="pt-4 border-t border-gray-200/60 space-y-2">
-        <button className="nav-item flex items-center gap-2 px-2.5 py-2 w-full text-xs text-gray-500 hover:bg-white/50">
-          <HelpCircle className="w-4 h-4 text-gray-400 flex-shrink-0" />
+        <button
+          onClick={() => setActiveTab('help')}
+          className={`nav-item flex items-center gap-2 px-2.5 py-2 w-full text-xs transition-all ${
+            activeTab === 'help'
+              ? 'active bg-white/90 shadow-sm text-blue-600 font-bold border border-white'
+              : 'text-gray-600 hover:bg-white/50'
+          }`}
+        >
+          <HelpCircle className={`w-4 h-4 flex-shrink-0 ${activeTab === 'help' ? 'text-blue-600' : 'text-gray-400'}`} />
           <span className="truncate">Help & Documentation</span>
         </button>
 
