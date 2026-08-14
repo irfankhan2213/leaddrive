@@ -63,21 +63,21 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header Banner */}
-      <div className="panel p-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 text-white flex items-center justify-between shadow-xl">
+      <div className="panel p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center font-bold">
-            <Cpu className="w-5 h-5 text-white" />
+          <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center font-bold">
+            <Cpu className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-lg font-extrabold tracking-tight">System Settings & Dispatch Engines</h2>
-            <p className="text-xs text-blue-100 font-medium mt-0.5">
+            <h2 className="text-lg font-extrabold text-gray-900 tracking-tight">System Settings & Integrations</h2>
+            <p className="text-xs text-gray-500 font-medium mt-0.5">
               Manage v0 AI site builder, Email (Resend), SMS (Twilio), and AI model credentials
             </p>
           </div>
         </div>
-        <div className="hidden sm:flex items-center gap-2 text-xs bg-white/10 px-3 py-1.5 rounded-xl border border-white/20">
-          <ShieldCheck className="w-4 h-4 text-emerald-300" />
-          <span>Local & Encrypted Persistence</span>
+        <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-50/80 px-3 py-1.5 rounded-xl border border-gray-200">
+          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+          <span>Encrypted Local Storage</span>
         </div>
       </div>
 
@@ -93,10 +93,12 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
         <div className="panel p-6 space-y-5">
           <div className="flex items-center justify-between border-b border-gray-100 pb-3">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-600" />
+              <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
+                <Sparkles className="w-3.5 h-3.5" />
+              </div>
               <h3 className="text-sm font-extrabold text-gray-900">v0 AI Site Builder Engine (Pure v0)</h3>
             </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 uppercase">
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
               Vercel v0 API
             </span>
           </div>
@@ -153,17 +155,22 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
               <button
                 type="button"
                 onClick={() => setForm({ ...form, defaultDemoQuality: 'low' })}
-                className={`p-3 rounded-xl border text-left transition-all ${
+                className={`p-3.5 rounded-2xl border text-left transition-all ${
                   form.defaultDemoQuality !== 'high'
-                    ? 'bg-purple-50/50 border-purple-500 ring-2 ring-purple-500/20 shadow-xs'
-                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                    ? 'bg-white border-blue-500 ring-2 ring-blue-500/10 shadow-xs'
+                    : 'bg-white/60 border-gray-200 text-gray-600 hover:bg-white hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-center gap-2 font-extrabold text-xs text-gray-900">
-                  <Zap className="w-4 h-4 text-amber-500" />
-                  <span>Low Usage Mode (Fast / Standard)</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-extrabold text-xs text-gray-900">
+                    <Zap className="w-4 h-4 text-gray-500" />
+                    <span>Low Usage Mode (Fast / Standard)</span>
+                  </div>
+                  {form.defaultDemoQuality !== 'high' && (
+                    <span className="w-2 h-2 rounded-full bg-blue-600" />
+                  )}
                 </div>
-                <div className="text-[11px] text-gray-500 mt-1">
+                <div className="text-[11px] text-gray-500 mt-1.5 leading-relaxed">
                   Uses v0-mini with compact prompts. Fast generation times, clean layout, core services, and direct booking form.
                 </div>
               </button>
@@ -171,18 +178,23 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
               <button
                 type="button"
                 onClick={() => setForm({ ...form, defaultDemoQuality: 'high' })}
-                className={`p-3 rounded-xl border text-left transition-all ${
+                className={`p-3.5 rounded-2xl border text-left transition-all ${
                   form.defaultDemoQuality === 'high'
-                    ? 'bg-purple-50/80 border-purple-600 ring-2 ring-purple-500/30 shadow-xs'
-                    : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                    ? 'bg-white border-blue-500 ring-2 ring-blue-500/10 shadow-xs'
+                    : 'bg-white/60 border-gray-200 text-gray-600 hover:bg-white hover:border-gray-300'
                 }`}
               >
-                <div className="flex items-center gap-2 font-extrabold text-xs text-purple-900">
-                  <Crown className="w-4 h-4 text-purple-600" />
-                  <span>High-End Mode (Ultra Pro Flagship)</span>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 font-extrabold text-xs text-gray-900">
+                    <Crown className="w-4 h-4 text-blue-600" />
+                    <span>High-End Mode (Pro Flagship)</span>
+                  </div>
+                  {form.defaultDemoQuality === 'high' && (
+                    <span className="w-2 h-2 rounded-full bg-blue-600" />
+                  )}
                 </div>
-                <div className="text-[11px] text-purple-700 mt-1">
-                  Uses v0-pro with comprehensive directives. Luxury glassmorphism, dynamic multi-step price calculator, booking calendar drawer, and Silicon Valley polish.
+                <div className="text-[11px] text-gray-500 mt-1.5 leading-relaxed">
+                  Uses v0-pro with comprehensive directives. Luxury layout, dynamic multi-step price calculator, and interactive booking drawer.
                 </div>
               </button>
             </div>

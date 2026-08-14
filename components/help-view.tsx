@@ -82,20 +82,20 @@ APP_BASE_URL="http://localhost:3000"`;
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header Banner */}
-      <div className="panel p-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 text-white shadow-xl flex items-center justify-between">
+      <div className="panel p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center font-bold shadow-md">
-            <BookOpen className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center font-bold">
+            <BookOpen className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-xl font-extrabold tracking-tight">Help Center & Platform Documentation</h2>
-            <p className="text-xs text-blue-100 font-medium mt-0.5">
+            <h2 className="text-lg font-extrabold text-gray-900 tracking-tight">Help Center & Documentation</h2>
+            <p className="text-xs text-gray-500 font-medium mt-0.5">
               Complete guide to multi-keyword campaigns, AI demos, scraping engines & settings
             </p>
           </div>
         </div>
-        <div className="hidden sm:flex items-center gap-2 text-xs bg-white/10 px-3.5 py-2 rounded-xl border border-white/20 font-bold">
-          <Zap className="w-4 h-4 text-amber-300" />
+        <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-50/80 px-3 py-1.5 rounded-xl border border-gray-200">
+          <Zap className="w-4 h-4 text-blue-600" />
           <span>v2.4 Engine Guide</span>
         </div>
       </div>
