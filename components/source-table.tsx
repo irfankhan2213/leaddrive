@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { ArrowUpRight, Database, FileSpreadsheet, Globe, MapPin, Sparkles, Users } from 'lucide-react';
+import { ArrowUpRight, Database, FileSpreadsheet, Globe, Instagram, MapPin, Sparkles, Users } from 'lucide-react';
 import type { Lead, LeadSource } from '@/lib/types';
 
 interface SourceTableProps {
@@ -20,6 +20,7 @@ interface SourceRow {
 }
 
 const sourceMeta: Record<LeadSource, { name: string; icon: React.ElementType; iconBg: string }> = {
+  instagram: { name: 'Instagram (Apify)', icon: Instagram, iconBg: 'bg-pink-50 text-pink-600 border-pink-100' },
   url_list: { name: 'URL List Scraping', icon: Globe, iconBg: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
   google_maps: { name: 'Google Maps Search', icon: MapPin, iconBg: 'bg-rose-50 text-rose-600 border-rose-100' },
   linkedin: { name: 'LinkedIn Sales Nav', icon: Users, iconBg: 'bg-blue-50 text-blue-600 border-blue-100' },

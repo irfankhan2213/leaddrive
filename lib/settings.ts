@@ -6,9 +6,13 @@ export const defaultSettings: AppSettings = {
   aiApiKey: '',
   v0ApiKey: '',
   v0Model: 'v0-mini',
+  defaultDemoQuality: 'low',
   resendApiKey: '',
   fromEmail: '',
   fromName: 'LeadDrive Team',
+  twilioAccountSid: '',
+  twilioAuthToken: '',
+  twilioPhoneNumber: '',
   brandName: 'LeadDrive',
   customInstructions: ''
 };

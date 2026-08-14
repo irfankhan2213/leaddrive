@@ -5,9 +5,9 @@ create table if not exists public.campaigns (
   name text not null,
   audience text not null,
   locations text not null default '',
-  source text not null check (source in ('google_maps', 'linkedin', 'product_hunt', 'apollo', 'csv', 'url_list')),
+  source text not null check (source in ('google_maps', 'instagram', 'linkedin', 'product_hunt', 'apollo', 'csv', 'url_list')),
   demo_type text not null check (demo_type in ('website', 'landing_page', 'app_mockup')),
-  channel text not null check (channel in ('email', 'linkedin')),
+  channel text not null default 'email',
   status text not null default 'running' check (status in ('draft', 'running', 'paused', 'complete')),
   total_prospects integer not null default 0,
   qualified integer not null default 0,
@@ -29,6 +29,7 @@ create table if not exists public.leads (
   source text not null,
   website_url text,
   linkedin_url text,
+  instagram_url text,
   city text,
   email text,
   phone text,
@@ -43,12 +44,14 @@ create table if not exists public.leads (
   qualification_reason text not null default '',
   signals jsonb not null default '[]'::jsonb,
   demo_type text not null default 'website',
+  demo_quality text default 'low',
   demo_prompt text not null default '',
   demo_url text,
   v0_chat_id text,
   v0_version_id text,
   outreach_subject text not null default '',
   outreach_body text not null default '',
+  outreach_sms text,
   reply_text text,
   opens integer not null default 0,
   clicks integer not null default 0,
@@ -64,6 +67,9 @@ alter table public.leads add column if not exists rating numeric;
 alter table public.leads add column if not exists reviews_count integer;
 alter table public.leads add column if not exists source_url text;
 alter table public.leads add column if not exists matched_keyword text;
+alter table public.leads add column if not exists outreach_sms text;
+alter table public.leads add column if not exists instagram_url text;
+alter table public.leads add column if not exists demo_quality text default 'low';
 
 create table if not exists public.outreach_events (
   id uuid primary key default gen_random_uuid(),

@@ -1,98 +1,130 @@
 import { NextResponse } from 'next/server';
 import { buildOutreach } from '@/lib/pipeline';
+import { buildSmsOutreach, sendTwilioSms } from '@/lib/sms';
+import { sendResendEmail } from '@/lib/email';
 import { getSupabaseAdmin } from '@/lib/supabase';
 import type { AppSettings, Lead, OutreachChannel } from '@/lib/types';
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as { lead: Lead; demoUrl?: string; channel?: OutreachChannel; settings?: AppSettings };
+  const body = (await req.json()) as {
+    lead: Lead;
+    demoUrl?: string;
+    channel?: OutreachChannel;
+    subject?: string;
+    customMessage?: string;
+    settings?: AppSettings;
+  };
+
   if (!body.lead) {
     return NextResponse.json({ error: 'Lead is required.' }, { status: 400 });
   }
 
-  const demoUrl = body.demoUrl || body.lead.demo_url || `${process.env.APP_BASE_URL || 'http://localhost:3000'}/demo/${body.lead.id}`;
-  const channel = body.channel || 'email';
-  const bodyText = buildOutreach({
-    company: body.lead.company_name,
-    contactName: body.lead.contact_name,
-    city: body.lead.city,
-    weakness: body.lead.weakness,
+  const lead = body.lead;
+  const channel: OutreachChannel = body.channel || 'email';
+  const demoUrl = body.demoUrl || lead.demo_url || `${process.env.APP_BASE_URL || 'http://localhost:3000'}/demo/${lead.id}`;
+
+  const emailSubject = body.subject || lead.outreach_subject || `${lead.company_name.split(' ')[0]} ${lead.city ? `in ${lead.city}` : ''} demo concept`;
+  const emailBody = body.customMessage || lead.outreach_body || buildOutreach({
+    company: lead.company_name,
+    contactName: lead.contact_name,
+    city: lead.city,
+    weakness: lead.weakness,
     demoUrl,
-    channel,
-    niche: body.lead.niche
+    channel: 'email',
+    niche: lead.niche
   });
 
-  const outreach = {
-    subject: `${body.lead.company_name.split(' ')[0]} ${body.lead.city ? `in ${body.lead.city}` : ''} demo idea`,
-    body: bodyText,
+  const smsText = body.customMessage || lead.outreach_sms || buildSmsOutreach(lead);
+
+  const results: {
+    email?: { sent: boolean; messageId?: string; error?: string };
+    sms?: { sent: boolean; messageId?: string; error?: string };
+    channel: OutreachChannel;
+    overallSuccess: boolean;
+  } = {
     channel,
-    sent: false,
-    providerId: undefined as string | undefined
+    overallSuccess: false
   };
 
-  const resendApiKey = body.settings?.resendApiKey || process.env.RESEND_API_KEY;
-  const fromEmail = body.settings?.fromEmail || process.env.FROM_EMAIL;
-  const fromName = body.settings?.fromName || process.env.FROM_NAME || 'LeadDrive';
+  // 1. Dispatch Email
+  if ((channel === 'email' || channel === 'multi') && lead.email) {
+    const emailResult = await sendResendEmail({
+      to: lead.email,
+      subject: emailSubject,
+      bodyText: emailBody,
+      lead: { ...lead, demo_url: demoUrl },
+      settings: body.settings
+    });
 
-  if (channel === 'email' && resendApiKey && fromEmail && body.lead.email) {
-    try {
-      const sendRes = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${resendApiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          from: `${fromName} <${fromEmail}>`,
-          to: [body.lead.email],
-          subject: outreach.subject,
-          text: outreach.body,
-          html: renderEmailHtml(outreach.body, body.lead.id)
+    results.email = {
+      sent: emailResult.success,
+      messageId: emailResult.messageId,
+      error: emailResult.error
+    };
+
+    if (emailResult.success) results.overallSuccess = true;
+  } else if ((channel === 'email' || channel === 'multi') && !lead.email) {
+    results.email = { sent: false, error: 'Lead has no email address.' };
+  }
+
+  // 2. Dispatch SMS
+  if ((channel === 'sms' || channel === 'multi') && lead.phone) {
+    const smsResult = await sendTwilioSms({
+      to: lead.phone,
+      body: smsText,
+      leadId: lead.id,
+      settings: body.settings
+    });
+
+    results.sms = {
+      sent: smsResult.success,
+      messageId: smsResult.messageId,
+      error: smsResult.error
+    };
+
+    if (smsResult.success) results.overallSuccess = true;
+  } else if ((channel === 'sms' || channel === 'multi') && !lead.phone) {
+    results.sms = { sent: false, error: 'Lead has no phone number.' };
+  }
+
+  // 3. Update Supabase status & record outreach events
+  const supabase = getSupabaseAdmin();
+  const isSupabaseLead = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lead.id);
+
+  if (supabase && isSupabaseLead) {
+    if (results.overallSuccess) {
+      await supabase
+        .from('leads')
+        .update({
+          outreach_subject: emailSubject,
+          outreach_body: emailBody,
+          status: 'outreach_sent'
         })
-      });
+        .eq('id', lead.id);
 
-      if (!sendRes.ok) {
-        const errorText = await sendRes.text();
-        return NextResponse.json({ error: `Resend email dispatch failed: ${errorText.slice(0, 150)}` }, { status: 502 });
+      if (results.email?.sent) {
+        await supabase.from('outreach_events').insert({
+          lead_id: lead.id,
+          event_type: 'sent',
+          event_data: { channel: 'email', provider_id: results.email.messageId, to: lead.email }
+        });
       }
 
-      const sent = (await sendRes.json()) as { id?: string };
-      outreach.sent = true;
-      outreach.providerId = sent.id;
-    } catch (err) {
-      return NextResponse.json({ error: err instanceof Error ? err.message : 'Email dispatch failed.' }, { status: 500 });
+      if (results.sms?.sent) {
+        await supabase.from('outreach_events').insert({
+          lead_id: lead.id,
+          event_type: 'sent',
+          event_data: { channel: 'sms', provider_id: results.sms.messageId, to: lead.phone }
+        });
+      }
     }
   }
 
-  const supabase = getSupabaseAdmin();
-  const isSupabaseLead = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.lead.id);
-  if (supabase && isSupabaseLead) {
-    await supabase
-      .from('leads')
-      .update({
-        outreach_subject: outreach.subject,
-        outreach_body: outreach.body,
-        status: outreach.sent ? 'outreach_sent' : body.lead.status
-      })
-      .eq('id', body.lead.id);
-
-    if (outreach.sent) {
-      await supabase.from('outreach_events').insert({
-        lead_id: body.lead.id,
-        event_type: 'sent',
-        event_data: { provider_id: outreach.providerId, channel }
-      });
-    }
-  }
-
-  return NextResponse.json(outreach);
-}
-
-function renderEmailHtml(text: string, leadId: string) {
-  const escaped = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\n/g, '<br />');
-  const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
-  return `${escaped}<img src="${baseUrl}/api/track/open?leadId=${encodeURIComponent(leadId)}" width="1" height="1" alt="" />`;
+  return NextResponse.json({
+    ...results,
+    leadId: lead.id,
+    subject: emailSubject,
+    body: emailBody,
+    smsText
+  });
 }

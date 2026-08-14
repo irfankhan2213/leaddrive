@@ -13,13 +13,14 @@ export interface WebsiteSnapshot {
   scrapedEmail?: string;
   scrapedPhone?: string;
   scrapedLinkedin?: string;
+  scrapedInstagram?: string;
   isSpa: boolean;
   responseTimeMs: number;
   error?: string;
 }
 
 export async function inspectWebsite(url: string): Promise<WebsiteSnapshot> {
-  // Security & Fast path: Validate URL scheme to prevent SSRF against internal resources (localhost, 169.254, 10.x, etc.)
+  // Security & Fast path: Validate URL scheme to prevent SSRF against internal resources
   let parsedUrl: URL;
   try {
     parsedUrl = new URL(url);
@@ -69,6 +70,7 @@ export async function inspectWebsite(url: string): Promise<WebsiteSnapshot> {
     const emails = extractEmailsFromHtml(html, domain);
     const phones = extractPhonesFromHtml(html);
     const linkedin = extractLinkedinFromHtml(html);
+    const instagram = extractInstagramFromHtml(html);
     const isSpa = /<div[^>]+id=["'](root|app|__next|gatsby-focus-wrapper)["']/i.test(html) ||
                   /__NEXT_DATA__|window\.__NUXT__|react-root|gatsby/i.test(html);
 
@@ -85,6 +87,7 @@ export async function inspectWebsite(url: string): Promise<WebsiteSnapshot> {
       scrapedEmail: emails[0],
       scrapedPhone: phones[0],
       scrapedLinkedin: linkedin,
+      scrapedInstagram: instagram,
       isSpa,
       responseTimeMs
     };
@@ -114,6 +117,7 @@ export function applyWebsiteSnapshot(lead: Lead, snapshot: WebsiteSnapshot): Lea
   const updatedEmail = lead.email || snapshot.scrapedEmail;
   const updatedPhone = lead.phone || snapshot.scrapedPhone;
   const updatedLinkedin = lead.linkedin_url || snapshot.scrapedLinkedin;
+  const updatedInstagram = lead.instagram_url || snapshot.scrapedInstagram;
 
   const signals: DigitalSignal[] = [
     ...lead.signals,
@@ -146,9 +150,17 @@ export function applyWebsiteSnapshot(lead: Lead, snapshot: WebsiteSnapshot): Lea
     });
   }
 
+  if (snapshot.scrapedInstagram) {
+    signals.push({
+      label: 'Instagram Profile',
+      value: snapshot.scrapedInstagram,
+      severity: 'positive'
+    });
+  }
+
   if (snapshot.scrapedLinkedin) {
     signals.push({
-      label: 'Scraped LinkedIn',
+      label: 'LinkedIn Profile',
       value: 'Found company profile link',
       severity: 'positive'
     });
@@ -161,6 +173,7 @@ export function applyWebsiteSnapshot(lead: Lead, snapshot: WebsiteSnapshot): Lea
     email: updatedEmail,
     phone: updatedPhone,
     linkedin_url: updatedLinkedin,
+    instagram_url: updatedInstagram,
     signals,
     weakness,
     qualification_reason: snapshot.ok
@@ -190,15 +203,15 @@ function summarizeSnapshot(snapshot: WebsiteSnapshot) {
     snapshot.title ? `title "${snapshot.title}"` : 'no title',
     snapshot.hasViewport ? 'mobile viewport present' : snapshot.isSpa ? 'SPA architecture' : 'mobile viewport missing',
     snapshot.scrapedEmail ? `email found (${snapshot.scrapedEmail})` : 'no direct email in HTML',
+    snapshot.scrapedInstagram ? 'Instagram link found' : '',
     snapshot.hasBookingCue ? 'CTA present' : 'CTA missing'
-  ];
+  ].filter(Boolean);
   return parts.join(', ');
 }
 
 function extractEmailsFromHtml(html: string, domain: string): string[] {
   const emails = new Set<string>();
 
-  // 1. Mailto links
   const mailtoMatches = html.matchAll(/href=["']mailto:([^"?#\s]+)/gi);
   for (const m of mailtoMatches) {
     if (m[1]) {
@@ -207,7 +220,6 @@ function extractEmailsFromHtml(html: string, domain: string): string[] {
     }
   }
 
-  // 2. Text regex matching email address
   const textMatches = html.matchAll(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g);
   for (const m of textMatches) {
     const email = m[0].trim().toLowerCase();
@@ -248,6 +260,18 @@ function extractPhonesFromHtml(html: string): string[] {
 function extractLinkedinFromHtml(html: string): string | undefined {
   const match = html.match(/href=["'](https?:\/\/(?:www\.)?linkedin\.com\/(?:company|in)\/[^"'?\s]+)/i);
   return match?.[1];
+}
+
+function extractInstagramFromHtml(html: string): string | undefined {
+  const match = html.match(/href=["'](https?:\/\/(?:www\.)?instagram\.com\/[a-zA-Z0-9._]+(?:\/)?)[^"'?\s]*["']/i);
+  if (match?.[1]) {
+    const clean = match[1].replace(/\/$/, '');
+    const path = clean.split('instagram.com/')[1]?.toLowerCase();
+    if (path && !['p', 'reel', 'explore', 'stories', 'tv', 'tags', 'about', 'developer'].includes(path)) {
+      return clean;
+    }
+  }
+  return undefined;
 }
 
 function extractTag(html: string, pattern: RegExp) {

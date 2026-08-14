@@ -1,7 +1,8 @@
-import type { Campaign, CampaignInput, DigitalSignal, Lead, LeadStatus, PipelineResult } from '@/lib/types';
+import type { Campaign, CampaignInput, DemoQuality, DigitalSignal, Lead, LeadStatus, OutreachChannel, PipelineResult } from '@/lib/types';
 
 const sourceLabels = {
   google_maps: 'Google Maps',
+  instagram: 'Instagram',
   linkedin: 'LinkedIn',
   product_hunt: 'Product Hunt',
   apollo: 'Apollo',
@@ -190,6 +191,7 @@ export function buildPipeline(
         : `Discovered via "${prospect.matched_keyword || input.audience}". Contact info verified. Needs demo before outreach.`,
       signals,
       demo_type: input.demoType,
+      demo_quality: input.demoQuality || 'low',
       demo_prompt: '',
       outreach_subject: `${prospect.company_name.split(' ')[0]} ${prospect.city ? `in ${prospect.city}` : ''} demo idea`,
       outreach_body: '',
@@ -200,7 +202,7 @@ export function buildPipeline(
       created_at: new Date().toISOString()
     };
 
-    lead.demo_prompt = buildDemoPrompt(lead);
+    lead.demo_prompt = buildDemoPrompt(lead, input.demoQuality || 'low');
     lead.outreach_body = buildOutreach({
       company: lead.company_name,
       contactName: lead.contact_name,
@@ -220,7 +222,7 @@ export function buildPipeline(
   return { campaign, leads };
 }
 
-export function buildDemoPrompt(lead: Lead): string {
+export function buildDemoPrompt(lead: Lead, quality: DemoQuality = 'low'): string {
   const demoTypeLabel = (lead.demo_type || 'website').replace('_', ' ');
   const signalsList = Array.isArray(lead.signals)
     ? lead.signals.map((signal) => `${signal.label}: ${signal.value}`).join('; ')
@@ -228,31 +230,58 @@ export function buildDemoPrompt(lead: Lead): string {
 
   const nicheStyle = getNicheStyleGuidelines(lead.niche || lead.company_name);
 
-  return `Build a massive, comprehensive, full-featured multi-section ${demoTypeLabel} landing page component for "${lead.company_name}" located in ${lead.city || 'their service area'}.
+  // LOW USAGE MODE (Fast, Clean, Cost-Efficient, Core Essentials)
+  if (quality === 'low') {
+    return `Build a clean, high-converting, responsive ${demoTypeLabel} landing page component for "${lead.company_name}" located in ${lead.city || 'their service area'}.
 
 TARGET PROSPECT INFORMATION:
 - Company Name: ${lead.company_name}
 - Decision Maker: ${lead.contact_name || 'Business Owner'}
 - Industry / Niche: ${lead.niche || 'High-Ticket Services'}
 - City / Market: ${lead.city || 'Local Market'}
-- Search Query Discovered: ${lead.matched_keyword || 'Local Search'}
 - Specific Conversion Vulnerability to Fix: "${lead.weakness}"
-- Qualification Rationale: "${lead.qualification_reason}"
-- Audit Signals: ${signalsList}
 
-REQUIRED COMPREHENSIVE SECTIONS (Build a large, complete site):
-1. Navigation Bar: Sticky header with brand logo "${lead.company_name}", nav links (Services, Solutions, Pricing, Reviews, FAQ), phone number button, and "Book Consultation" CTA button.
-2. Hero Section: Prominent hero headline tailored to ${lead.niche} buyers in ${lead.city || 'the area'}, subheadline, double CTA ("Book 1-Click Appointment" + "View Pricing"), trust metrics ("Rated 4.9★ by 250+ clients in ${lead.city || 'the area'}").
-3. Problem & Solution Banner: Explicitly addresses "${lead.weakness}" and demonstrates how this modernized platform resolves it seamlessly.
-4. Extensive Services & Pricing Grid: Render 6 detailed service packages with features, pricing, duration, and direct booking buttons tailored to ${lead.niche}.
-5. Interactive Tool / Booking Widget: Live interactive 1-click appointment scheduler or instant quote estimator component directly in the page flow.
-6. Testimonials & Social Proof: 3 detailed client review cards with 5-star badges, client quotes, and verified local badges.
-7. FAQ Accordion: 4 expandable interactive FAQ items answering top client questions.
-8. Footer & Mobile Quick Bar: Full footer with sitemap links, copyright, and a fixed bottom mobile booking bar for instant mobile conversions.
+CORE SECTIONS TO BUILD:
+1. Navigation Bar: Sticky header with brand logo "${lead.company_name}", phone button, and "Book Consultation" CTA button.
+2. Hero Section: Direct value proposition tailored to ${lead.niche} in ${lead.city || 'the area'}, trust badge, and primary booking CTA.
+3. Problem & Solution Banner: Explicitly addresses "${lead.weakness}" with a clear modern solution.
+4. Services & Pricing Grid: 3 core service packages with clear transparent pricing and direct booking CTA buttons.
+5. Interactive 1-Click Booking Widget: Interactive appointment scheduler / quote request form in the page.
+6. Testimonials & Social Proof: 2 client review cards with 5-star badges.
+7. Mobile Footer: Clean footer with direct call/booking button.
 
-DESIGN & STYLE SPECIFICATIONS:
+DESIGN SPECIFICATIONS:
 - Color Palette: ${nicheStyle.colorTheme}.
-- Code Standard: Return a large, complete, self-contained React + Next.js + Tailwind CSS component with smooth hover states, Lucide icons, responsive layout, and rich realistic copy.`;
+- Code Standard: Return a clean, self-contained React + Next.js + Tailwind CSS component with Lucide icons.`;
+  }
+
+  // HIGH USAGE MODE (Ultra High-End, Luxury Glassmorphism, Advanced Interactive Components, Flagship Agency Quality)
+  return `Build a world-class, ultra-luxurious, state-of-the-art flagship web application and ${demoTypeLabel} component for "${lead.company_name}" in ${lead.city || 'their primary market'}. This must look like an award-winning site designed by a top Silicon Valley agency.
+
+TARGET PROSPECT INTELLIGENCE:
+- Company Name: ${lead.company_name}
+- Decision Maker: ${lead.contact_name || 'Business Owner'}
+- Industry / Niche: ${lead.niche || 'High-Ticket Services'}
+- City / Market: ${lead.city || 'Local Market'}
+- Critical Digital Vulnerability to Solve: "${lead.weakness}"
+- Lead Qualification Reason: "${lead.qualification_reason}"
+- Audit Signals & Social Data: ${signalsList}
+
+HIGH-END ARCHITECTURE & ADVANCED INTERACTIVE FEATURES:
+1. Luxury Glassmorphism Header: Sticky translucent glassmorphic nav (backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-gray-200/60), brand monogram logo, interactive navigation links with hover capsules, live status badge ("⚡ Accepting New Appointments in ${lead.city || 'Your Area'}"), phone quick-call, and glowing "Book VIP Consultation" CTA.
+2. High-Impact Hero Showcase: Dynamic hero section with subtle gradient glow, animated trust pills, high-conversion headline targeting high-value ${lead.niche} clients in ${lead.city || 'the area'}, verified rating card (4.95★ over 320+ verified local engagements), instant interactive 3-question quick consultation launcher, and live consultation preview card.
+3. Deep Problem & Transformation Showcase: Interactive Before-vs-After comparison module directly showcasing how "${lead.company_name}" eradicates "${lead.weakness}" with streamlined modern client onboarding.
+4. Interactive Multi-Step Instant Quote & Cost Calculator: Stateful interactive widget with dynamic sliders (project size, service tier, turnaround time) calculating realistic estimated investment and 1-click booking locked-in rate.
+5. Interactive Tabbed Capability & Service Matrix: 6 comprehensive, deeply detailed service packages with expandable feature checklists, deliverables, turnaround times, guarantee badges, and instant booking modal triggers.
+6. Interactive Client Booking Calendar Drawer: Real-time interactive date & time slot picker with service selection, confirmation step, and calendar sync cues.
+7. Verified Local Client Case Studies & Video Testimonials: 4 rich testimonial cards with star ratings, verified buyer badges from ${lead.city || 'the region'}, transformation metrics (e.g. "+340% ROI, 2-day turnaround"), and client avatar badges.
+8. Interactive FAQ with Search & Accordion: 5 rich expandable questions resolving client objections, payment terms, and scheduling guarantees.
+9. Floating Mobile Quick-Conversion Bar: Fixed bottom mobile dock with 1-tap call, instant SMS, and direct booking trigger for maximum mobile conversions.
+
+LUXURY DESIGN TOKENS & VISUAL POLISH:
+- Color Harmony: ${nicheStyle.colorTheme} paired with obsidian/slate dark-mode accents and luminous highlights.
+- Styling: Premium typography, glassmorphism cards, micro-borders (border border-white/20), subtle drop shadows (shadow-2xl shadow-blue-500/10), interactive hover micro-transitions (hover:-translate-y-1 transition-all duration-300).
+- Code Standard: Complete, self-contained React + Next.js + Tailwind CSS component using Lucide icons, full state interactivity, and rich realistic copy.`;
 }
 
 export function buildOutreach({
@@ -269,7 +298,7 @@ export function buildOutreach({
   city?: string;
   weakness: string;
   demoUrl: string;
-  channel: 'email' | 'linkedin';
+  channel: OutreachChannel;
   niche?: string;
 }): string {
   const nameGreeting = contactName ? `Hi ${contactName.split(' ')[0]},` : 'Hi,';
@@ -281,6 +310,10 @@ export function buildOutreach({
 I put together a quick 1-minute interactive demo showing how I'd tighten up your mobile booking for local buyers: ${demoUrl}
 
 Worth sending over the notes?`;
+  }
+
+  if (channel === 'sms') {
+    return `Hi ${contactName ? contactName.split(' ')[0] : 'there'}, noticed ${company}'s mobile booking has a gap: "${weakness}". Built a custom live demo for you: ${demoUrl} - Let me know if you want to chat!`;
   }
 
   return `${nameGreeting}

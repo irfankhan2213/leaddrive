@@ -4,24 +4,34 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowUpRight,
   Bot,
+  Check,
   CheckCircle2,
+  Crown,
   ExternalLink,
+  Instagram,
   Kanban,
   Loader2,
   Mail,
+  MessageSquare,
+  Monitor,
   MousePointerClick,
+  Phone,
   Play,
   RefreshCw,
   Search,
   Send,
+  ShieldAlert,
+  Smartphone,
   Sparkles,
+  Tablet,
   Target,
   Users,
   Wand2,
+  XCircle,
   Zap
 } from 'lucide-react';
 import { sampleCampaign, sampleLeads } from '@/lib/mock-data';
-import type { AppSettings, Campaign, CampaignInput, Lead } from '@/lib/types';
+import type { AppSettings, Campaign, CampaignInput, DemoQuality, Lead, OutreachChannel } from '@/lib/types';
 import { defaultSettings, getStoredSettings, saveStoredSettings } from '@/lib/settings';
 
 import { Sidebar, NavTab } from '@/components/sidebar';
@@ -47,11 +57,21 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [demoGeneratingId, setDemoGeneratingId] = useState<string | null>(null);
+  const [batchDemoLoading, setBatchDemoLoading] = useState(false);
+  const [batchOutreachLoading, setBatchOutreachLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [previewViewport, setPreviewViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [demoQualityMode, setDemoQualityMode] = useState<DemoQuality>('low');
+  const [outreachChannel, setOutreachChannel] = useState<OutreachChannel>('email');
+  const [outreachNotice, setOutreachNotice] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
   useEffect(() => {
-    setSettings(getStoredSettings());
+    const loadedSettings = getStoredSettings();
+    setSettings(loadedSettings);
+    if (loadedSettings.defaultDemoQuality) {
+      setDemoQualityMode(loadedSettings.defaultDemoQuality);
+    }
 
     async function loadInitialData() {
       try {
@@ -107,7 +127,7 @@ export default function Home() {
   const computedMetrics = useMemo(() => {
     const totalProspects = leads.length;
     const qualified = leads.filter((l) => l.fit_score >= 70).length;
-    const demosBuilt = leads.filter((l) => ['demo_ready', 'outreach_sent', 'replied', 'converted'].includes(l.status)).length;
+    const demosBuilt = leads.filter((l) => Boolean(l.demo_url && l.demo_url.startsWith('http'))).length;
     const messagesSent = leads.filter((l) => ['outreach_sent', 'replied', 'converted'].includes(l.status)).length;
     const replies = leads.filter((l) => ['replied', 'converted'].includes(l.status)).length;
     const conversions = leads.filter((l) => l.status === 'converted').length;
@@ -140,9 +160,11 @@ export default function Home() {
         setLeads(data.leads);
         setSelectedId(data.leads[0]?.id);
         setSelectedDemoLeadId(data.leads[0]?.id);
+
+        const generatedCount = data.leads.filter((l) => Boolean(l.demo_url && l.demo_url.startsWith('http'))).length;
         setNotice({
           type: 'success',
-          text: `Scraped and classified ${data.leads.length} real lead${data.leads.length === 1 ? '' : 's'}. v0 demos were not generated automatically.`
+          text: `Scraped ${data.leads.length} real leads. ${generatedCount} v0 AI live demo${generatedCount === 1 ? '' : 's'} generated automatically!`
         });
       }
     } catch (err) {
@@ -152,14 +174,16 @@ export default function Home() {
     }
   }
 
-  async function handleGenerateDemo(targetLead: Lead) {
+  // Generate Single v0 AI Demo (Low vs High-End Mode)
+  async function handleGenerateDemo(targetLead: Lead, qualityOverride?: DemoQuality) {
+    const quality = qualityOverride || demoQualityMode;
     setDemoGeneratingId(targetLead.id);
     setNotice(null);
     try {
       const res = await fetch('/api/demos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lead: targetLead, settings })
+        body: JSON.stringify({ lead: targetLead, settings, demoQuality: quality })
       });
       const data = (await res.json()) as {
         demoUrl?: string;
@@ -170,20 +194,16 @@ export default function Home() {
 
       if (data.error && data.status === 'failed') throw new Error(data.error);
 
-      const newDemoUrl = data.demoUrl || `/demo/${targetLead.id}`;
-      const updatedLeads = leads.map((l) =>
-        l.id === targetLead.id
-          ? { ...l, status: 'demo_ready' as const, demo_url: newDemoUrl }
-          : l
-      );
-      setLeads(updatedLeads);
-
-      if (data.error) {
-        setNotice({ type: 'info', text: data.error });
-      } else {
+      if (data.demoUrl) {
+        const updatedLeads = leads.map((l) =>
+          l.id === targetLead.id
+            ? { ...l, status: 'demo_ready' as const, demo_url: data.demoUrl, demo_quality: quality }
+            : l
+        );
+        setLeads(updatedLeads);
         setNotice({
           type: 'success',
-          text: `v0 AI Demo generated for ${targetLead.company_name}!`
+          text: `${quality === 'high' ? '👑 High-End Flagship' : '⚡ Standard'} v0 AI Live Site generated for ${targetLead.company_name}!`
         });
       }
     } catch (err) {
@@ -196,12 +216,158 @@ export default function Home() {
     }
   }
 
+  // Auto-Generate All Pending v0 Demos
+  async function handleAutoGenerateAllDemos(qualityOverride?: DemoQuality) {
+    const quality = qualityOverride || demoQualityMode;
+    const pendingLeads = leads.filter((l) => !l.demo_url || !l.demo_url.startsWith('http'));
+    if (pendingLeads.length === 0) {
+      setNotice({ type: 'info', text: 'All leads already have live v0 AI demos generated!' });
+      return;
+    }
+
+    setBatchDemoLoading(true);
+    setNotice({
+      type: 'info',
+      text: `Auto-generating ${quality === 'high' ? '👑 High-End (v0-pro)' : '⚡ Standard (v0-mini)'} demos for ${pendingLeads.length} leads in background...`
+    });
+
+    let successCount = 0;
+    const currentLeads = [...leads];
+
+    for (const lead of pendingLeads) {
+      try {
+        const res = await fetch('/api/demos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lead, settings, demoQuality: quality })
+        });
+        const data = (await res.json()) as { demoUrl?: string; status?: string };
+        if (data.demoUrl) {
+          successCount += 1;
+          const idx = currentLeads.findIndex((l) => l.id === lead.id);
+          if (idx !== -1) {
+            currentLeads[idx] = {
+              ...currentLeads[idx],
+              status: 'demo_ready',
+              demo_url: data.demoUrl,
+              demo_quality: quality
+            };
+            setLeads([...currentLeads]);
+          }
+        }
+      } catch {
+        // Continue loop for remaining leads
+      }
+    }
+
+    setBatchDemoLoading(false);
+    setNotice({
+      type: 'success',
+      text: `Completed v0 generation! ${successCount} new ${quality === 'high' ? 'High-End' : 'Standard'} live v0 demo${successCount === 1 ? '' : 's'} built successfully.`
+    });
+  }
+
+  // Single Lead Outreach Dispatch (Email / SMS)
+  async function handleSendOutreach(targetLead: Lead, channel: OutreachChannel) {
+    setNotice(null);
+    try {
+      const res = await fetch('/api/outreach', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lead: targetLead,
+          channel,
+          settings
+        })
+      });
+      const data = (await res.json()) as {
+        email?: { sent: boolean; messageId?: string; error?: string };
+        sms?: { sent: boolean; messageId?: string; error?: string };
+        overallSuccess?: boolean;
+        error?: string;
+      };
+
+      if (data.error) throw new Error(data.error);
+
+      if (data.overallSuccess) {
+        setLeads((prev) =>
+          prev.map((l) => (l.id === targetLead.id ? { ...l, status: 'outreach_sent' as const } : l))
+        );
+        setNotice({
+          type: 'success',
+          text: `Outreach dispatched via ${channel.toUpperCase()} to ${targetLead.company_name}!`
+        });
+      } else {
+        const errDetails = data.email?.error || data.sms?.error || 'Dispatch incomplete';
+        setNotice({ type: 'error', text: `Outreach warning: ${errDetails}` });
+      }
+    } catch (err) {
+      setNotice({ type: 'error', text: err instanceof Error ? err.message : 'Outreach failed.' });
+    }
+  }
+
+  // Batch Outreach Dispatch
+  async function handleBatchOutreach(channel: OutreachChannel) {
+    const readyLeads = leads.filter(
+      (l) => l.status === 'demo_ready' || l.status === 'qualified' || Boolean(l.demo_url)
+    );
+
+    if (readyLeads.length === 0) {
+      setNotice({ type: 'info', text: 'No qualified or demo-ready leads available for outreach.' });
+      return;
+    }
+
+    setBatchOutreachLoading(true);
+    setNotice({
+      type: 'info',
+      text: `Dispatching ${channel.toUpperCase()} outreach to ${readyLeads.length} leads...`
+    });
+
+    try {
+      const res = await fetch('/api/outreach/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leads: readyLeads,
+          channel,
+          settings
+        })
+      });
+
+      const data = (await res.json()) as {
+        sentCount: number;
+        failedCount: number;
+        results: Array<{ leadId: string; emailSent?: boolean; smsSent?: boolean; error?: string }>;
+        error?: string;
+      };
+
+      if (data.error) throw new Error(data.error);
+
+      // Update lead statuses
+      const sentIds = new Set(
+        data.results.filter((r) => r.emailSent || r.smsSent).map((r) => r.leadId)
+      );
+      setLeads((prev) =>
+        prev.map((l) => (sentIds.has(l.id) ? { ...l, status: 'outreach_sent' as const } : l))
+      );
+
+      setNotice({
+        type: 'success',
+        text: `Batch outreach complete! Successfully dispatched to ${data.sentCount} leads (${data.failedCount} skipped/failed).`
+      });
+    } catch (err) {
+      setNotice({ type: 'error', text: err instanceof Error ? err.message : 'Batch outreach failed.' });
+    } finally {
+      setBatchOutreachLoading(false);
+    }
+  }
+
   // Pipeline kanban columns derived from real leads
   const pipelineColumns = useMemo(() => {
     return {
       prospecting: leads.filter((l) => ['new', 'scraped'].includes(l.status)),
       qualified: leads.filter((l) => l.status === 'qualified'),
-      demoReady: leads.filter((l) => l.status === 'demo_ready'),
+      demoReady: leads.filter((l) => l.status === 'demo_ready' || Boolean(l.demo_url && l.demo_url.startsWith('http'))),
       outreachSent: leads.filter((l) => l.status === 'outreach_sent'),
       closed: leads.filter((l) => ['replied', 'converted'].includes(l.status))
     };
@@ -222,21 +388,21 @@ export default function Home() {
               : activeTab === 'prospecting'
               ? 'Prospecting Hub'
               : activeTab === 'demos'
-              ? 'AI Demo Lab'
+              ? 'AI Demo Lab (v0 Live Sites)'
               : activeTab === 'pipeline'
-              ? 'Outreach Pipeline'
-              : 'Settings & Integrations'
+              ? 'Outreach & Dispatch Command'
+              : 'Settings & Dispatch Engines'
           }
           subtitle={
             activeTab === 'dashboard'
-              ? 'Your automated multi-keyword web scraping & outreach engine performance.'
+              ? 'Multi-keyword web scraping, v0 AI live site creation, and Email & SMS cold outreach.'
               : activeTab === 'prospecting'
-              ? 'Multi-query account intelligence, digital vulnerabilities, and customized pitches.'
+              ? 'Target accounts, audited conversion gaps, and 1-click personalized pitches.'
               : activeTab === 'demos'
-              ? 'Interactive AI-generated demo previews for high-intent prospects.'
+              ? 'Interactive v0 AI live applications hosted on Vercel cloud.'
               : activeTab === 'pipeline'
-              ? 'Track lead stages, deal flow, and booked meetings.'
-              : 'Manage Gemini, Anthropic Claude, and v0 API keys and model preferences.'
+              ? 'Dispatch Email (Resend) and SMS (Twilio) outreach with live variable replacement.'
+              : 'Configure Vercel v0, Resend Email, Twilio SMS, and Google Gemini / Anthropic API keys.'
           }
           onNewCampaignClick={() => setIsModalOpen(true)}
           searchQuery={searchQuery}
@@ -248,7 +414,7 @@ export default function Home() {
           <div className="mb-4 p-3 rounded-2xl bg-blue-50/70 border border-blue-200/70 flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1 text-xs font-extrabold text-blue-900 mr-2">
               <Search className="w-3.5 h-3.5 text-blue-600" />
-              <span>Active Campaign Search Queries ({campaign.keywords.length}):</span>
+              <span>Active Search Queries ({campaign.keywords.length}):</span>
             </div>
             {campaign.keywords.map((kw, i) => (
               <span
@@ -284,7 +450,7 @@ export default function Home() {
         {/* 1. COMMAND CENTER (DASHBOARD) TAB */}
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
-            {/* KPI Cards Grid — Powered by Real State */}
+            {/* KPI Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <MetricCard
                 label="Total Prospects"
@@ -293,15 +459,15 @@ export default function Home() {
                 icon={Users}
               />
               <MetricCard
-                label="Demos Built"
+                label="v0 Demos Built"
                 value={computedMetrics.demosBuilt}
-                badge="Manual"
+                badge="Pure v0 AI"
                 icon={Wand2}
               />
               <MetricCard
-                label="Messages Sent"
+                label="Outreach Sent"
                 value={computedMetrics.messagesSent}
-                badge="Outreach"
+                badge="Email & SMS"
                 icon={Send}
               />
               <MetricCard
@@ -310,6 +476,48 @@ export default function Home() {
                 badge={`${computedMetrics.conversionsCount} converted`}
                 icon={Target}
               />
+            </div>
+
+            {/* Quick Actions Panel */}
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+              <div className="space-y-1 text-center sm:text-left">
+                <div className="font-extrabold text-sm flex items-center gap-1.5 justify-center sm:justify-start">
+                  <Zap className="w-4 h-4 text-amber-300" />
+                  <span>Outreach & AI Generation Pipeline</span>
+                </div>
+                <p className="text-xs text-blue-100">
+                  Auto-generate v0 AI live sites and dispatch multi-channel Email & SMS campaigns in 1-click.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 flex-wrap justify-center">
+                <button
+                  onClick={() => handleAutoGenerateAllDemos()}
+                  disabled={batchDemoLoading}
+                  className="px-4 py-2 rounded-xl bg-white text-blue-700 hover:bg-blue-50 text-xs font-extrabold shadow-md flex items-center gap-1.5 disabled:opacity-50 transition-all"
+                >
+                  {batchDemoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-purple-600" />}
+                  <span>Auto-Generate All v0 Demos</span>
+                </button>
+
+                <button
+                  onClick={() => handleBatchOutreach('email')}
+                  disabled={batchOutreachLoading}
+                  className="px-4 py-2 rounded-xl bg-blue-900/80 hover:bg-blue-900 text-white text-xs font-extrabold border border-white/20 flex items-center gap-1.5 disabled:opacity-50 transition-all"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>Batch Send Emails</span>
+                </button>
+
+                <button
+                  onClick={() => handleBatchOutreach('sms')}
+                  disabled={batchOutreachLoading}
+                  className="px-4 py-2 rounded-xl bg-purple-900/80 hover:bg-purple-900 text-white text-xs font-extrabold border border-white/20 flex items-center gap-1.5 disabled:opacity-50 transition-all"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>Batch Send SMS</span>
+                </button>
+              </div>
             </div>
 
             {/* Middle Section: Campaign Performance Chart + Live Activity Feed */}
@@ -334,11 +542,15 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Left: Accounts List */}
             <div className="lg:col-span-5 panel p-5">
-              <h3 className="text-base font-extrabold text-gray-900 mb-1">Target Accounts</h3>
-              <p className="text-xs text-gray-500 mb-4">Select an account to view multi-keyword discovery analysis</p>
-              <div className="space-y-2.5">
+              <div className="flex items-center justify-between mb-1">
+                <h3 className="text-base font-extrabold text-gray-900">Target Accounts ({filteredLeads.length})</h3>
+                <span className="text-xs font-bold text-blue-600">{computedMetrics.qualifiedCount} Qualified</span>
+              </div>
+              <p className="text-xs text-gray-500 mb-4">Select an account to view multi-keyword discovery & contact info</p>
+              <div className="space-y-2.5 max-h-[700px] overflow-y-auto pr-1 scrollbar-thin">
                 {filteredLeads.map((lead) => {
                   const isSelected = lead.id === selectedLead?.id;
+                  const hasV0 = Boolean(lead.demo_url && lead.demo_url.startsWith('http'));
                   return (
                     <div
                       key={lead.id}
@@ -354,17 +566,40 @@ export default function Home() {
                           <div className="font-extrabold text-sm text-gray-900">{lead.company_name}</div>
                           <div className="text-xs text-gray-500 font-medium">{lead.city || 'Service Area'}</div>
                         </div>
-                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
-                          Score: {lead.fit_score}/100
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                          {hasV0 && (
+                            <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
+                              v0 Live
+                            </span>
+                          )}
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                            Score: {lead.fit_score}/100
+                          </span>
+                        </div>
                       </div>
+
+                      <div className="mt-2 flex items-center gap-3 text-[11px] font-semibold text-gray-600">
+                        {lead.email ? (
+                          <span className="flex items-center gap-1 text-emerald-700">
+                            <Mail size={12} />
+                            <span>{lead.email}</span>
+                          </span>
+                        ) : null}
+                        {lead.phone ? (
+                          <span className="flex items-center gap-1 text-blue-700">
+                            <Phone size={12} />
+                            <span>{lead.phone}</span>
+                          </span>
+                        ) : null}
+                      </div>
+
                       {lead.matched_keyword && (
                         <div className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-blue-700">
                           <Search className="w-2.5 h-2.5" />
                           <span>Scraped via: "{lead.matched_keyword}"</span>
                         </div>
                       )}
-                      <div className="mt-2 text-xs font-semibold text-gray-700 line-clamp-1">
+                      <div className="mt-1.5 text-xs font-semibold text-gray-700 line-clamp-1">
                         {lead.weakness || 'Digital gap analysis in progress'}
                       </div>
                     </div>
@@ -373,7 +608,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Right: Account Detail & Pitch Angle */}
+            {/* Right: Account Detail & Quick Outreach */}
             <div className="lg:col-span-7 panel p-6">
               {selectedLead ? (
                 <div className="space-y-5">
@@ -393,71 +628,109 @@ export default function Home() {
                       )}
                     </div>
                     <div className="text-right">
-                      <span className="text-xs font-bold text-gray-400 block">Outreach Channel</span>
-                      <span className="text-xs font-extrabold text-gray-900 uppercase">{selectedLead.source.replace('_', ' ')}</span>
+                      <span className="text-xs font-bold text-gray-400 block">Lead Status</span>
+                      <span className="text-xs font-extrabold text-blue-700 uppercase bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+                        {selectedLead.status.replace('_', ' ')}
+                      </span>
                     </div>
                   </div>
 
-                  {selectedLead.matched_keyword && (
-                    <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200/80 flex items-center justify-between text-xs font-bold text-blue-950">
+                  {/* Contact Info Card */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0">
+                        <Mail className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-bold text-gray-400 uppercase">Email Address</div>
+                        <div className="text-xs font-extrabold text-gray-900 truncate">
+                          {selectedLead.email || 'No email found'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                        <Phone className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-bold text-gray-400 uppercase">Phone Number (SMS)</div>
+                        <div className="text-xs font-extrabold text-gray-900 truncate">
+                          {selectedLead.phone || 'No phone number'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-pink-50/70 border border-pink-100 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center flex-shrink-0">
+                        <Instagram className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[10px] font-bold text-pink-700 uppercase">Instagram Profile</div>
+                        {selectedLead.instagram_url ? (
+                          <a
+                            href={selectedLead.instagram_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs font-extrabold text-pink-700 hover:underline truncate block"
+                          >
+                            {selectedLead.instagram_url.replace(/https?:\/\/(www\.)?instagram\.com\//i, '@')}
+                          </a>
+                        ) : (
+                          <div className="text-xs font-semibold text-gray-400">Not detected</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2">
+                      Identified Conversion Vulnerabilities
+                    </h4>
+                    <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 text-xs font-bold text-amber-950 flex items-center gap-2">
+                      <ShieldAlert size={16} className="text-amber-600 flex-shrink-0" />
+                      <span>{selectedLead.weakness}</span>
+                    </div>
+                  </div>
+
+                  {/* Outreach Quick Dispatch Action */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 text-white space-y-3">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Search className="w-4 h-4 text-blue-600" />
-                        <span>Matched Search Query:</span>
+                        <Zap className="w-4 h-4 text-amber-400" />
+                        <span className="text-xs font-extrabold">1-Click Outreach Dispatch</span>
                       </div>
-                      <span className="px-2.5 py-0.5 rounded-full bg-white text-blue-800 border border-blue-200 shadow-2xs">
-                        "{selectedLead.matched_keyword}"
-                      </span>
-                    </div>
-                  )}
-
-                  <div>
-                    <h4 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2">
-                      Identified Vulnerabilities
-                    </h4>
-                    <div className="space-y-2">
-                      <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/60 text-xs font-bold text-amber-900 flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-amber-500" />
-                        <span>{selectedLead.weakness}</span>
-                      </div>
-                      {selectedLead.signals?.map((sig, idx) => (
-                        <div
-                          key={idx}
-                          className="p-3 rounded-xl bg-amber-50/40 border border-amber-100 text-xs font-semibold text-amber-900 flex items-center gap-2"
+                      {selectedLead.demo_url && (
+                        <a
+                          href={selectedLead.demo_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[11px] font-bold text-blue-400 hover:underline flex items-center gap-1"
                         >
-                          <span className="w-2 h-2 rounded-full bg-amber-400" />
-                          <span>{sig.label}: {sig.value}</span>
-                        </div>
-                      ))}
+                          <span>Preview Live v0 Site</span>
+                          <ExternalLink size={11} />
+                        </a>
+                      )}
                     </div>
-                  </div>
 
-                  <div>
-                    <h4 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2">
-                      Recommended Pitch Angle
-                    </h4>
-                    <div className="p-4 rounded-2xl bg-white border border-gray-200/80 text-xs leading-relaxed font-medium text-gray-800 shadow-sm">
-                      {selectedLead.qualification_reason ||
-                        `Lead with conversion gap. Pitch our personalized 1-click preview package as a direct ROI booster.`}
-                    </div>
-                  </div>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <button
+                        onClick={() => handleSendOutreach(selectedLead, 'email')}
+                        disabled={!selectedLead.email}
+                        className="btn text-xs py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold flex items-center gap-1.5 disabled:opacity-40"
+                      >
+                        <Mail size={13} />
+                        <span>Send Email Outreach (Resend)</span>
+                      </button>
 
-                  <div>
-                    <h4 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider mb-2">
-                      Key Decision Maker
-                    </h4>
-                    <div className="p-3 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold flex items-center justify-center">
-                          {selectedLead.contact_name?.[0] || 'C'}
-                        </div>
-                        <div>
-                          <div className="font-bold text-gray-900">{selectedLead.contact_name || selectedLead.company_name}</div>
-                          <div className="text-[11px] text-gray-500 font-medium">{selectedLead.contact_name ? 'Decision Maker' : 'Company contact'}</div>
-                        </div>
-                      </div>
-                      <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
-                        {selectedLead.email || selectedLead.phone ? 'Contact Found' : 'Needs Contact'}
-                      </span>
+                      <button
+                        onClick={() => handleSendOutreach(selectedLead, 'sms')}
+                        disabled={!selectedLead.phone}
+                        className="btn text-xs py-2 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 disabled:opacity-40"
+                      >
+                        <MessageSquare size={13} />
+                        <span>Send SMS Outreach (Twilio)</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -468,27 +741,69 @@ export default function Home() {
           </div>
         )}
 
-        {/* 3. AI DEMO LAB TAB — Real State & v0 Generator Powered */}
+        {/* 3. AI DEMO LAB TAB — Pure v0 Live Apps */}
         {activeTab === 'demos' && (
           <div className="panel p-6 space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
               <div>
-                <h3 className="text-lg font-extrabold text-gray-900">Active AI Demos</h3>
-                <p className="text-xs text-gray-500">Manage and preview personalized AI experiences built for prospects</p>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-extrabold text-gray-900">v0 AI Live Demo Lab</h3>
+                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
+                    100% Genuine v0 Cloud
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500">Live interactive web applications generated via Vercel's v0 engine</p>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-gray-500">Live Preview Mode</span>
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Generation Mode Selector */}
+                <div className="flex items-center bg-gray-100 p-1 rounded-xl border border-gray-200 text-xs font-bold">
+                  <button
+                    onClick={() => setDemoQualityMode('low')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                      demoQualityMode === 'low'
+                        ? 'bg-white text-gray-900 shadow-xs'
+                        : 'text-gray-500 hover:text-gray-900'
+                    }`}
+                  >
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Low Usage (Fast)</span>
+                  </button>
+
+                  <button
+                    onClick={() => setDemoQualityMode('high')}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                      demoQualityMode === 'high'
+                        ? 'bg-purple-600 text-white shadow-xs'
+                        : 'text-gray-500 hover:text-gray-900'
+                    }`}
+                  >
+                    <Crown className="w-3.5 h-3.5 text-amber-300" />
+                    <span>High-End (Ultra Pro)</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => handleAutoGenerateAllDemos()}
+                  disabled={batchDemoLoading}
+                  className="btn text-xs py-2 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-extrabold shadow-md flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {batchDemoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                  <span>
+                    Auto-Generate All ({demoQualityMode === 'high' ? '👑 High-End' : '⚡ Low Usage'})
+                  </span>
+                </button>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Active Demos List (from real leads) */}
-              <div className="space-y-3">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              {/* Active Demos List */}
+              <div className="lg:col-span-4 space-y-3 max-h-[750px] overflow-y-auto pr-1 scrollbar-thin">
                 {leads.map((lead) => {
                   const isSelected = lead.id === selectedDemoLead?.id;
-                  const isReady = ['demo_ready', 'outreach_sent', 'replied', 'converted'].includes(lead.status) || Boolean(lead.demo_url);
+                  const isReady = Boolean(lead.demo_url && lead.demo_url.startsWith('http'));
                   const isGenerating = demoGeneratingId === lead.id;
+                  const isHighEnd = lead.demo_quality === 'high';
                   return (
                     <div
                       key={lead.id}
@@ -499,27 +814,38 @@ export default function Home() {
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-extrabold text-gray-900">{lead.company_name}</span>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            isGenerating
-                              ? 'bg-blue-100 text-blue-800'
-                              : isReady
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}
-                        >
-                          {isGenerating ? 'Generating...' : isReady ? 'Ready' : 'Pending'}
-                        </span>
+                        <div className="flex items-center gap-1">
+                          {isReady && (
+                            <span
+                              className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded-md ${
+                                isHighEnd ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-700'
+                              }`}
+                            >
+                              {isHighEnd ? '👑 Pro' : '⚡ Mini'}
+                            </span>
+                          )}
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              isGenerating
+                                ? 'bg-blue-100 text-blue-800'
+                                : isReady
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-amber-100 text-amber-800'
+                            }`}
+                          >
+                            {isGenerating ? 'Generating...' : isReady ? 'Live Ready' : 'Pending'}
+                          </span>
+                        </div>
                       </div>
                       <div className="text-xs text-gray-500 font-medium">Recipient: {lead.contact_name || lead.company_name}</div>
                       <div className="mt-2 text-[11px] font-semibold text-blue-600 flex items-center justify-between">
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1 text-purple-700">
                           <Sparkles className="w-3 h-3" />
-                          <span>{lead.demo_type || 'website'} demo</span>
+                          <span>{isHighEnd ? 'High-End Interactive Site' : 'v0 Landing Page'}</span>
                         </span>
-                        {lead.demo_url && (
-                          <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
-                            {lead.demo_url.includes('v0') ? 'v0 AI' : 'Local Preview'}
+                        {isReady && (
+                          <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            Live App Ready
                           </span>
                         )}
                       </div>
@@ -528,95 +854,236 @@ export default function Home() {
                 })}
               </div>
 
-              {/* Demo Preview Canvas */}
-              {selectedDemoLead ? (
-                <div className="lg:col-span-2 border border-gray-200/80 rounded-2xl p-6 bg-gradient-to-b from-gray-900 to-gray-950 text-white flex flex-col justify-between min-h-[400px] shadow-xl">
-                  <div className="flex items-center justify-between border-b border-gray-800 pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-3 h-3 rounded-full bg-rose-500" />
-                      <span className="w-3 h-3 rounded-full bg-amber-500" />
-                      <span className="w-3 h-3 rounded-full bg-emerald-500" />
-                      <span className="text-xs font-mono text-gray-400 ml-2">
-                        {selectedDemoLead.demo_url || `/demo/${selectedDemoLead.id}`}
-                      </span>
-                    </div>
-                    <span className="text-xs font-bold text-blue-400">{selectedDemoLead.company_name} Preview</span>
-                  </div>
+              {/* Real v0 Demo Live Preview Canvas */}
+              <div className="lg:col-span-8 flex flex-col">
+                {selectedDemoLead ? (
+                  <div className="border border-slate-800 rounded-3xl bg-slate-950 text-white flex flex-col flex-1 overflow-hidden shadow-2xl">
+                    {/* Top Canvas Bar with Viewport Switchers */}
+                    <div className="bg-slate-900 px-4 py-3 border-b border-slate-800 flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-rose-500" />
+                        <span className="w-3 h-3 rounded-full bg-amber-500" />
+                        <span className="w-3 h-3 rounded-full bg-emerald-500" />
+                        <span className="text-xs font-mono text-slate-300 ml-2 truncate max-w-[220px]">
+                          {selectedDemoLead.demo_url || `v0 Site: ${selectedDemoLead.company_name}`}
+                        </span>
+                      </div>
 
-                  <div className="my-8 text-center space-y-4">
-                    <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-600/20 text-blue-400 border border-blue-500/30 mb-2">
-                      <Bot className="w-6 h-6" />
-                    </div>
-                    <h4 className="text-xl font-extrabold tracking-tight">{selectedDemoLead.company_name} AI Demo Concept</h4>
-                    <p className="text-xs text-gray-400 max-w-md mx-auto line-clamp-2">
-                      {selectedDemoLead.weakness}
-                    </p>
+                      {/* Viewport Selectors */}
+                      <div className="flex items-center gap-1 bg-slate-800 p-1 rounded-xl border border-slate-700">
+                        <button
+                          onClick={() => setPreviewViewport('desktop')}
+                          className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+                            previewViewport === 'desktop' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                          }`}
+                          title="Desktop View"
+                        >
+                          <Monitor size={14} />
+                        </button>
+                        <button
+                          onClick={() => setPreviewViewport('tablet')}
+                          className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+                            previewViewport === 'tablet' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                          }`}
+                          title="Tablet View"
+                        >
+                          <Tablet size={14} />
+                        </button>
+                        <button
+                          onClick={() => setPreviewViewport('mobile')}
+                          className={`p-1.5 rounded-lg text-xs font-bold transition-all ${
+                            previewViewport === 'mobile' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                          }`}
+                          title="Mobile View"
+                        >
+                          <Smartphone size={14} />
+                        </button>
+                      </div>
 
-                    <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-                      <button
-                        onClick={() => handleGenerateDemo(selectedDemoLead)}
-                        disabled={demoGeneratingId === selectedDemoLead.id}
-                        className="btn text-xs px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl flex items-center gap-2 shadow-lg disabled:opacity-50"
-                      >
-                        {demoGeneratingId === selectedDemoLead.id ? (
-                          <>
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Building v0 AI Component...</span>
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="w-4 h-4" />
-                            <span>{selectedDemoLead.demo_url?.includes('v0') ? 'Re-Generate v0 Demo' : 'Generate v0 AI Demo'}</span>
-                          </>
+                      <div className="flex items-center gap-2">
+                        {selectedDemoLead.demo_url && (
+                          <a
+                            href={selectedDemoLead.demo_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1"
+                          >
+                            <span>Open Full Screen</span>
+                            <ExternalLink size={12} />
+                          </a>
                         )}
-                      </button>
+                      </div>
+                    </div>
 
-                      <a
-                        href={selectedDemoLead.demo_url || `/demo/${selectedDemoLead.id}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="btn secondary text-xs px-5 py-2.5 border-gray-700 text-gray-200 hover:bg-gray-800 rounded-xl flex items-center gap-2"
-                      >
-                        <Play className="w-3.5 h-3.5 fill-current text-blue-400" />
-                        <span>Launch Full Preview</span>
-                      </a>
+                    {/* Frame Content */}
+                    <div className="flex-1 min-h-[600px] p-3 flex items-center justify-center bg-slate-900/50">
+                      {selectedDemoLead.demo_url && selectedDemoLead.demo_url.startsWith('http') ? (
+                        <div
+                          className={`h-full min-h-[580px] rounded-2xl overflow-hidden border border-slate-800 bg-white transition-all shadow-2xl flex flex-col ${
+                            previewViewport === 'mobile'
+                              ? 'w-[375px]'
+                              : previewViewport === 'tablet'
+                              ? 'w-[768px]'
+                              : 'w-full'
+                          }`}
+                        >
+                          <iframe
+                            src={selectedDemoLead.demo_url}
+                            className="w-full flex-1 border-0 min-h-[580px]"
+                            title={`${selectedDemoLead.company_name} Live v0 AI Application`}
+                            allow="accelerometer; autoplay; camera; encrypted-media; geolocation; gyroscope; microphone"
+                          />
+                        </div>
+                      ) : (
+                        /* Generator Trigger for Unbuilt Demo */
+                        <div className="text-center space-y-4 max-w-md p-8">
+                          <div className="inline-flex items-center justify-center w-14 h-14 rounded-3xl bg-blue-600/20 text-blue-400 border border-blue-500/30 mb-2">
+                            <Bot className="w-7 h-7" />
+                          </div>
+                          <h4 className="text-xl font-extrabold tracking-tight">
+                            Generate v0 AI Site for {selectedDemoLead.company_name}
+                          </h4>
+                          <p className="text-xs text-slate-400 leading-relaxed">
+                            {selectedDemoLead.weakness}
+                          </p>
+
+                          <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-2.5">
+                            <button
+                              onClick={() => handleGenerateDemo(selectedDemoLead, 'low')}
+                              disabled={demoGeneratingId === selectedDemoLead.id}
+                              className="btn text-xs px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl flex items-center gap-1.5 border border-slate-700 disabled:opacity-50"
+                            >
+                              <Zap className="w-3.5 h-3.5 text-amber-400" />
+                              <span>Build Standard (v0 Mini)</span>
+                            </button>
+
+                            <button
+                              onClick={() => handleGenerateDemo(selectedDemoLead, 'high')}
+                              disabled={demoGeneratingId === selectedDemoLead.id}
+                              className="btn text-xs px-5 py-2.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-extrabold rounded-xl flex items-center gap-2 shadow-lg shadow-purple-500/20 disabled:opacity-50"
+                            >
+                              {demoGeneratingId === selectedDemoLead.id ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  <span>Building High-End Flagship Site...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Crown className="w-4 h-4 text-amber-300" />
+                                  <span>Build Ultra High-End (v0 Pro)</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Canvas Footer */}
+                    <div className="px-4 py-2.5 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                      <span>Engine: Vercel v0 AI</span>
+                      <span>Target: {selectedDemoLead.company_name} ({selectedDemoLead.city || 'Local'})</span>
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between text-[11px] text-gray-400 border-t border-gray-800/80 pt-3">
-                    <span>Model: {selectedDemoLead.demo_type || 'website'} builder</span>
-                    <span>Status: {selectedDemoLead.status}</span>
+                ) : (
+                  <div className="panel p-12 text-center text-gray-500">
+                    Select a lead to preview its v0 AI site.
                   </div>
-                </div>
-              ) : (
-                <div className="lg:col-span-2 border border-gray-200/80 rounded-2xl p-12 text-center text-gray-500">
-                  Select a lead to inspect its AI demo preview.
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         )}
 
-        {/* 4. OUTREACH PIPELINE TAB — Powered by Real Leads */}
+        {/* 4. OUTREACH PIPELINE & DISPATCH COMMAND TAB */}
         {activeTab === 'pipeline' && (
           <div className="space-y-6">
-            <div className="panel p-5 flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-extrabold text-gray-900">Outreach Pipeline</h3>
-                <p className="text-xs text-gray-500">Real lead stage tracking and campaign deal flow</p>
+            {/* Outreach Dispatch Header Panel */}
+            <div className="panel p-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white space-y-4 shadow-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Send className="w-5 h-5 text-blue-400" />
+                    <h3 className="text-lg font-extrabold tracking-tight">Cold Outreach Command Center</h3>
+                  </div>
+                  <p className="text-xs text-slate-300 mt-0.5">
+                    Send personalized Email (Resend) and SMS (Twilio) outreach with live v0 demo links
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <button
+                    onClick={() => handleBatchOutreach('email')}
+                    disabled={batchOutreachLoading}
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50 transition-all shadow-md shadow-blue-600/30"
+                  >
+                    {batchOutreachLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
+                    <span>Batch Send Emails ({pipelineColumns.demoReady.length + pipelineColumns.qualified.length})</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleBatchOutreach('sms')}
+                    disabled={batchOutreachLoading}
+                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 disabled:opacity-50 transition-all shadow-md shadow-emerald-600/30"
+                  >
+                    {batchOutreachLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageSquare className="w-3.5 h-3.5" />}
+                    <span>Batch Send SMS ({leads.filter((l) => Boolean(l.phone)).length})</span>
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-6">
-                <div>
-                  <span className="text-[10px] font-bold uppercase text-gray-400 block">Total Leads</span>
-                  <span className="text-base font-extrabold text-gray-900">{leads.length}</span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold uppercase text-gray-400 block">Qualified</span>
-                  <span className="text-base font-extrabold text-emerald-600">{computedMetrics.qualifiedCount}</span>
-                </div>
+
+              {/* Outreach Lead Card Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
+                {leads.slice(0, 6).map((lead) => {
+                  const isSent = ['outreach_sent', 'replied', 'converted'].includes(lead.status);
+                  const hasV0 = Boolean(lead.demo_url && lead.demo_url.startsWith('http'));
+                  return (
+                    <div
+                      key={lead.id}
+                      className="p-3.5 rounded-2xl bg-slate-800/80 border border-slate-700/80 text-white space-y-2 flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="font-extrabold text-xs text-white truncate max-w-[170px]">{lead.company_name}</span>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              isSent ? 'bg-emerald-500/20 text-emerald-300' : 'bg-blue-500/20 text-blue-300'
+                            }`}
+                          >
+                            {isSent ? 'Sent' : 'Ready'}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-400 mt-0.5 truncate">
+                          {lead.email || lead.phone || 'Contact missing'}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 flex items-center gap-2">
+                        <button
+                          onClick={() => handleSendOutreach(lead, 'email')}
+                          disabled={!lead.email}
+                          className="flex-1 py-1.5 rounded-xl bg-blue-600/80 hover:bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center gap-1 disabled:opacity-30"
+                        >
+                          <Mail size={11} />
+                          <span>Email</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleSendOutreach(lead, 'sms')}
+                          disabled={!lead.phone}
+                          className="flex-1 py-1.5 rounded-xl bg-emerald-600/80 hover:bg-emerald-600 text-white text-[10px] font-bold flex items-center justify-center gap-1 disabled:opacity-30"
+                        >
+                          <MessageSquare size={11} />
+                          <span>SMS</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
+            {/* Pipeline Stage Columns */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {/* Column 1: Prospecting */}
               <div className="panel p-4 bg-gray-50/50">
@@ -646,7 +1113,7 @@ export default function Home() {
               {/* Column 2: Qualified */}
               <div className="panel p-4 bg-gray-50/50">
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-200/60">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-gray-700">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-blue-700">
                     Qualified ({pipelineColumns.qualified.length})
                   </span>
                   <span className="w-2 h-2 rounded-full bg-blue-500" />
@@ -658,7 +1125,13 @@ export default function Home() {
                       <div className="text-[11px] text-gray-500">{l.contact_name || 'Verified Contact'}</div>
                       <div className="mt-2 flex items-center justify-between text-[10px]">
                         <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold">Score {l.fit_score}</span>
-                        <span className="text-gray-400">Qualified</span>
+                        <button
+                          onClick={() => handleGenerateDemo(l)}
+                          className="text-purple-600 font-bold hover:underline flex items-center gap-0.5"
+                        >
+                          <Sparkles size={10} />
+                          <span>Build v0</span>
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -668,11 +1141,11 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Column 3: Demo Ready */}
+              {/* Column 3: v0 Demo Ready */}
               <div className="panel p-4 bg-gray-50/50">
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-200/60">
                   <span className="text-xs font-extrabold uppercase tracking-wider text-purple-700">
-                    Demo Ready ({pipelineColumns.demoReady.length})
+                    v0 Demo Ready ({pipelineColumns.demoReady.length})
                   </span>
                   <span className="w-2 h-2 rounded-full bg-purple-500" />
                 </div>
@@ -680,12 +1153,20 @@ export default function Home() {
                   {pipelineColumns.demoReady.map((l) => (
                     <div key={l.id} className="p-3.5 rounded-xl bg-white border border-purple-200 shadow-sm">
                       <div className="font-bold text-xs text-gray-900">{l.company_name}</div>
-                      <div className="text-[11px] text-gray-500">{l.demo_type || 'website'} demo ready</div>
+                      <div className="text-[11px] text-gray-500">v0 AI Live Site Ready</div>
                       <div className="mt-2 flex items-center justify-between text-[10px]">
-                        <span className="px-2 py-0.5 rounded bg-purple-50 text-purple-700 font-bold">Demo Built</span>
-                        <a href={l.demo_url || `/demo/${l.id}`} target="_blank" rel="noreferrer" className="text-purple-600 font-bold underline">
-                          View
-                        </a>
+                        <span className="px-2 py-0.5 rounded bg-purple-50 text-purple-700 font-bold">v0 Ready</span>
+                        <div className="flex items-center gap-2">
+                          <a href={l.demo_url} target="_blank" rel="noreferrer" className="text-purple-600 font-bold underline">
+                            View
+                          </a>
+                          <button
+                            onClick={() => handleSendOutreach(l, 'email')}
+                            className="text-blue-600 font-bold hover:underline"
+                          >
+                            Send
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -695,7 +1176,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Column 4: Outreach & Replied */}
+              {/* Column 4: Outreach Sent & Replied */}
               <div className="panel p-4 bg-gray-50/50">
                 <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-200/60">
                   <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-700">

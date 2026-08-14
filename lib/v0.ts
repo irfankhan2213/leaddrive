@@ -1,4 +1,4 @@
-import type { Lead, V0DemoResult } from '@/lib/types';
+import type { DemoQuality, Lead, V0DemoResult } from '@/lib/types';
 import { buildDemoPrompt } from '@/lib/pipeline';
 
 type V0ChatResponse = {
@@ -13,24 +13,29 @@ type V0ChatResponse = {
 export async function createV0Demo(
   lead: Lead,
   customV0ApiKey?: string,
-  customV0Model?: string
+  customV0Model?: string,
+  qualityOverride?: DemoQuality
 ): Promise<V0DemoResult> {
   const apiKey = customV0ApiKey || process.env.V0_API_KEY;
 
   if (!apiKey || apiKey.trim() === '') {
     return {
-      demoUrl: `/demo/${lead.id}`,
-      webUrl: `/demo/${lead.id}`,
       provider: 'v0',
-      status: 'ready',
-      error: 'V0_API_KEY is not configured in Settings or .env.local. Using local v0 preview renderer.'
+      status: 'failed',
+      error: 'V0_API_KEY is not configured. Please add your v0 API Key in Settings or .env.local.'
     };
   }
 
-  const modelIds = getV0ModelCandidates(customV0Model || process.env.V0_MODEL);
-  const prompt = compactV0Prompt(lead);
+  const quality: DemoQuality = qualityOverride || lead.demo_quality || 'low';
+  const modelIds = getV0ModelCandidates(quality, customV0Model || process.env.V0_MODEL);
+  const prompt = compactV0Prompt(lead, quality);
   let lastError = '';
   let chat: V0ChatResponse | null = null;
+
+  const systemInstruction =
+    quality === 'high'
+      ? 'You are v0 by Vercel. Generate an ultra-luxurious, award-winning, state-of-the-art flagship web application and high-converting landing page component in React + Next.js + Tailwind CSS. Implement rich interactivity with React state (dynamic multi-step cost/quote calculator, interactive booking calendar drawer, tabbed service showcase, before/after slider), luxury glassmorphism cards, refined gradients, Lucide icons, and responsive mobile layout.'
+      : 'You are v0 by Vercel. Generate a clean, polished, responsive React + Next.js + Tailwind CSS landing page for this prospect. Return responsive code with hero section, clear value proposition, service cards with pricing, 1-click booking form, and mobile footer.';
 
   for (const modelId of modelIds) {
     try {
@@ -41,8 +46,7 @@ export async function createV0Demo(
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          system:
-            'You are v0, the master AI web architect by Vercel. Generate complete, expansive, multi-section React + Next.js + Tailwind CSS landing page applications for cold outreach prospects. Return full, beautifully styled code with sticky Navbar, Hero section, Problem & Solution banner, 6 Service Cards with Pricing, Live Booking Tool/Estimator, Testimonials grid, FAQ Accordion, Footer, and a fixed mobile conversion bar.',
+          system: systemInstruction,
           message: prompt,
           chatPrivacy: 'unlisted',
           responseMode: 'sync',
@@ -60,86 +64,75 @@ export async function createV0Demo(
       }
 
       const errText = await chatRes.text();
-      lastError = `${modelId}: ${chatRes.status} ${errText}`;
+      lastError = `v0 (${modelId}) failed: ${chatRes.status} ${errText.slice(0, 160)}`;
 
-      // If unauthorized (401), stop immediately to avoid hammering invalid key
       if (chatRes.status === 401) {
         return {
-          demoUrl: `/demo/${lead.id}`,
-          webUrl: `/demo/${lead.id}`,
           provider: 'v0',
-          status: 'ready',
+          status: 'failed',
           error: 'V0_API_KEY is unauthorized. Check your V0 API Key in Settings.'
         };
       }
-
-      if (![400, 404, 422].includes(chatRes.status)) break;
     } catch (err) {
-      lastError = err instanceof Error ? err.message : 'Network fetch failed.';
+      lastError = err instanceof Error ? err.message : 'Network fetch to v0 failed.';
     }
   }
 
   if (!chat) {
     return {
-      demoUrl: `/demo/${lead.id}`,
-      webUrl: `/demo/${lead.id}`,
       provider: 'v0',
-      status: 'ready',
-      error: `v0 site builder notice: ${lastError || 'Fallback to v0 preview renderer.'}`
+      status: 'failed',
+      error: lastError || 'v0 AI site building failed.'
     };
   }
 
   const versionId = chat.latestVersion?.id;
-  const publicDemoUrl = chat.latestVersion?.demoUrl || chat.demo || chat.webUrl || chat.url || `/demo/${lead.id}`;
+  const publicDemoUrl = chat.latestVersion?.demoUrl || chat.demo || chat.webUrl || chat.url;
+
+  if (!publicDemoUrl) {
+    return {
+      chatId: chat.id,
+      versionId,
+      provider: 'v0',
+      status: 'failed',
+      error: 'v0 did not return a public demo URL.'
+    };
+  }
 
   return {
     chatId: chat.id,
     versionId,
     demoUrl: publicDemoUrl,
+    deploymentUrl: chat.latestVersion?.demoUrl || chat.demo,
     webUrl: chat.webUrl || chat.url,
     provider: 'v0',
     status: 'ready'
   };
 }
 
-function getV0ModelCandidates(configured?: string) {
-  const preferred = configured || 'v0-mini';
-  const candidates = [
-    preferred,
-    normalizeGatewayModelId(preferred),
-    'v0-mini',
-    'v0-pro',
-    'v0-max-fast',
-    'vercel/v0-1.5-md',
-    'v0/v0-1.5-md',
-    'v0-1.5-md'
-  ];
+function getV0ModelCandidates(quality: DemoQuality, configured?: string) {
+  if (quality === 'high') {
+    const preferred = configured && configured !== 'v0-mini' ? configured : 'v0-pro';
+    const candidates = [preferred, 'v0-pro', 'v0-max-fast', 'v0-mini'];
+    return [...new Set(candidates.filter(Boolean))];
+  }
 
+  // Low usage mode
+  const preferred = configured || 'v0-mini';
+  const candidates = [preferred, 'v0-mini'];
   return [...new Set(candidates.filter(Boolean))];
 }
 
-function normalizeGatewayModelId(modelId: string) {
-  if (modelId.includes('/')) return modelId;
-  if (modelId.startsWith('v0-1.')) return `vercel/${modelId}`;
-  return modelId;
-}
-
-function compactV0Prompt(lead: Lead) {
-  const maxChars = Number(process.env.V0_MAX_PROMPT_CHARS || 3500);
-  const fullPrompt =
-    lead.demo_prompt ||
-    buildDemoPrompt({
-      ...lead,
-      signals: lead.signals?.slice(0, 6) || []
-    });
+function compactV0Prompt(lead: Lead, quality: DemoQuality) {
+  const maxChars = quality === 'high' ? 4500 : Number(process.env.V0_MAX_PROMPT_CHARS || 3000);
+  const fullPrompt = buildDemoPrompt(lead, quality);
 
   const compact = `${fullPrompt}
 
-v0 Site Builder Requirements:
-- Generate a large, expansive, complete landing page.
-- Clear brand title "${lead.company_name}".
-- Include Navbar, Hero, Problem/Solution, 6 Service Cards with Pricing, Interactive Scheduler, Testimonials, FAQ, Footer, and Fixed Mobile Booking Bar.
-- Modern Tailwind CSS styling with zero placeholder text.`;
+v0 Directive (${quality === 'high' ? 'Ultra High-End Mode' : 'Standard Fast Mode'}):
+- Brand: "${lead.company_name}".
+- Modern Tailwind CSS styling with zero placeholder text.
+- Full interactive self-contained component with Lucide icons.`;
 
-  return compact.length > maxChars ? `${compact.slice(0, maxChars)}\n\nBuild full multi-section v0 site.` : compact;
+  return compact.length > maxChars ? `${compact.slice(0, maxChars)}\n\nBuild full v0 site.` : compact;
 }
