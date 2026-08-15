@@ -76,9 +76,9 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
   ];
 
   const demoProviders = [
-    { value: 'agentic', label: 'Agentic Platform (Vertex, credit-safe)' },
-    { value: 'v0', label: 'v0 Live Site Builder' },
-    { value: 'hybrid', label: 'Hybrid Agentic Strategy + v0' }
+    { value: 'agentic', label: 'Google Cloud Vertex AI (Gemini)' },
+    { value: 'v0', label: 'Vercel v0 Live Site Builder' },
+    { value: 'hybrid', label: 'Hybrid Google Cloud Vertex + v0' }
   ] as const;
 
   function handleSubmit(e: React.FormEvent) {
@@ -127,12 +127,12 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
               <h3 className="text-sm font-extrabold text-gray-900">Demo Builder Engines</h3>
             </div>
             <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-              Agentic / v0 / Hybrid
+              Google Cloud / v0 / Hybrid
             </span>
           </div>
 
           <p className="text-xs text-gray-500">
-            Choose between credit-safe Vertex agentic demo blueprints, live v0 sites, or a hybrid flow where Vertex plans and v0 builds.
+            Choose between Google Cloud Vertex AI interactive applications, live v0 sites, or a hybrid flow where Google Cloud plans and v0 builds.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

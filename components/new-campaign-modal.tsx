@@ -31,9 +31,9 @@ const channelOptions: Array<{ value: OutreachChannel; label: string; icon: React
 const limitPresets = [5, 10, 25, 50, 100, 250];
 
 const demoProviderOptions: Array<{ value: DemoProvider; label: string; desc: string }> = [
-  { value: 'agentic', label: 'Agentic', desc: 'Vertex strategy demo, no v0 credits' },
+  { value: 'agentic', label: 'Google Cloud', desc: 'Google Cloud Vertex AI & Gemini interactive app' },
   { value: 'v0', label: 'v0', desc: 'Live Vercel v0 site' },
-  { value: 'hybrid', label: 'Hybrid', desc: 'Vertex strategy plus v0 build' }
+  { value: 'hybrid', label: 'Hybrid', desc: 'Google Cloud strategy plus v0 build' }
 ];
 
 export function NewCampaignModal({ isOpen, onClose, onLaunch, loading }: NewCampaignModalProps) {
