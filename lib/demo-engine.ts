@@ -1,5 +1,6 @@
 import { generateAgenticDemoStrategy } from '@/lib/vertex';
 import { createV0Demo } from '@/lib/v0';
+import { publishAgenticDemo } from '@/lib/published-demos';
 import type { AppSettings, DemoProvider, DemoQuality, Lead, V0DemoResult } from '@/lib/types';
 
 interface DemoEngineOptions {
@@ -47,9 +48,10 @@ async function createAgenticDemo(
     model: options.settings?.vertexModel || options.settings?.aiModel,
     enableGrounding: options.settings?.vertexGrounding
   });
+
+  // Publish demo and get the live link
+  const demoUrl = publishAgenticDemo(lead.id, strategy, options.baseUrl, lead);
   const demoArtifact = JSON.stringify(strategy);
-  const strategyBase64 = Buffer.from(demoArtifact).toString('base64url');
-  const demoUrl = `${options.baseUrl}/demo/${lead.id}?engine=agentic&strategy=${strategyBase64}`;
 
   return {
     provider: 'agentic',

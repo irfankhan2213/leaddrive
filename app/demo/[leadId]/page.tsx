@@ -1,5 +1,6 @@
 import { Bot, ExternalLink, ShieldAlert, Sparkles } from 'lucide-react';
 import { getSupabaseAdmin } from '@/lib/supabase';
+import { getPublishedDemo } from '@/lib/published-demos';
 import type { Lead, AgenticStrategy } from '@/lib/types';
 import Link from 'next/link';
 import { AgenticLiveDemo } from '@/components/agentic-live-demo';
@@ -15,8 +16,15 @@ export default async function DemoPage({
   const query = searchParams ? await searchParams : {};
   let lead: Lead | null = null;
 
+  // 1. Check published local store
+  const published = getPublishedDemo(leadId);
+  if (published?.lead) {
+    lead = published.lead as Lead;
+  }
+
+  // 2. Check Supabase DB
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(leadId);
-  if (isUuid) {
+  if (!lead && isUuid) {
     const supabase = getSupabaseAdmin();
     if (supabase) {
       const { data } = await supabase.from('leads').select('*').eq('id', leadId).single();
@@ -26,14 +34,14 @@ export default async function DemoPage({
     }
   }
 
-  const name = lead?.company_name || leadId
+  const name = lead?.company_name || published?.strategy?.title || leadId
     .replace(/^lead_/, '')
     .replace(/[_-]/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
   const weakness = lead?.weakness || 'Mobile booking path is unoptimized for local search traffic.';
   const hasLiveV0Demo = Boolean(lead?.demo_url && /^https?:\/\//i.test(lead.demo_url) && !lead.demo_url.includes('/demo/'));
-  const strategy = decodeAgenticStrategy(getQueryValue(query.strategy)) || decodeAgenticStrategy(lead?.demo_prompt);
+  const strategy = decodeAgenticStrategy(getQueryValue(query.strategy)) || published?.strategy || decodeAgenticStrategy(lead?.demo_prompt);
   const isAgenticDemo = Boolean(getQueryValue(query.strategy) || getQueryValue(query.engine) === 'agentic' || lead?.demo_provider === 'agentic' || strategy);
 
   if (hasLiveV0Demo) {
