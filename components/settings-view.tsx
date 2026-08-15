@@ -50,10 +50,14 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
   ];
 
   const anthropicModels = [
+    { value: 'claude-opus-5', label: 'Claude Opus 5 (Flagship 1M Context & Agentic Coding)' },
+    { value: 'claude-sonnet-5', label: 'Claude Sonnet 5 (Flagship Speed & High Intelligence)' },
+    { value: 'claude-fable-5', label: 'Claude Fable 5 (Top-Tier Mythos-Class Reasoning)' },
+    { value: 'claude-opus-4-8', label: 'Claude Opus 4.8 (Advanced Agentic Analysis)' },
+    { value: 'claude-haiku-4-5', label: 'Claude Haiku 4.5 (Ultra-Fast High-Volume Automation)' },
     { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet (Hybrid & Extended Reasoning)' },
-    { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (High Precision)' },
+    { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (High-Craft Precision)' },
     { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Fast & Cost Efficient)' },
-    { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus (Deep Complex Reasoning)' },
     { value: 'custom', label: 'Custom Model ID (Enter Below)' }
   ];
 
