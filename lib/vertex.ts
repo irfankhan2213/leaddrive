@@ -257,15 +257,6 @@ export async function generateAgenticDemoStrategy(
     const vertex = getVertexAIClient(config);
     const modelName = config?.model || process.env.VERTEX_AI_MODEL || 'gemini-2.5-flash';
 
-    const generativeModel = vertex.getGenerativeModel({
-      model: modelName,
-      generationConfig: {
-        temperature: 0.15,
-        maxOutputTokens: quality === 'high' ? 2000 : 1200,
-        responseMimeType: 'application/json'
-      }
-    });
-
     const signalSummary = lead.signals.map((signal) => `${signal.label}: ${signal.value}`).join('; ');
     const prompt = `You are LeadDrive's elite Agentic Demo Strategist running on Google Cloud Vertex AI.
 Create a bespoke, conversion-focused interactive demo blueprint for this prospect that proves our agency can solve their digital conversion bottleneck.
@@ -299,8 +290,36 @@ Generate a valid JSON object matching this schema:
   "promptEnhancement": "A compact, highly effective prompt addendum for live component generation"
 }`;
 
-    const result = await generativeModel.generateContent(prompt);
-    const text = result.response.candidates?.[0]?.content?.parts?.[0]?.text;
+    let text: string | undefined;
+    try {
+      const generativeModel = vertex.getGenerativeModel({
+        model: modelName,
+        generationConfig: {
+          temperature: 0.15,
+          maxOutputTokens: quality === 'high' ? 2000 : 1200,
+          responseMimeType: 'application/json'
+        }
+      });
+      const result = await generativeModel.generateContent(prompt);
+      text = result.response.candidates?.[0]?.content?.parts?.[0]?.text;
+    } catch (modelErr) {
+      if (modelName !== 'gemini-2.5-flash') {
+        console.warn(`[Vertex AI] Model ${modelName} unavailable, falling back to gemini-2.5-flash:`, modelErr instanceof Error ? modelErr.message : modelErr);
+        const fallbackModel = vertex.getGenerativeModel({
+          model: 'gemini-2.5-flash',
+          generationConfig: {
+            temperature: 0.15,
+            maxOutputTokens: quality === 'high' ? 2000 : 1200,
+            responseMimeType: 'application/json'
+          }
+        });
+        const fallbackResult = await fallbackModel.generateContent(prompt);
+        text = fallbackResult.response.candidates?.[0]?.content?.parts?.[0]?.text;
+      } else {
+        throw modelErr;
+      }
+    }
+
     if (!text) throw new Error('Empty response from Vertex agentic demo strategist.');
 
     const parsed = extractJsonFromResponse<Record<string, unknown>>(text);

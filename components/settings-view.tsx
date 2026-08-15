@@ -34,18 +34,26 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
   const [savedNotice, setSavedNotice] = useState(false);
 
   const vertexModels = [
-    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Active & Verified on us-central1)' },
-    { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash (AI Agent & Coding Specialist)' },
-    { value: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash (Token Optimized)' },
-    { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite (Low Latency)' },
-    { value: 'custom', label: 'Custom Model ID (Enter Below)' }
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Active & Verified in us-central1 - Sub-Second)' },
+    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Deep Enterprise Strategy & Reasoning)' },
+    { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash (Flagship AI Agents & Code Engine)' },
+    { value: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash (Token Optimized Agent Workflows)' },
+    { value: 'gemini-3.5-pro', label: 'Gemini 3.5 Pro (Frontier Multimodal & Prospect Audits)' },
+    { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (High Throughput Production)' },
+    { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite (Low Latency Automation)' },
+    { value: 'claude-opus-5', label: 'Claude Opus 5 (Vertex AI Model Garden)' },
+    { value: 'claude-sonnet-5', label: 'Claude Sonnet 5 (Vertex AI Model Garden)' },
+    { value: 'custom', label: 'Custom Model / Endpoint (Enter Below)' }
   ];
 
   const geminiModels = [
     { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Google AI Flagship)' },
-    { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash (Agent Specialist)' },
-    { value: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash (Production)' },
-    { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite' },
+    { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro (Enterprise Strategy)' },
+    { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash (AI Agent Specialist)' },
+    { value: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash (Production Workhorse)' },
+    { value: 'gemini-3.5-pro', label: 'Gemini 3.5 Pro (Frontier Reasoning)' },
+    { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (High Throughput)' },
+    { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite (Cost Saver)' },
     { value: 'custom', label: 'Custom Model ID (Enter Below)' }
   ];
 
