@@ -191,7 +191,7 @@ export function buildPipeline(
         : `Discovered via "${prospect.matched_keyword || input.audience}". Contact info verified. Needs demo before outreach.`,
       signals,
       demo_type: input.demoType,
-      demo_provider: input.demoProvider || 'agentic',
+      demo_provider: input.demoProvider || 'v0',
       demo_quality: input.demoQuality || 'low',
       demo_prompt: '',
       outreach_subject: `${prospect.company_name.split(' ')[0]} ${prospect.city ? `in ${prospect.city}` : ''} demo idea`,

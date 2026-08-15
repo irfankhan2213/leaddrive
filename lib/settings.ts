@@ -13,7 +13,7 @@ export const defaultSettings: AppSettings = {
   bigqueryDataset: 'leaddrive_analytics',
   v0ApiKey: '',
   v0Model: 'v0-mini',
-  demoProvider: 'agentic',
+  demoProvider: 'v0',
   defaultDemoQuality: 'low',
   maxAutoDemosPerCampaign: 3,
   minDemoScore: 75,

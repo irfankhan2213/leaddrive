@@ -125,7 +125,7 @@ export async function streamLeadToBigQuery(lead: Lead): Promise<boolean> {
       weakness: lead.weakness || null,
       demo_url: lead.demo_url || null,
       demo_quality: lead.demo_quality || 'low',
-      demo_provider: lead.demo_provider || 'agentic',
+      demo_provider: lead.demo_provider || 'v0',
       source: lead.source || 'google_maps',
       rating: lead.rating || null,
       reviews_count: lead.reviews_count || null,
