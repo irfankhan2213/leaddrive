@@ -6,6 +6,7 @@ import {
   Bot,
   Check,
   CheckCircle2,
+  Copy,
   ExternalLink,
   Instagram,
   Kanban,
@@ -883,15 +884,27 @@ export default function Home() {
 
                       <div className="flex items-center gap-2">
                         {selectedDemoLead.demo_url && (
-                          <a
-                            href={selectedDemoLead.demo_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1"
-                          >
-                            <span>Open Full Screen</span>
-                            <ExternalLink size={12} />
-                          </a>
+                          <>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(selectedDemoLead.demo_url!);
+                                setNotice({ type: 'success', text: `Live Demo URL copied for ${selectedDemoLead.company_name}!` });
+                              }}
+                              className="text-xs font-bold text-slate-300 hover:text-white flex items-center gap-1.5 bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 hover:border-slate-600 transition-all"
+                            >
+                              <Copy size={12} className="text-blue-400" />
+                              <span>Copy Live URL</span>
+                            </button>
+                            <a
+                              href={selectedDemoLead.demo_url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all shadow-md shadow-blue-600/30"
+                            >
+                              <span>Open Live Site</span>
+                              <ExternalLink size={12} />
+                            </a>
+                          </>
                         )}
                       </div>
                     </div>
