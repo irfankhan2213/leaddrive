@@ -48,7 +48,8 @@ async function createAgenticDemo(
     enableGrounding: options.settings?.vertexGrounding
   });
   const demoArtifact = JSON.stringify(strategy);
-  const demoUrl = `${options.baseUrl}/demo/${lead.id}?engine=agentic`;
+  const strategyBase64 = Buffer.from(demoArtifact).toString('base64url');
+  const demoUrl = `${options.baseUrl}/demo/${lead.id}?engine=agentic&strategy=${strategyBase64}`;
 
   return {
     provider: 'agentic',

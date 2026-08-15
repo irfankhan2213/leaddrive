@@ -44,6 +44,62 @@ export function getVertexAIClient(config?: VertexConfig): VertexAI {
   return vertexAiClient;
 }
 
+function extractJsonFromResponse<T = unknown>(text: string): T {
+  if (!text) throw new Error('Empty text provided');
+  let clean = text.trim();
+
+  // 1. Strip markdown fences if present
+  if (clean.includes('```')) {
+    clean = clean.replace(/^[\s\S]*?```(?:json)?\s*/i, '');
+    const endFence = clean.lastIndexOf('```');
+    if (endFence !== -1) {
+      clean = clean.substring(0, endFence).trim();
+    }
+  }
+
+  // 2. Direct parse cleaned text
+  try {
+    return JSON.parse(clean) as T;
+  } catch {
+    // 3. Find outermost Object { ... }
+    const firstObj = clean.indexOf('{');
+    const lastObj = clean.lastIndexOf('}');
+    if (firstObj !== -1 && lastObj > firstObj) {
+      const objStr = clean.substring(firstObj, lastObj + 1);
+      try {
+        return JSON.parse(objStr) as T;
+      } catch {
+        try {
+          const sanitized = objStr.replace(/(?<=:\s*"[^"]*)\n(?=[^"]*")/g, '\\n');
+          return JSON.parse(sanitized) as T;
+        } catch {}
+      }
+    }
+
+    // 4. Find outermost Array [ ... ]
+    const firstArr = clean.indexOf('[');
+    const lastArr = clean.lastIndexOf(']');
+    if (firstArr !== -1 && lastArr > firstArr) {
+      const arrStr = clean.substring(firstArr, lastArr + 1);
+      try {
+        return JSON.parse(arrStr) as T;
+      } catch {
+        try {
+          const sanitized = arrStr.replace(/(?<=:\s*"[^"]*)\n(?=[^"]*")/g, '\\n');
+          return JSON.parse(sanitized) as T;
+        } catch {}
+      }
+    }
+  }
+
+  // 5. Try raw text
+  try {
+    return JSON.parse(text.trim()) as T;
+  } catch {}
+
+  throw new Error(`Unable to extract JSON from Vertex AI response: ${text.slice(0, 100)}...`);
+}
+
 export async function generateVertexCampaignKeywords(
   input: CampaignInput,
   config?: VertexConfig
@@ -58,7 +114,8 @@ export async function generateVertexCampaignKeywords(
       generationConfig: {
         temperature: 0.2,
         maxOutputTokens: 800,
-        responseMimeType: 'application/json'
+        // Do not set responseMimeType when Search tool is enabled (Vertex AI constraint)
+        responseMimeType: enableGrounding ? undefined : 'application/json'
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tools: enableGrounding ? ([{ googleSearch: {} }] as any) : undefined
@@ -72,7 +129,7 @@ TARGET CRITERIA:
 - Location(s): "${input.locations}"
 - Target Strategy: High commercial intent, verified local listings, directories, and niche specializations.
 
-Return a JSON array of search strings. Example format:
+CRITICAL: Return ONLY a valid JSON array of search strings. Do not include markdown preamble. Example:
 ["HVAC emergency repair Austin TX", "commercial roofing contractors Travis County", "residential air conditioning installation near Austin"]`;
 
     const result = await generativeModel.generateContent(prompt);
@@ -83,8 +140,7 @@ Return a JSON array of search strings. Example format:
       throw new Error('Empty response from Vertex AI Gemini.');
     }
 
-    const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const parsed = JSON.parse(cleanJson);
+    const parsed = extractJsonFromResponse<string[]>(text);
     if (Array.isArray(parsed) && parsed.length > 0) {
       return parsed.map((item) => String(item).trim()).filter(Boolean);
     }
@@ -115,7 +171,8 @@ export async function analyzeLeadWithVertex(
       generationConfig: {
         temperature: 0.2,
         maxOutputTokens: 1000,
-        responseMimeType: 'application/json'
+        // Do not set responseMimeType when Search tool is enabled (Vertex AI constraint)
+        responseMimeType: enableGrounding ? undefined : 'application/json'
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tools: enableGrounding ? ([{ googleSearch: {} }] as any) : undefined
@@ -141,7 +198,7 @@ EVALUATION RULES:
 3. "qualification_reason": Concise 1-sentence sales justification for reaching out.
 4. "signals": Array of 3 to 4 digital signals with "severity" ('positive'|'warning'|'critical') and concise "label" and "value".
 
-Return valid JSON with keys: "fit_score", "weakness", "qualification_reason", "signals".`;
+CRITICAL: Return ONLY a valid JSON object with keys: "fit_score", "weakness", "qualification_reason", "signals".`;
 
     const result = await generativeModel.generateContent(prompt);
     const response = result.response;
@@ -151,17 +208,20 @@ Return valid JSON with keys: "fit_score", "weakness", "qualification_reason", "s
       throw new Error('Empty response from Vertex AI lead analysis.');
     }
 
-    const cleanJson = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const parsed = JSON.parse(cleanJson);
+    const parsed = extractJsonFromResponse<{
+      fit_score?: number;
+      weakness?: string;
+      qualification_reason?: string;
+      signals?: Array<{ label?: string; value?: string; detail?: string; severity?: 'positive' | 'warning' | 'critical' }>;
+      outreach_body?: string;
+    }>(text);
 
     return {
       fit_score: typeof parsed.fit_score === 'number' ? Math.min(100, Math.max(0, parsed.fit_score)) : 82,
       weakness: parsed.weakness || lead.weakness,
       qualification_reason: parsed.qualification_reason || lead.qualification_reason,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       signals: Array.isArray(parsed.signals)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ? parsed.signals.map((s: any) => ({
+        ? parsed.signals.map((s) => ({
             label: s.label || 'Digital audit',
             value: s.value || s.detail || 'Detected',
             severity: s.severity || 'warning'
@@ -196,49 +256,54 @@ export async function generateAgenticDemoStrategy(
   try {
     const vertex = getVertexAIClient(config);
     const modelName = config?.model || process.env.VERTEX_AI_MODEL || 'gemini-2.5-flash';
-    const enableGrounding = config?.enableGrounding ?? (process.env.VERTEX_SEARCH_GROUNDING !== 'false');
 
     const generativeModel = vertex.getGenerativeModel({
       model: modelName,
       generationConfig: {
         temperature: 0.15,
-        maxOutputTokens: quality === 'high' ? 1800 : 1100,
+        maxOutputTokens: quality === 'high' ? 2000 : 1200,
         responseMimeType: 'application/json'
-      },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tools: enableGrounding ? ([{ googleSearch: {} }] as any) : undefined
+      }
     });
 
     const signalSummary = lead.signals.map((signal) => `${signal.label}: ${signal.value}`).join('; ');
-    const prompt = `You are LeadDrive's Agentic Demo Strategist running on Google Cloud Vertex AI.
-Create a conversion-focused personalized demo blueprint for this prospect. Use grounded public facts when available, avoid made-up staff names, and focus on a demo that can be shown to the prospect as a proof-of-work asset.
+    const prompt = `You are LeadDrive's elite Agentic Demo Strategist running on Google Cloud Vertex AI.
+Create a bespoke, conversion-focused interactive demo blueprint for this prospect that proves our agency can solve their digital conversion bottleneck.
 
-PROSPECT:
-- Company: ${lead.company_name}
-- Website: ${lead.website_url || 'No website found'}
-- Market: ${lead.city || 'Unknown'}
-- Niche: ${lead.niche}
-- Weakness: ${lead.weakness}
+PROSPECT DETAILS:
+- Company: "${lead.company_name}"
+- Website: "${lead.website_url || 'No website found'}"
+- Market/City: "${lead.city || 'Local Area'}"
+- Niche: "${lead.niche || 'High-Ticket Services'}"
+- Key Weakness/Vulnerability: "${lead.weakness}"
 - Fit Score: ${lead.fit_score}
-- Signals: ${signalSummary || 'None'}
-- Demo Quality: ${quality}
+- Audit Signals: "${signalSummary || 'None'}"
+- Demo Fidelity: "${quality}"
 
-Return strict JSON with:
+Generate a valid JSON object matching this schema:
 {
-  "title": "short demo title",
-  "positioning": "one sentence why this demo matters",
-  "heroHeadline": "specific headline for the demo",
-  "primaryCta": "specific call to action",
-  "sections": [{"title":"", "purpose":"", "copy":""}],
-  "proofPoints": ["3 to 5 specific credibility or conversion proof points"],
-  "promptEnhancement": "compact paragraph to improve a v0 prompt if hybrid mode is used"
+  "title": "Short descriptive demo title",
+  "positioning": "One persuasive sentence explaining why this demo directly solves their conversion leak",
+  "heroHeadline": "Compelling, modern hero headline crafted specifically for their brand",
+  "primaryCta": "High-converting call to action label (e.g. 'Get Instant Quote & Book Online')",
+  "sections": [
+    {
+      "title": "Section Title",
+      "purpose": "Conversion purpose",
+      "copy": "Persuasive sample copy addressing their weakness"
+    }
+  ],
+  "proofPoints": [
+    "3 to 5 strong credibility, speed, or trust proof points"
+  ],
+  "promptEnhancement": "A compact, highly effective prompt addendum for live component generation"
 }`;
 
     const result = await generativeModel.generateContent(prompt);
     const text = result.response.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) throw new Error('Empty response from Vertex agentic demo strategist.');
 
-    const parsed = JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+    const parsed = extractJsonFromResponse<Record<string, unknown>>(text);
     return normalizeAgenticStrategy(parsed, lead);
   } catch (err) {
     console.warn('[Vertex AI] Agentic demo strategy warning:', err instanceof Error ? err.message : err);
