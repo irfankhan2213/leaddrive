@@ -1,8 +1,8 @@
 import { Bot, ExternalLink, ShieldAlert, Sparkles } from 'lucide-react';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import type { Lead } from '@/lib/types';
+import type { Lead, AgenticStrategy } from '@/lib/types';
 import Link from 'next/link';
-import { AgenticLiveDemo, type AgenticStrategy } from '@/components/agentic-live-demo';
+import { AgenticLiveDemo } from '@/components/agentic-live-demo';
 
 export default async function DemoPage({
   params,
@@ -164,15 +164,22 @@ function decodeAgenticStrategy(value?: string): AgenticStrategy | null {
     if (!parsed || typeof parsed !== 'object') return null;
     return {
       title: String(parsed.title || 'Agentic demo blueprint'),
+      tagline: parsed.tagline ? String(parsed.tagline) : undefined,
       positioning: String(parsed.positioning || ''),
       heroHeadline: String(parsed.heroHeadline || ''),
       primaryCta: String(parsed.primaryCta || ''),
+      secondaryCta: parsed.secondaryCta ? String(parsed.secondaryCta) : undefined,
       sections: Array.isArray(parsed.sections) ? parsed.sections.map((section: Record<string, unknown>) => ({
         title: String(section.title || 'Demo module'),
         purpose: String(section.purpose || 'Improve conversion.'),
         copy: String(section.copy || '')
       })) : [],
-      proofPoints: Array.isArray(parsed.proofPoints) ? parsed.proofPoints.map(String) : []
+      proofPoints: Array.isArray(parsed.proofPoints) ? parsed.proofPoints.map(String) : [],
+      pricingPackages: Array.isArray(parsed.pricingPackages) ? parsed.pricingPackages : undefined,
+      calculator: parsed.calculator && typeof parsed.calculator === 'object' ? parsed.calculator : undefined,
+      comparison: parsed.comparison && typeof parsed.comparison === 'object' ? parsed.comparison : undefined,
+      reviews: Array.isArray(parsed.reviews) ? parsed.reviews : undefined,
+      faqs: Array.isArray(parsed.faqs) ? parsed.faqs : undefined
     };
   } catch {
     return null;

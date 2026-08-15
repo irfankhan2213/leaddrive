@@ -1,5 +1,5 @@
 import { VertexAI } from '@google-cloud/vertexai';
-import type { CampaignInput, DemoQuality, DigitalSignal, Lead } from '@/lib/types';
+import type { AgenticStrategy, CampaignInput, DemoQuality, DigitalSignal, Lead } from '@/lib/types';
 import path from 'path';
 import fs from 'fs';
 
@@ -244,22 +244,14 @@ export async function generateAgenticDemoStrategy(
   lead: Lead,
   quality: DemoQuality = 'low',
   config?: VertexConfig
-): Promise<{
-  title: string;
-  positioning: string;
-  heroHeadline: string;
-  primaryCta: string;
-  sections: Array<{ title: string; purpose: string; copy: string }>;
-  proofPoints: string[];
-  promptEnhancement: string;
-}> {
+): Promise<AgenticStrategy> {
   try {
     const vertex = getVertexAIClient(config);
     const modelName = config?.model || process.env.VERTEX_AI_MODEL || 'gemini-3.7-flash';
 
     const signalSummary = lead.signals.map((signal) => `${signal.label}: ${signal.value}`).join('; ');
-    const prompt = `You are LeadDrive's elite Agentic Demo Strategist running on Google Cloud Vertex AI.
-Create a bespoke, conversion-focused interactive demo blueprint for this prospect that proves our agency can solve their digital conversion bottleneck.
+    const prompt = `You are LeadDrive's elite Full-Stack UI/UX Web Strategist running on Google Cloud Vertex AI.
+Create a rich, state-of-the-art, flagship interactive web application blueprint for this prospect matching the craft, depth, and interactivity of a top-tier v0 website.
 
 PROSPECT DETAILS:
 - Company: "${lead.company_name}"
@@ -269,23 +261,111 @@ PROSPECT DETAILS:
 - Key Weakness/Vulnerability: "${lead.weakness}"
 - Fit Score: ${lead.fit_score}
 - Audit Signals: "${signalSummary || 'None'}"
+- Review Rating: ${lead.rating ? `${lead.rating}★ (${lead.reviews_count || 0} reviews)` : 'None'}
 - Demo Fidelity: "${quality}"
 
-Generate a valid JSON object matching this schema:
+Generate a valid JSON object matching this comprehensive schema:
 {
   "title": "Short descriptive demo title",
-  "positioning": "One persuasive sentence explaining why this demo directly solves their conversion leak",
+  "tagline": "Punchy brand tagline",
   "heroHeadline": "Compelling, modern hero headline crafted specifically for their brand",
-  "primaryCta": "High-converting call to action label (e.g. 'Get Instant Quote & Book Online')",
+  "positioning": "One to two persuasive sentences explaining why this demo directly solves their conversion leak",
+  "primaryCta": "High-converting primary button label (e.g. 'Get Instant Quote & Book Online')",
+  "secondaryCta": "Secondary button label (e.g. 'Calculate Estimate')",
+  "proofPoints": [
+    "4 strong credibility, speed, or trust proof points"
+  ],
+  "pricingPackages": [
+    {
+      "name": "Standard / Priority Package Name",
+      "price": "$89 or $149 or Custom Quote",
+      "duration": "Within 90 mins or Scheduled",
+      "popular": true,
+      "description": "Clear benefit-driven package description.",
+      "perks": ["3 to 4 key inclusions or guarantees"]
+    },
+    {
+      "name": "Comprehensive / Maintenance Package Name",
+      "price": "$189 or $299",
+      "duration": "Same-day inspection",
+      "popular": false,
+      "description": "Full-service package description.",
+      "perks": ["3 to 4 key inclusions"]
+    },
+    {
+      "name": "Flagship / Replacement Package Name",
+      "price": "Custom Estimate",
+      "duration": "Free consultation",
+      "popular": false,
+      "description": "High-ticket service description.",
+      "perks": ["Extended warranty", "Financing available", "Free on-site quote"]
+    }
+  ],
+  "calculator": {
+    "serviceType": "Project or Service Scope",
+    "unitLabel": "Property Sq Ft or Service Units",
+    "basePrice": 89,
+    "pricePerUnit": 0.04,
+    "defaultUnits": 1800,
+    "minUnits": 600,
+    "maxUnits": 5000,
+    "step": 100,
+    "options": [
+      { "label": "Emergency / Same-Day Fast-Track", "price": 49 },
+      { "label": "Comprehensive Sanitization / Deep Inspection", "price": 39 },
+      { "label": "Extended Workmanship Warranty (1-Year)", "price": 59 }
+    ]
+  },
+  "comparison": {
+    "current": ["Slow phone-tag during busy hours", "No after-hours online booking", "Uncertain technician ETA", "Loses mobile visitors to fast competitors"],
+    "modernized": ["Instant 60-second 1-click booking", "24/7 AI Receptionist Concierge", "Live SMS dispatch & arrival confirmation", "Sub-second mobile-first speed"]
+  },
+  "reviews": [
+    {
+      "author": "Local Verified Customer",
+      "location": "${lead.city || 'Local Area'}",
+      "content": "Outstanding experience. The online scheduler made it effortless and the team was at our door in under an hour.",
+      "rating": 5,
+      "verified": true
+    },
+    {
+      "author": "Property Owner",
+      "location": "${lead.city || 'Local Area'}",
+      "content": "Upfront pricing with zero hidden fees. Highly recommend their professional technicians.",
+      "rating": 5,
+      "verified": true
+    }
+  ],
+  "faqs": [
+    {
+      "question": "How quickly can a specialist arrive in ${lead.city || 'our area'}?",
+      "answer": "Emergency priority bookings are dispatched within 60 to 90 minutes. Scheduled appointments have guaranteed 2-hour arrival windows."
+    },
+    {
+      "question": "Do I have to pay upfront to book online?",
+      "answer": "No upfront payment is required. You approve the transparent quote with your technician on-site before work begins."
+    },
+    {
+      "question": "Are your technicians licensed and insured?",
+      "answer": "Yes, every technician is 100% background-checked, state-licensed, and backed by our full Workmanship Guarantee."
+    }
+  ],
   "sections": [
     {
-      "title": "Section Title",
+      "title": "Section Title 1",
+      "purpose": "Conversion purpose",
+      "copy": "Persuasive sample copy addressing their weakness"
+    },
+    {
+      "title": "Section Title 2",
+      "purpose": "Conversion purpose",
+      "copy": "Persuasive sample copy addressing their weakness"
+    },
+    {
+      "title": "Section Title 3",
       "purpose": "Conversion purpose",
       "copy": "Persuasive sample copy addressing their weakness"
     }
-  ],
-  "proofPoints": [
-    "3 to 5 strong credibility, speed, or trust proof points"
   ],
   "promptEnhancement": "A compact, highly effective prompt addendum for live component generation"
 }`;
@@ -351,64 +431,235 @@ export async function testVertexConnection(): Promise<{ success: boolean; model:
   };
 }
 
-function normalizeAgenticStrategy(value: Record<string, unknown>, lead: Lead) {
-  const sections = Array.isArray(value.sections)
+function normalizeAgenticStrategy(value: Record<string, unknown>, lead: Lead): AgenticStrategy {
+  const fallback = fallbackAgenticStrategy(lead);
+
+  const sections = Array.isArray(value.sections) && value.sections.length > 0
     ? value.sections.slice(0, 6).map((section) => {
         const item = section as Record<string, unknown>;
         return {
-          title: String(item.title || 'Conversion section'),
-          purpose: String(item.purpose || 'Improve the conversion path.'),
+          title: String(item.title || 'Conversion Feature'),
+          purpose: String(item.purpose || 'Accelerate prospect conversion.'),
           copy: String(item.copy || lead.weakness)
         };
       })
-    : fallbackAgenticStrategy(lead).sections;
+    : fallback.sections;
 
-  const proofPoints = Array.isArray(value.proofPoints)
+  const proofPoints = Array.isArray(value.proofPoints) && value.proofPoints.length > 0
     ? value.proofPoints.slice(0, 5).map(String)
-    : fallbackAgenticStrategy(lead).proofPoints;
+    : fallback.proofPoints;
+
+  const pricingPackages = Array.isArray(value.pricingPackages) && value.pricingPackages.length > 0
+    ? value.pricingPackages.slice(0, 4).map((p) => {
+        const item = p as Record<string, unknown>;
+        return {
+          name: String(item.name || 'Core Service Package'),
+          price: String(item.price || '$99'),
+          duration: String(item.duration || 'Fast Dispatch'),
+          popular: Boolean(item.popular),
+          description: String(item.description || 'Complete priority service inspection and upfront quote.'),
+          perks: Array.isArray(item.perks) ? item.perks.map(String) : ['100% Upfront Guarantee', 'Certified Technicians', 'Fast Booking']
+        };
+      })
+    : fallback.pricingPackages;
+
+  const calculator = value.calculator && typeof value.calculator === 'object'
+    ? {
+        serviceType: String((value.calculator as Record<string, unknown>).serviceType || 'Service Size'),
+        unitLabel: String((value.calculator as Record<string, unknown>).unitLabel || 'Sq Ft / Scope'),
+        basePrice: Number((value.calculator as Record<string, unknown>).basePrice) || 89,
+        pricePerUnit: Number((value.calculator as Record<string, unknown>).pricePerUnit) || 0.04,
+        defaultUnits: Number((value.calculator as Record<string, unknown>).defaultUnits) || 1800,
+        minUnits: Number((value.calculator as Record<string, unknown>).minUnits) || 600,
+        maxUnits: Number((value.calculator as Record<string, unknown>).maxUnits) || 5000,
+        step: Number((value.calculator as Record<string, unknown>).step) || 100,
+        options: Array.isArray((value.calculator as Record<string, unknown>).options)
+          ? ((value.calculator as Record<string, unknown>).options as Array<Record<string, unknown>>).map((opt) => ({
+              label: String(opt.label || 'Priority Add-on'),
+              price: Number(opt.price) || 39
+            }))
+          : fallback.calculator!.options
+      }
+    : fallback.calculator;
+
+  const comparison = value.comparison && typeof value.comparison === 'object'
+    ? {
+        current: Array.isArray((value.comparison as Record<string, unknown>).current)
+          ? ((value.comparison as Record<string, unknown>).current as string[]).map(String)
+          : fallback.comparison!.current,
+        modernized: Array.isArray((value.comparison as Record<string, unknown>).modernized)
+          ? ((value.comparison as Record<string, unknown>).modernized as string[]).map(String)
+          : fallback.comparison!.modernized
+      }
+    : fallback.comparison;
+
+  const reviews = Array.isArray(value.reviews) && value.reviews.length > 0
+    ? value.reviews.slice(0, 4).map((r) => {
+        const item = r as Record<string, unknown>;
+        return {
+          author: String(item.author || 'Verified Client'),
+          location: String(item.location || lead.city || 'Local Customer'),
+          content: String(item.content || 'Exceptional service and communication.'),
+          rating: Number(item.rating) || 5,
+          verified: true
+        };
+      })
+    : fallback.reviews;
+
+  const faqs = Array.isArray(value.faqs) && value.faqs.length > 0
+    ? value.faqs.slice(0, 5).map((f) => {
+        const item = f as Record<string, unknown>;
+        return {
+          question: String(item.question || 'How does priority booking work?'),
+          answer: String(item.answer || 'Select your time slot online and receive an instant simulated SMS confirmation.')
+        };
+      })
+    : fallback.faqs;
 
   return {
-    title: String(value.title || `${lead.company_name} conversion demo`),
-    positioning: String(value.positioning || `A focused demo to fix ${lead.weakness.toLowerCase()}`),
-    heroHeadline: String(value.heroHeadline || `Turn more ${lead.city || 'local'} visitors into booked customers`),
-    primaryCta: String(value.primaryCta || 'Book a consultation'),
+    title: String(value.title || `${lead.company_name} - Priority Conversion Site`),
+    tagline: String(value.tagline || `Top-Rated ${lead.niche} in ${lead.city || 'Your Area'}`),
+    positioning: String(value.positioning || `A focused interactive demo showing how ${lead.company_name} can fix ${lead.weakness.toLowerCase()}`),
+    heroHeadline: String(value.heroHeadline || `Turn more ${lead.city || 'local'} searches into booked customers`),
+    primaryCta: String(value.primaryCta || 'Book Priority Service Online'),
+    secondaryCta: String(value.secondaryCta || 'Calculate Instant Estimate'),
     sections,
     proofPoints,
+    pricingPackages,
+    calculator,
+    comparison,
+    reviews,
+    faqs,
     promptEnhancement: String(
       value.promptEnhancement ||
-        `Use the agentic strategy to emphasize ${lead.weakness}, clear CTA placement, proof points, and mobile-first conversion flow.`
+        `Design around ${lead.weakness}. Prioritize 1-click booking, transparent estimator, proof points, and mobile-first speed.`
     )
   };
 }
 
-function fallbackAgenticStrategy(lead: Lead) {
+function fallbackAgenticStrategy(lead: Lead): AgenticStrategy {
   return {
-    title: `${lead.company_name} conversion demo`,
-    positioning: `A focused demo showing how ${lead.company_name} can fix ${lead.weakness.toLowerCase()}`,
-    heroHeadline: `A faster path from ${lead.city || 'local'} search to booked revenue`,
-    primaryCta: 'See availability',
+    title: `${lead.company_name} - Modernized Conversion Platform`,
+    tagline: `Top-Rated ${lead.niche} in ${lead.city || 'Central Texas'}`,
+    positioning: `A focused live prototype demonstrating how ${lead.company_name} can eliminate conversion leaks and capture high-intent search traffic with 1-click booking and 24/7 AI Concierge.`,
+    heroHeadline: `${lead.company_name}: Fast, Reliable ${lead.niche} in ${lead.city || 'Austin, TX'}. Book in 60 Seconds.`,
+    primaryCta: 'Book Priority Service Online',
+    secondaryCta: 'Estimate Project Cost',
     sections: [
       {
-        title: 'Mobile-first hero',
-        purpose: 'Make the offer obvious in the first screen.',
-        copy: lead.weakness
+        title: 'Instant 1-Click Online Booking',
+        purpose: 'Capture high-intent traffic 24/7 with zero phone friction.',
+        copy: `Directly solves "${lead.weakness}". Allows customers to select their preferred service, choose an arrival window, and receive instant SMS confirmation.`
       },
       {
-        title: 'Trust and proof',
-        purpose: 'Turn existing credibility into conversion momentum.',
-        copy: lead.rating ? `Show ${lead.rating}/5 rating and ${lead.reviews_count || 0} reviews near the CTA.` : 'Show recent outcomes, guarantees, and local proof near the CTA.'
+        title: 'Sub-Second Page Speed & Mobile UX',
+        purpose: 'Prevent bounce rates and maximize Google Search ranking.',
+        copy: 'Engineered for sub-second mobile load times, modern glassmorphic cards, and frictionless navigation across every device.'
       },
       {
-        title: 'Fast booking path',
-        purpose: 'Remove friction from high-intent visitors.',
-        copy: 'Add a one-tap booking, quote, or consultation flow with direct contact options.'
+        title: '24/7 AI Receptionist Concierge',
+        purpose: 'Answer prospect questions and qualify jobs after-hours.',
+        copy: 'Instant automated responses for pricing inquiries, availability, and emergency dispatch, ensuring you never lose a job to voicemail.'
       }
     ],
     proofPoints: [
-      lead.website_url ? 'Existing website can be modernized without changing the brand.' : 'No website found creates a clear first-demo opportunity.',
-      lead.phone ? 'Phone contact is available for outreach.' : 'Contact enrichment should run before outreach.',
-      lead.rating ? `${lead.rating}/5 review rating can be used as social proof.` : 'Add visible local credibility above the fold.'
+      `Guaranteed 1-hour priority response in ${lead.city || 'your area'}`,
+      '100% Upfront pricing with zero hidden fees',
+      '24/7 AI-powered dispatch & emergency booking',
+      'State-licensed, insured & background-checked experts'
     ],
-    promptEnhancement: `Design around ${lead.weakness}. Prioritize a mobile-first hero, proof near CTA, and one-step booking path.`
+    pricingPackages: [
+      {
+        name: 'Emergency Priority Service',
+        price: '$89',
+        duration: 'Within 90 mins',
+        popular: true,
+        description: 'Fast on-site dispatch to inspect, diagnose, and resolve immediate issues.',
+        perks: ['Priority dispatch queue', 'Comprehensive multi-point audit', '100% upfront quote approval guarantee']
+      },
+      {
+        name: 'Complete Preventive Maintenance',
+        price: '$149',
+        duration: 'Scheduled 2-hr window',
+        popular: false,
+        description: 'Comprehensive tune-up and safety inspection to prevent costly future breakdowns.',
+        perks: ['Deep system calibration', 'Filter & safety check', 'Extended warranty coverage']
+      },
+      {
+        name: 'Full System Upgrade & Install',
+        price: 'Custom Quote',
+        duration: 'Free on-site estimate',
+        popular: false,
+        description: 'High-efficiency replacement and modernization with flexible financing.',
+        perks: ['10-year parts & labor warranty', '0% APR financing available', 'Rebate assistance included']
+      }
+    ],
+    calculator: {
+      serviceType: 'Service Scope Size',
+      unitLabel: 'Property Sq Ft',
+      basePrice: 89,
+      pricePerUnit: 0.04,
+      defaultUnits: 1800,
+      minUnits: 600,
+      maxUnits: 5000,
+      step: 100,
+      options: [
+        { label: 'Emergency Same-Day Dispatch', price: 49 },
+        { label: 'Deep Sanitization & Air Quality Check', price: 39 },
+        { label: '1-Year Extended Workmanship Warranty', price: 59 }
+      ]
+    },
+    comparison: {
+      current: [
+        'Slow phone-tag during busy peak hours',
+        'No after-hours online booking for night visitors',
+        'Uncertain technician dispatch ETA',
+        'Loses high-intent mobile visitors to modern competitors'
+      ],
+      modernized: [
+        'Instant 60-second 1-click booking tool',
+        '24/7 AI Receptionist Concierge chatbot',
+        'Real-time SMS dispatch & arrival confirmation',
+        'Sub-second 98/100 PageSpeed mobile architecture'
+      ]
+    },
+    reviews: [
+      {
+        author: 'Marcus Vance',
+        location: lead.city || 'Austin, TX',
+        content: 'The 1-click booking was effortless. A technician was at my property in under 45 minutes.',
+        rating: 5,
+        verified: true
+      },
+      {
+        author: 'Sarah Jenkins',
+        location: lead.city || 'Austin, TX',
+        content: 'Transparent upfront estimate and great communication throughout. Best service experience we have had.',
+        rating: 5,
+        verified: true
+      },
+      {
+        author: 'David Chen',
+        location: lead.city || 'Austin, TX',
+        content: 'Super fast, professional, and courteous. Having the AI assistant answer questions late at night was a lifesaver.',
+        rating: 5,
+        verified: true
+      }
+    ],
+    faqs: [
+      {
+        question: `How fast can a technician arrive in ${lead.city || 'our area'}?`,
+        answer: 'Emergency bookings are dispatched within 60 to 90 minutes. Scheduled routine visits have guaranteed 2-hour arrival windows.'
+      },
+      {
+        question: 'Do I have to pay upfront when scheduling online?',
+        answer: 'No upfront payment is required. You review and approve the exact quote on-site with your technician before any work begins.'
+      },
+      {
+        question: 'Are all technicians licensed and insured?',
+        answer: 'Yes, every specialist is fully certified, background-checked, and covered by our 100% Workmanship Guarantee.'
+      }
+    ],
+    promptEnhancement: `Design around ${lead.weakness}. Prioritize 1-click booking, transparent cost estimator, interactive service packages, and mobile-first speed.`
   };
 }

@@ -113,6 +113,62 @@ export interface PipelineResult {
   leads: Lead[];
 }
 
+export interface PricingPackage {
+  name: string;
+  price: string;
+  duration: string;
+  popular?: boolean;
+  description: string;
+  perks: string[];
+}
+
+export interface CalculatorOption {
+  label: string;
+  price: number;
+}
+
+export interface CalculatorConfig {
+  serviceType: string;
+  unitLabel: string;
+  basePrice: number;
+  pricePerUnit: number;
+  defaultUnits: number;
+  minUnits: number;
+  maxUnits: number;
+  step: number;
+  options: CalculatorOption[];
+}
+
+export interface DemoReview {
+  author: string;
+  location?: string;
+  content: string;
+  rating: number;
+  verified?: boolean;
+}
+
+export interface DemoFaq {
+  question: string;
+  answer: string;
+}
+
+export interface AgenticStrategy {
+  title: string;
+  tagline?: string;
+  positioning: string;
+  heroHeadline: string;
+  primaryCta: string;
+  secondaryCta?: string;
+  sections: Array<{ title: string; purpose: string; copy: string }>;
+  proofPoints: string[];
+  pricingPackages?: PricingPackage[];
+  calculator?: CalculatorConfig;
+  comparison?: { current: string[]; modernized: string[] };
+  reviews?: DemoReview[];
+  faqs?: DemoFaq[];
+  promptEnhancement?: string;
+}
+
 export interface V0DemoResult {
   chatId?: string;
   versionId?: string;
