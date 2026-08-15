@@ -34,26 +34,27 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
   const [savedNotice, setSavedNotice] = useState(false);
 
   const vertexModels = [
-    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Active & Recommended - Grounded & Sub-Second)' },
-    { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash (Latest AI Agents & Coding Engine)' },
-    { value: 'gemini-3.5-pro', label: 'Gemini 3.5 Pro (Deep Reasoning & Complex Prospect Audits)' },
-    { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (Production Workhorse)' },
-    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Long Context Analysis)' }
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Active & Verified on us-central1)' },
+    { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash (AI Agent & Coding Specialist)' },
+    { value: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash (Token Optimized)' },
+    { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite (Low Latency)' },
+    { value: 'custom', label: 'Custom Model ID (Enter Below)' }
   ];
 
   const geminiModels = [
-    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Recommended - Ultra Fast)' },
-    { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash (AI Agent Specialist)' },
-    { value: 'gemini-3.5-pro', label: 'Gemini 3.5 Pro (Frontier Reasoning)' },
-    { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (High Throughput)' },
-    { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite (Credit Saver)' }
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Google AI Flagship)' },
+    { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash (Agent Specialist)' },
+    { value: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash (Production)' },
+    { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite' },
+    { value: 'custom', label: 'Custom Model ID (Enter Below)' }
   ];
 
   const anthropicModels = [
-    { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet (Latest Hybrid & Extended Reasoning)' },
-    { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (High-Craft Precision)' },
+    { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet (Hybrid & Extended Reasoning)' },
+    { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (High Precision)' },
     { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Fast & Cost Efficient)' },
-    { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus (Deep Complex Reasoning)' }
+    { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus (Deep Complex Reasoning)' },
+    { value: 'custom', label: 'Custom Model ID (Enter Below)' }
   ];
 
   const v0Models = [
@@ -438,18 +439,36 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
                 </div>
 
                 <div>
-                  <label className="label">Vertex AI Model</label>
-                  <select
-                    value={form.vertexModel || 'gemini-2.5-flash'}
-                    onChange={(e) => setForm({ ...form, vertexModel: e.target.value, aiModel: e.target.value })}
-                    className="field text-xs font-semibold"
-                  >
-                    {vertexModels.map((m) => (
-                      <option key={m.value} value={m.value}>
-                        {m.label}
-                      </option>
-                    ))}
-                  </select>
+                  <label className="label flex items-center justify-between">
+                    <span>Vertex AI Model</span>
+                    <span className="text-[10px] text-gray-400 font-mono">
+                      {form.vertexModel || 'gemini-2.5-flash'}
+                    </span>
+                  </label>
+                  <div className="space-y-1.5">
+                    <select
+                      value={vertexModels.some(m => m.value === form.vertexModel) ? form.vertexModel : 'custom'}
+                      onChange={(e) => {
+                        if (e.target.value !== 'custom') {
+                          setForm({ ...form, vertexModel: e.target.value, aiModel: e.target.value });
+                        }
+                      }}
+                      className="field text-xs font-semibold"
+                    >
+                      {vertexModels.map((m) => (
+                        <option key={m.value} value={m.value}>
+                          {m.label}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="text"
+                      value={form.vertexModel || ''}
+                      onChange={(e) => setForm({ ...form, vertexModel: e.target.value, aiModel: e.target.value })}
+                      placeholder="e.g. gemini-2.5-flash or gemini-3.7-flash"
+                      className="field text-xs font-mono bg-gray-50 py-1.5"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -485,18 +504,36 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
               <div>
-                <label className="label">Select AI Model</label>
-                <select
-                  value={form.aiModel}
-                  onChange={(e) => setForm({ ...form, aiModel: e.target.value })}
-                  className="field text-xs font-semibold"
-                >
-                  {(form.aiProvider === 'gemini' ? geminiModels : anthropicModels).map((m) => (
-                    <option key={m.value} value={m.value}>
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
+                <label className="label flex items-center justify-between">
+                  <span>Select AI Model</span>
+                  <span className="text-[10px] text-gray-400 font-mono">
+                    {form.aiModel}
+                  </span>
+                </label>
+                <div className="space-y-1.5">
+                  <select
+                    value={(form.aiProvider === 'gemini' ? geminiModels : anthropicModels).some(m => m.value === form.aiModel) ? form.aiModel : 'custom'}
+                    onChange={(e) => {
+                      if (e.target.value !== 'custom') {
+                        setForm({ ...form, aiModel: e.target.value });
+                      }
+                    }}
+                    className="field text-xs font-semibold"
+                  >
+                    {(form.aiProvider === 'gemini' ? geminiModels : anthropicModels).map((m) => (
+                      <option key={m.value} value={m.value}>
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    value={form.aiModel || ''}
+                    onChange={(e) => setForm({ ...form, aiModel: e.target.value })}
+                    placeholder={form.aiProvider === 'gemini' ? 'e.g. gemini-2.5-flash' : 'e.g. claude-3-7-sonnet-20250219'}
+                    className="field text-xs font-mono bg-gray-50 py-1.5"
+                  />
+                </div>
               </div>
 
               <div>
