@@ -113,7 +113,7 @@ export async function generateVertexCampaignKeywords(
       model: modelName,
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 800,
+        maxOutputTokens: 2048,
         // Do not set responseMimeType when Search tool is enabled (Vertex AI constraint)
         responseMimeType: enableGrounding ? undefined : 'application/json'
       },
@@ -170,7 +170,7 @@ export async function analyzeLeadWithVertex(
       model: modelName,
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 1000,
+        maxOutputTokens: 2048,
         // Do not set responseMimeType when Search tool is enabled (Vertex AI constraint)
         responseMimeType: enableGrounding ? undefined : 'application/json'
       },
@@ -296,7 +296,7 @@ Generate a valid JSON object matching this schema:
         model: modelName,
         generationConfig: {
           temperature: 0.15,
-          maxOutputTokens: quality === 'high' ? 2000 : 1200,
+          maxOutputTokens: quality === 'high' ? 4096 : 3072,
           responseMimeType: 'application/json'
         }
       });
@@ -309,7 +309,7 @@ Generate a valid JSON object matching this schema:
           model: 'gemini-2.5-flash',
           generationConfig: {
             temperature: 0.15,
-            maxOutputTokens: quality === 'high' ? 2000 : 1200,
+            maxOutputTokens: quality === 'high' ? 4096 : 3072,
             responseMimeType: 'application/json'
           }
         });
