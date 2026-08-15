@@ -44,6 +44,46 @@ export function getVertexAIClient(config?: VertexConfig): VertexAI {
   return vertexAiClient;
 }
 
+function repairTruncatedJson(str: string): string {
+  let inString = false;
+  let escape = false;
+  const stack: string[] = [];
+
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (char === '\\') {
+      escape = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (!inString) {
+      if (char === '{' || char === '[') {
+        stack.push(char);
+      } else if (char === '}') {
+        if (stack.length > 0 && stack[stack.length - 1] === '{') stack.pop();
+      } else if (char === ']') {
+        if (stack.length > 0 && stack[stack.length - 1] === '[') stack.pop();
+      }
+    }
+  }
+
+  let repaired = str.trim().replace(/,\s*$/, '');
+  if (inString) repaired += '"';
+  while (stack.length > 0) {
+    const open = stack.pop();
+    if (open === '{') repaired += '}';
+    else if (open === '[') repaired += ']';
+  }
+  return repaired;
+}
+
 function extractJsonFromResponse<T = unknown>(text: string): T {
   if (!text) throw new Error('Empty text provided');
   let clean = text.trim();
@@ -61,40 +101,53 @@ function extractJsonFromResponse<T = unknown>(text: string): T {
   try {
     return JSON.parse(clean) as T;
   } catch {
-    // 3. Find outermost Object { ... }
+    // 3. Try repairing truncated JSON directly
+    try {
+      return JSON.parse(repairTruncatedJson(clean)) as T;
+    } catch {}
+
+    // 4. Find outermost Object { ... }
     const firstObj = clean.indexOf('{');
     const lastObj = clean.lastIndexOf('}');
-    if (firstObj !== -1 && lastObj > firstObj) {
-      const objStr = clean.substring(firstObj, lastObj + 1);
+    if (firstObj !== -1) {
+      const objStr = lastObj > firstObj ? clean.substring(firstObj, lastObj + 1) : clean.substring(firstObj);
       try {
         return JSON.parse(objStr) as T;
       } catch {
         try {
-          const sanitized = objStr.replace(/(?<=:\s*"[^"]*)\n(?=[^"]*")/g, '\\n');
-          return JSON.parse(sanitized) as T;
-        } catch {}
+          return JSON.parse(repairTruncatedJson(objStr)) as T;
+        } catch {
+          try {
+            const sanitized = objStr.replace(/(?<=:\s*"[^"]*)\n(?=[^"]*")/g, '\\n');
+            return JSON.parse(repairTruncatedJson(sanitized)) as T;
+          } catch {}
+        }
       }
     }
 
-    // 4. Find outermost Array [ ... ]
+    // 5. Find outermost Array [ ... ]
     const firstArr = clean.indexOf('[');
     const lastArr = clean.lastIndexOf(']');
-    if (firstArr !== -1 && lastArr > firstArr) {
-      const arrStr = clean.substring(firstArr, lastArr + 1);
+    if (firstArr !== -1) {
+      const arrStr = lastArr > firstArr ? clean.substring(firstArr, lastArr + 1) : clean.substring(firstArr);
       try {
         return JSON.parse(arrStr) as T;
       } catch {
         try {
-          const sanitized = arrStr.replace(/(?<=:\s*"[^"]*)\n(?=[^"]*")/g, '\\n');
-          return JSON.parse(sanitized) as T;
-        } catch {}
+          return JSON.parse(repairTruncatedJson(arrStr)) as T;
+        } catch {
+          try {
+            const sanitized = arrStr.replace(/(?<=:\s*"[^"]*)\n(?=[^"]*")/g, '\\n');
+            return JSON.parse(repairTruncatedJson(sanitized)) as T;
+          } catch {}
+        }
       }
     }
   }
 
-  // 5. Try raw text
+  // 6. Try raw text with repair
   try {
-    return JSON.parse(text.trim()) as T;
+    return JSON.parse(repairTruncatedJson(text.trim())) as T;
   } catch {}
 
   throw new Error(`Unable to extract JSON from Vertex AI response: ${text.slice(0, 100)}...`);
