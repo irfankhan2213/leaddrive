@@ -33,6 +33,12 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
   const [showTwilioAuth, setShowTwilioAuth] = useState(false);
   const [savedNotice, setSavedNotice] = useState(false);
 
+  const vertexModels = [
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash on Vertex AI (Recommended - Grounded & Ultra Fast)' },
+    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro on Vertex AI (Deep Reasoning & Multimodal)' },
+    { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash on Vertex AI' }
+  ];
+
   const geminiModels = [
     { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Recommended - Ultra Fast)' },
     { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
@@ -268,24 +274,49 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
           </div>
         </div>
 
-        {/* Section 4: AI Analysis & Multi-Keyword Engine (Gemini / Anthropic) */}
+        {/* Section 4: AI Intelligence & Google Cloud Vertex Engine */}
         <div className="panel p-6 space-y-5">
           <div className="flex items-center justify-between border-b border-gray-100 pb-3">
             <div className="flex items-center gap-2">
               <Bot className="w-4 h-4 text-blue-600" />
-              <h3 className="text-sm font-extrabold text-gray-900">AI Intelligence Engine</h3>
+              <h3 className="text-sm font-extrabold text-gray-900">AI Intelligence & Cloud Engine</h3>
             </div>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 uppercase">
-              {form.aiProvider === 'gemini' ? 'Google Gemini' : 'Anthropic Claude'}
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 uppercase">
+              {form.aiProvider === 'vertex'
+                ? 'Google Cloud Vertex AI'
+                : form.aiProvider === 'gemini'
+                ? 'Google Gemini API'
+                : 'Anthropic Claude'}
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            {/* 1. Google Cloud Vertex AI */}
+            <div
+              onClick={() => setForm({ ...form, aiProvider: 'vertex', aiModel: 'gemini-2.5-flash', vertexModel: 'gemini-2.5-flash' })}
+              className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                form.aiProvider === 'vertex'
+                  ? 'bg-blue-50/80 border-blue-500 shadow-sm ring-1 ring-blue-500/20'
+                  : 'bg-white border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-extrabold text-xs text-gray-900">Google Cloud Vertex</span>
+                <span className="text-[10px] font-bold text-blue-700 bg-white px-2 py-0.5 rounded border border-blue-200">
+                  Service Account
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-500 leading-snug">
+                Enterprise Gemini 2.5 on Vertex AI with live Google Search Grounding & BigQuery streaming.
+              </p>
+            </div>
+
+            {/* 2. Google Gemini API */}
             <div
               onClick={() => setForm({ ...form, aiProvider: 'gemini', aiModel: 'gemini-2.5-flash' })}
               className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                 form.aiProvider === 'gemini'
-                  ? 'bg-blue-50/80 border-blue-500 shadow-sm'
+                  ? 'bg-blue-50/80 border-blue-500 shadow-sm ring-1 ring-blue-500/20'
                   : 'bg-white border-gray-200 hover:bg-gray-50'
               }`}
             >
@@ -296,20 +327,21 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
                 </span>
               </div>
               <p className="text-[11px] text-gray-500 leading-snug">
-                Fast multi-keyword expansion & lead vulnerability scoring powered by Google AI.
+                Fast multi-keyword query expansion & lead scoring via standard Google AI Developer Key.
               </p>
             </div>
 
+            {/* 3. Anthropic Claude API */}
             <div
               onClick={() => setForm({ ...form, aiProvider: 'anthropic', aiModel: 'claude-3-5-haiku-20241022' })}
               className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                 form.aiProvider === 'anthropic'
-                  ? 'bg-purple-50/80 border-purple-500 shadow-sm'
+                  ? 'bg-purple-50/80 border-purple-500 shadow-sm ring-1 ring-purple-500/20'
                   : 'bg-white border-gray-200 hover:bg-gray-50'
               }`}
             >
               <div className="flex items-center justify-between mb-1">
-                <span className="font-extrabold text-xs text-gray-900">Anthropic Claude API</span>
+                <span className="font-extrabold text-xs text-gray-900">Anthropic Claude</span>
                 <span className="text-[10px] font-bold text-purple-700 bg-white px-2 py-0.5 rounded border border-purple-200">
                   Claude 3.5 / 3.7
                 </span>
@@ -320,51 +352,124 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-            <div>
-              <label className="label">Select AI Model</label>
-              <select
-                value={form.aiModel}
-                onChange={(e) => setForm({ ...form, aiModel: e.target.value })}
-                className="field text-xs font-semibold"
-              >
-                {(form.aiProvider === 'gemini' ? geminiModels : anthropicModels).map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Dynamic Provider Settings */}
+          {form.aiProvider === 'vertex' ? (
+            <div className="space-y-4 pt-2 border-t border-gray-100">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="label">GCP Project ID</label>
+                  <input
+                    type="text"
+                    value={form.gcpProjectId || 'skillful-fx-467601-h4'}
+                    onChange={(e) => setForm({ ...form, gcpProjectId: e.target.value })}
+                    className="field text-xs font-mono bg-gray-50"
+                    placeholder="project-id..."
+                  />
+                </div>
 
-            <div>
-              <label className="label flex items-center justify-between">
-                <span>{form.aiProvider === 'gemini' ? 'Gemini API Key' : 'Anthropic API Key'}</span>
-                <span className="text-[10px] text-gray-400 font-normal">
-                  {form.aiApiKey ? '✓ Key Entered' : 'Required for AI mode'}
-                </span>
-              </label>
-              <div className="relative">
-                <input
-                  type={showAiKey ? 'text' : 'password'}
-                  value={form.aiApiKey}
-                  onChange={(e) => setForm({ ...form, aiApiKey: e.target.value })}
-                  className="field text-xs pr-10 font-mono"
-                  placeholder={
-                    form.aiProvider === 'gemini'
-                      ? 'AIzaSy...'
-                      : 'sk-ant-api03-...'
-                  }
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowAiKey(!showAiKey)}
-                  className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-                >
-                  {showAiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+                <div>
+                  <label className="label">GCP Region / Location</label>
+                  <input
+                    type="text"
+                    value={form.gcpLocation || 'us-central1'}
+                    onChange={(e) => setForm({ ...form, gcpLocation: e.target.value })}
+                    className="field text-xs font-mono bg-gray-50"
+                    placeholder="us-central1"
+                  />
+                </div>
+
+                <div>
+                  <label className="label">Vertex AI Model</label>
+                  <select
+                    value={form.vertexModel || 'gemini-2.5-flash'}
+                    onChange={(e) => setForm({ ...form, vertexModel: e.target.value, aiModel: e.target.value })}
+                    className="field text-xs font-semibold"
+                  >
+                    {vertexModels.map((m) => (
+                      <option key={m.value} value={m.value}>
+                        {m.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Vertex Feature Toggles */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div className="p-3 rounded-xl bg-gray-50/80 border border-gray-200/70 flex items-center justify-between">
+                  <div>
+                    <div className="text-xs font-bold text-gray-900">Google Search Grounding</div>
+                    <div className="text-[10px] text-gray-500">Real-time live Google Search fact retrieval for prospect audits</div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={form.vertexGrounding !== false}
+                    onChange={(e) => setForm({ ...form, vertexGrounding: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                  />
+                </div>
+
+                <div className="p-3 rounded-xl bg-gray-50/80 border border-gray-200/70 flex items-center justify-between">
+                  <div>
+                    <div className="text-xs font-bold text-gray-900">BigQuery Lead Streaming</div>
+                    <div className="text-[10px] text-gray-500">Auto-stream leads and outreach metrics to <span className="font-mono text-gray-700">leaddrive_analytics</span></div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={form.bigqueryEnabled !== false}
+                    onChange={(e) => setForm({ ...form, bigqueryEnabled: e.target.checked })}
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                  />
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+              <div>
+                <label className="label">Select AI Model</label>
+                <select
+                  value={form.aiModel}
+                  onChange={(e) => setForm({ ...form, aiModel: e.target.value })}
+                  className="field text-xs font-semibold"
+                >
+                  {(form.aiProvider === 'gemini' ? geminiModels : anthropicModels).map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="label flex items-center justify-between">
+                  <span>{form.aiProvider === 'gemini' ? 'Gemini API Key' : 'Anthropic API Key'}</span>
+                  <span className="text-[10px] text-gray-400 font-normal">
+                    {form.aiApiKey ? '✓ Key Entered' : 'Required for direct API mode'}
+                  </span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showAiKey ? 'text' : 'password'}
+                    value={form.aiApiKey}
+                    onChange={(e) => setForm({ ...form, aiApiKey: e.target.value })}
+                    className="field text-xs pr-10 font-mono"
+                    placeholder={
+                      form.aiProvider === 'gemini'
+                        ? 'AIzaSy...'
+                        : 'sk-ant-api03-...'
+                    }
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAiKey(!showAiKey)}
+                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                  >
+                    {showAiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Section 5: Brand Identity */}

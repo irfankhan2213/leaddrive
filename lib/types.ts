@@ -38,6 +38,15 @@ export interface DigitalSignal {
   severity: 'positive' | 'warning' | 'critical';
 }
 
+export interface OutreachEvent {
+  id: string;
+  lead_id: string;
+  event_type: 'sent' | 'opened' | 'clicked' | 'replied';
+  channel?: string;
+  created_at: string;
+  event_data?: Record<string, unknown>;
+}
+
 export interface Lead {
   id: string;
   campaign_id?: string;
@@ -112,9 +121,16 @@ export interface V0DemoResult {
 }
 
 export interface AppSettings {
-  aiProvider: 'gemini' | 'anthropic';
+  aiProvider: 'vertex' | 'gemini' | 'anthropic';
   aiModel: string;
   aiApiKey: string;
+  gcpProjectId?: string;
+  gcpLocation?: string;
+  gcpClientEmail?: string;
+  vertexModel?: string;
+  vertexGrounding?: boolean;
+  bigqueryEnabled?: boolean;
+  bigqueryDataset?: string;
   v0ApiKey: string;
   v0Model: string;
   defaultDemoQuality?: DemoQuality;

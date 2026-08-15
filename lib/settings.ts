@@ -1,9 +1,16 @@
 import type { AppSettings } from '@/lib/types';
 
 export const defaultSettings: AppSettings = {
-  aiProvider: 'gemini',
+  aiProvider: 'vertex',
   aiModel: 'gemini-2.5-flash',
   aiApiKey: '',
+  gcpProjectId: 'skillful-fx-467601-h4',
+  gcpLocation: 'us-central1',
+  gcpClientEmail: 'vertex-express@skillful-fx-467601-h4.iam.gserviceaccount.com',
+  vertexModel: 'gemini-2.5-flash',
+  vertexGrounding: true,
+  bigqueryEnabled: true,
+  bigqueryDataset: 'leaddrive_analytics',
   v0ApiKey: '',
   v0Model: 'v0-mini',
   defaultDemoQuality: 'low',

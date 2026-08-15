@@ -12,6 +12,20 @@ export async function GET(req: Request) {
       ok: false as boolean | null,
       error: null as string | null
     },
+    vertex: {
+      configured: Boolean(process.env.GCP_PROJECT_ID),
+      projectId: process.env.GCP_PROJECT_ID || null,
+      location: process.env.GCP_LOCATION || 'us-central1',
+      model: process.env.VERTEX_AI_MODEL || 'gemini-2.5-flash',
+      ok: null as boolean | null,
+      error: null as string | null
+    },
+    bigquery: {
+      configured: Boolean(process.env.GCP_PROJECT_ID),
+      dataset: process.env.BIGQUERY_DATASET || 'leaddrive_analytics',
+      ok: null as boolean | null,
+      error: null as string | null
+    },
     gemini: {
       configured: Boolean(process.env.GEMINI_API_KEY),
       enabled: process.env.GEMINI_ENABLED === 'true',
@@ -21,7 +35,7 @@ export async function GET(req: Request) {
     },
     v0: {
       configured: Boolean(process.env.V0_API_KEY),
-      model: process.env.V0_MODEL || 'v0-1.5-md',
+      model: process.env.V0_MODEL || 'v0-mini',
       ok: null as boolean | null,
       error: null as string | null
     }

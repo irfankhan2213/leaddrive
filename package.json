@@ -11,7 +11,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@google-cloud/bigquery": "^9.0.2",
+    "@google-cloud/vertexai": "^1.12.0",
     "@supabase/supabase-js": "2.110.0",
+    "google-auth-library": "^11.0.2",
     "lucide-react": "0.395.0",
     "next": "16.2.10",
     "react": "18.3.1",

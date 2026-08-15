@@ -120,6 +120,24 @@ export async function POST(req: Request) {
     }
   }
 
+  // Stream outreach event to BigQuery
+  if (results.overallSuccess) {
+    import('@/lib/bigquery').then(({ streamEventToBigQuery }) => {
+      streamEventToBigQuery({
+        lead_id: lead.id,
+        event_type: 'sent',
+        channel,
+        payload: {
+          emailSent: results.email?.sent,
+          smsSent: results.sms?.sent,
+          company: lead.company_name,
+          email: lead.email,
+          phone: lead.phone
+        }
+      }).catch(() => {});
+    }).catch(() => {});
+  }
+
   return NextResponse.json({
     ...results,
     leadId: lead.id,

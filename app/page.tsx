@@ -90,9 +90,15 @@ export default function Home() {
   function handleSaveSettings(updated: AppSettings) {
     setSettings(updated);
     saveStoredSettings(updated);
+    const providerName =
+      updated.aiProvider === 'vertex'
+        ? 'Google Cloud Vertex AI'
+        : updated.aiProvider === 'gemini'
+        ? 'Google Gemini'
+        : 'Anthropic Claude';
     setNotice({
       type: 'success',
-      text: `Updated settings! Active AI provider set to ${updated.aiProvider === 'gemini' ? 'Google Gemini' : 'Anthropic Claude'} (${updated.aiModel}).`
+      text: `Updated settings! Active AI provider set to ${providerName} (${updated.aiModel || updated.vertexModel || 'gemini-2.5-flash'}).`
     });
   }
 
