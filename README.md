@@ -1,6 +1,6 @@
 # ⚡ LeadDrive — AI-Powered Cold Outreach & Demo Automation Platform
 
-**LeadDrive** is an end-to-end cold outreach automation engine designed for digital agencies, software consultancies, and freelancers. It discovers real business prospects, performs multi-keyword search query expansions, audits digital presence (mobile viewport, CTAs, PageSpeed, SEO), scrapes direct emails & contact info, generates personalized **v0 AI landing page demos**, and manages cold outreach delivery with live open/click analytics tracking.
+**LeadDrive** is an end-to-end cold outreach automation engine designed for digital agencies, software consultancies, and freelancers. It discovers real business prospects, expands search with Vertex/Gemini, audits digital presence, generates personalized demos with **Agentic**, **v0**, or **Hybrid** engines, and streams outreach analytics to Supabase and BigQuery.
 
 ---
 
@@ -12,9 +12,9 @@
 | **Lead Discovery Engine** | Real-time business prospect discovery from Google Maps, LinkedIn, Apollo, Product Hunt, URLs, or CSV lists | SerpAPI & Apify |
 | **Website & Contact Scraper** | Fetches website HTML, extracts `mailto:` emails, `tel:` phones, `linkedin.com/company` profiles, and detects SPA frameworks | Node Fetch & HTML Parser |
 | **Technical & PageSpeed Audit** | Evaluates mobile performance, SEO, accessibility, and best practices with automated snapshot estimation fallback | Google PageSpeed API |
-| **v0 AI Site Builder** | Builds live, interactive Next.js + Tailwind CSS landing pages tailored to each prospect's exact conversion vulnerability | Vercel v0 Platform API (`https://api.v0.dev/v1/chats`) |
-| **Dual AI Provider System** | Choose between **Google Gemini 2.5 Flash** or **Anthropic Claude 3.5 Haiku / 3.7 Sonnet** with custom API keys in Settings | Google AI / Anthropic API |
-| **Outreach Delivery & Tracking** | Sends cold emails via Resend API with 1x1 open tracking pixels (`/api/track/open`) and redirect click tracking (`/api/track/click`) | Resend API & Supabase |
+| **Scalable Demo Engine** | Choose credit-safe Agentic blueprints, live v0 sites, or Hybrid Vertex strategy + v0 execution with campaign caps | Vertex AI + Vercel v0 |
+| **AI Provider System** | Choose Vertex AI Gemini 2.5 Flash with Search Grounding, Google Gemini API, or Anthropic Claude | Vertex AI / Google AI / Anthropic |
+| **Outreach Delivery & Tracking** | Sends email/SMS outreach, tracks opens/clicks, and streams events to analytics | Resend, Twilio, Supabase, BigQuery |
 
 ---
 
@@ -28,12 +28,15 @@ flowchart TD
   CampaignRoute -->|2. Search & Scrape| Discovery["Lead Discovery (SerpAPI Google Maps / Apify)"]
   CampaignRoute -->|3. Contact Scraper| WebInspector["Website Inspector (Emails, Phones, LinkedIn, SPAs)"]
   CampaignRoute -->|4. Tech Audit| PageSpeed["PageSpeed Audit (Performance, SEO, Viewport)"]
-  CampaignRoute -->|5. Fit Scoring| Scoring["Granular 0-100 Scoring & Vulnerability Detector"]
+  CampaignRoute -->|5. Fit Scoring| Scoring["Vertex/Gemini 0-100 Scoring & Vulnerability Detector"]
   CampaignRoute -->|6. Save Data| DB[("Supabase PostgreSQL Database")]
+  CampaignRoute -->|7. Stream Analytics| BQ[("BigQuery leaddrive_analytics")]
   
   User -->|Generate AI Demo| DemoRoute["POST /api/demos"]
-  DemoRoute -->|v0 API| V0Dev["Vercel v0 Platform API"]
-  V0Dev -->|Live Landing Page| DemoURL["https://demo-*.vusercontent.net"]
+  DemoRoute -->|Agentic| Agentic["Vertex Demo Strategist"]
+  DemoRoute -->|v0 / Hybrid| V0Dev["Vercel v0 Platform API"]
+  Agentic --> DemoURL["/demo/[leadId]?engine=agentic"]
+  V0Dev --> DemoURL
 ```
 
 ---
@@ -87,6 +90,16 @@ PAGESPEED_API_KEY="your_pagespeed_api_key"
 V0_API_KEY="your_v0_api_key"
 V0_MODEL="v0-mini"
 
+# Google Cloud Vertex AI + BigQuery
+GCP_PROJECT_ID="your-gcp-project-id"
+GCP_LOCATION="us-central1"
+GOOGLE_APPLICATION_CREDENTIALS="./gcp-service-account.json"
+VERTEX_AI_ENABLED="true"
+VERTEX_AI_MODEL="gemini-2.5-flash"
+VERTEX_SEARCH_GROUNDING="true"
+BIGQUERY_ENABLED="true"
+BIGQUERY_DATASET="leaddrive_analytics"
+
 # Cold Outreach Delivery
 RESEND_API_KEY="your_resend_api_key"
 FROM_EMAIL="outreach@yourdomain.com"
@@ -110,8 +123,12 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - `GET /api/campaigns`: Retrieves all campaigns and scraped leads from Supabase.
 - `POST /api/campaigns`: Launches multi-keyword search query expansions, scrapes target prospects via SerpAPI/Apify, runs website contact scraping & PageSpeed audits, scores leads (0-100), and persists campaign records.
 
-### 2. v0 AI Demo Building
-- `POST /api/demos`: Sends custom lead design prompts to the Vercel v0 API (`https://api.v0.dev/v1/chats`) to build live Next.js + Tailwind CSS landing page demos.
+### 2. Scalable Demo Building
+- `POST /api/demos`: Builds demos with `demoProvider: "agentic" | "v0" | "hybrid"`.
+- Agentic mode uses Vertex AI to create a conversion blueprint with no v0 spend.
+- v0 mode builds live hosted Next.js/Tailwind demos through the v0 Platform API.
+- Hybrid mode uses Vertex to plan the demo and v0 to build the live page.
+- Campaign auto-generation is off by default and guarded by `demoLimit` plus `demoMinScore`.
 
 ### 3. Outreach & Email Delivery
 - `POST /api/outreach`: Sends tailored cold outreach emails via Resend API with open-tracking pixels and click-tracking links.
@@ -119,9 +136,10 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ### 4. Tracking Pixels & Analytics
 - `GET /api/track/open?leadId=...`: 1x1 transparent GIF endpoint recording email opens.
 - `GET /api/track/click?leadId=...&target=...`: Validates redirect URLs and records click events.
+- BigQuery streaming records leads plus sent/opened/clicked outreach events when enabled.
 
 ### 5. Health & Diagnostic Check
-- `GET /api/health?live=1`: Checks database connectivity, environment variable configurations, and AI provider reachability.
+- `GET /api/health?live=1`: Checks Supabase, Vertex AI, BigQuery schema, Gemini, and v0 reachability.
 
 ---
 

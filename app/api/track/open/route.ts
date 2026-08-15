@@ -20,6 +20,14 @@ export async function GET(req: Request) {
       });
       await incrementLeadCounter(supabase, leadId, 'opens');
     }
+    import('@/lib/bigquery').then(({ streamEventToBigQuery }) => {
+      streamEventToBigQuery({
+        lead_id: leadId,
+        event_type: 'opened',
+        channel: 'email',
+        payload: { source: 'tracking_pixel' }
+      }).catch(() => {});
+    }).catch(() => {});
   }
 
   return new NextResponse(pixel, {

@@ -34,6 +34,7 @@ export function getBigQueryClient(): BigQuery {
 }
 
 const DATASET_ID = process.env.BIGQUERY_DATASET || 'leaddrive_analytics';
+let schemaReadyPromise: Promise<boolean> | null = null;
 
 export async function ensureBigQuerySchema(): Promise<boolean> {
   try {
@@ -67,6 +68,7 @@ export async function ensureBigQuerySchema(): Promise<boolean> {
           { name: 'weakness', type: 'STRING', mode: 'NULLABLE' },
           { name: 'demo_url', type: 'STRING', mode: 'NULLABLE' },
           { name: 'demo_quality', type: 'STRING', mode: 'NULLABLE' },
+          { name: 'demo_provider', type: 'STRING', mode: 'NULLABLE' },
           { name: 'source', type: 'STRING', mode: 'NULLABLE' },
           { name: 'rating', type: 'FLOAT', mode: 'NULLABLE' },
           { name: 'reviews_count', type: 'INTEGER', mode: 'NULLABLE' },
@@ -104,6 +106,7 @@ export async function streamLeadToBigQuery(lead: Lead): Promise<boolean> {
   if (process.env.BIGQUERY_ENABLED === 'false') return false;
 
   try {
+    await ensureBigQuerySchemaOnce();
     const bq = getBigQueryClient();
     const table = bq.dataset(DATASET_ID).table('leads');
 
@@ -122,6 +125,7 @@ export async function streamLeadToBigQuery(lead: Lead): Promise<boolean> {
       weakness: lead.weakness || null,
       demo_url: lead.demo_url || null,
       demo_quality: lead.demo_quality || 'low',
+      demo_provider: lead.demo_provider || 'agentic',
       source: lead.source || 'google_maps',
       rating: lead.rating || null,
       reviews_count: lead.reviews_count || null,
@@ -151,6 +155,7 @@ export async function streamEventToBigQuery(
   if (process.env.BIGQUERY_ENABLED === 'false') return false;
 
   try {
+    await ensureBigQuerySchemaOnce();
     const bq = getBigQueryClient();
     const table = bq.dataset(DATASET_ID).table('outreach_events');
 
@@ -169,6 +174,13 @@ export async function streamEventToBigQuery(
     console.warn('[BigQuery] Event stream warning:', err instanceof Error ? err.message : err);
     return false;
   }
+}
+
+function ensureBigQuerySchemaOnce() {
+  if (!schemaReadyPromise) {
+    schemaReadyPromise = ensureBigQuerySchema();
+  }
+  return schemaReadyPromise;
 }
 
 export async function testBigQueryConnection(): Promise<{ success: boolean; dataset: string; message: string }> {

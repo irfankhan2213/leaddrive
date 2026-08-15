@@ -53,6 +53,30 @@ export async function GET(req: Request) {
 
   if (!live) return NextResponse.json(status);
 
+  if (status.vertex.configured) {
+    try {
+      const { testVertexConnection } = await import('@/lib/vertex');
+      const result = await testVertexConnection();
+      status.vertex.ok = result.success;
+      status.vertex.error = result.success ? null : result.message;
+    } catch (err) {
+      status.vertex.ok = false;
+      status.vertex.error = err instanceof Error ? err.message : 'Vertex AI check failed.';
+    }
+  }
+
+  if (status.bigquery.configured) {
+    try {
+      const { ensureBigQuerySchema, testBigQueryConnection } = await import('@/lib/bigquery');
+      const [schemaOk, result] = await Promise.all([ensureBigQuerySchema(), testBigQueryConnection()]);
+      status.bigquery.ok = schemaOk && result.success;
+      status.bigquery.error = schemaOk && result.success ? null : result.message;
+    } catch (err) {
+      status.bigquery.ok = false;
+      status.bigquery.error = err instanceof Error ? err.message : 'BigQuery check failed.';
+    }
+  }
+
   if (status.gemini.configured) {
     try {
       const res = await fetch(

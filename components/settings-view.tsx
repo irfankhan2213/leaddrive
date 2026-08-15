@@ -58,6 +58,12 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
     { value: 'v0-max-fast', label: 'v0 Max Fast' }
   ];
 
+  const demoProviders = [
+    { value: 'agentic', label: 'Agentic Platform (Vertex, credit-safe)' },
+    { value: 'v0', label: 'v0 Live Site Builder' },
+    { value: 'hybrid', label: 'Hybrid Agentic Strategy + v0' }
+  ] as const;
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     onSave(form);
@@ -94,25 +100,40 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Section 1: v0 AI Site Builder Engine */}
+        {/* Section 1: Demo Builder Engines */}
         <div className="panel p-6 space-y-5">
           <div className="flex items-center justify-between border-b border-gray-100 pb-3">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center">
                 <Sparkles className="w-3.5 h-3.5" />
               </div>
-              <h3 className="text-sm font-extrabold text-gray-900">v0 AI Site Builder Engine (Pure v0)</h3>
+              <h3 className="text-sm font-extrabold text-gray-900">Demo Builder Engines</h3>
             </div>
             <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-100">
-              Vercel v0 API
+              Agentic / v0 / Hybrid
             </span>
           </div>
 
           <p className="text-xs text-gray-500">
-            LeadDrive generates 100% genuine interactive web applications hosted on Vercel's v0 cloud. No local mock templates.
+            Choose between credit-safe Vertex agentic demo blueprints, live v0 sites, or a hybrid flow where Vertex plans and v0 builds.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="label">Default Demo Engine</label>
+              <select
+                value={form.demoProvider || 'agentic'}
+                onChange={(e) => setForm({ ...form, demoProvider: e.target.value as AppSettings['demoProvider'] })}
+                className="field text-xs font-semibold"
+              >
+                {demoProviders.map((provider) => (
+                  <option key={provider.value} value={provider.value}>
+                    {provider.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <div>
               <label className="label flex items-center justify-between">
                 <span>v0 API Key</span>
@@ -151,6 +172,40 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label className="label">Max Auto Demos per Campaign</label>
+              <input
+                type="number"
+                min={0}
+                max={25}
+                value={form.maxAutoDemosPerCampaign ?? 3}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    maxAutoDemosPerCampaign: Math.min(Math.max(Number(e.target.value) || 0, 0), 25)
+                  })
+                }
+                className="field text-xs font-semibold"
+              />
+            </div>
+
+            <div>
+              <label className="label">Minimum Demo Score</label>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                value={form.minDemoScore ?? 75}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    minDemoScore: Math.min(Math.max(Number(e.target.value) || 0, 0), 100)
+                  })
+                }
+                className="field text-xs font-semibold"
+              />
             </div>
           </div>
         </div>

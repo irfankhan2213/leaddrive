@@ -103,6 +103,22 @@ export async function POST(req: Request) {
       if (supabase && isSupabaseLead) {
         await supabase.from('leads').update({ status: 'outreach_sent' }).eq('id', lead.id);
       }
+      if (shouldStreamToBigQuery(body.settings)) {
+        import('@/lib/bigquery').then(({ streamEventToBigQuery }) => {
+          streamEventToBigQuery({
+            lead_id: lead.id,
+            event_type: 'sent',
+            channel,
+            payload: {
+              emailSent,
+              smsSent,
+              company: lead.company_name,
+              email: lead.email,
+              phone: lead.phone
+            }
+          }).catch(() => {});
+        }).catch(() => {});
+      }
     } else {
       failedCount += 1;
     }
@@ -122,4 +138,8 @@ export async function POST(req: Request) {
     failedCount,
     results: dispatchResults
   });
+}
+
+function shouldStreamToBigQuery(settings?: AppSettings) {
+  return settings?.bigqueryEnabled !== false && process.env.BIGQUERY_ENABLED !== 'false';
 }

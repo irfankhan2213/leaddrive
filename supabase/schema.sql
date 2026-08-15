@@ -45,6 +45,7 @@ create table if not exists public.leads (
   signals jsonb not null default '[]'::jsonb,
   demo_type text not null default 'website',
   demo_quality text default 'low',
+  demo_provider text default 'agentic',
   demo_prompt text not null default '',
   demo_url text,
   v0_chat_id text,
@@ -70,6 +71,7 @@ alter table public.leads add column if not exists matched_keyword text;
 alter table public.leads add column if not exists outreach_sms text;
 alter table public.leads add column if not exists instagram_url text;
 alter table public.leads add column if not exists demo_quality text default 'low';
+alter table public.leads add column if not exists demo_provider text default 'agentic';
 
 create table if not exists public.outreach_events (
   id uuid primary key default gen_random_uuid(),

@@ -121,7 +121,7 @@ export async function POST(req: Request) {
   }
 
   // Stream outreach event to BigQuery
-  if (results.overallSuccess) {
+  if (results.overallSuccess && shouldStreamToBigQuery(body.settings)) {
     import('@/lib/bigquery').then(({ streamEventToBigQuery }) => {
       streamEventToBigQuery({
         lead_id: lead.id,
@@ -145,4 +145,8 @@ export async function POST(req: Request) {
     body: emailBody,
     smsText
   });
+}
+
+function shouldStreamToBigQuery(settings?: AppSettings) {
+  return settings?.bigqueryEnabled !== false && process.env.BIGQUERY_ENABLED !== 'false';
 }

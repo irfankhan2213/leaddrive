@@ -1,5 +1,5 @@
 import { VertexAI } from '@google-cloud/vertexai';
-import type { CampaignInput, DigitalSignal, Lead } from '@/lib/types';
+import type { CampaignInput, DemoQuality, DigitalSignal, Lead } from '@/lib/types';
 import path from 'path';
 import fs from 'fs';
 
@@ -180,6 +180,72 @@ Return valid JSON with keys: "fit_score", "weakness", "qualification_reason", "s
   }
 }
 
+export async function generateAgenticDemoStrategy(
+  lead: Lead,
+  quality: DemoQuality = 'low',
+  config?: VertexConfig
+): Promise<{
+  title: string;
+  positioning: string;
+  heroHeadline: string;
+  primaryCta: string;
+  sections: Array<{ title: string; purpose: string; copy: string }>;
+  proofPoints: string[];
+  promptEnhancement: string;
+}> {
+  try {
+    const vertex = getVertexAIClient(config);
+    const modelName = config?.model || process.env.VERTEX_AI_MODEL || 'gemini-2.5-flash';
+    const enableGrounding = config?.enableGrounding ?? (process.env.VERTEX_SEARCH_GROUNDING !== 'false');
+
+    const generativeModel = vertex.getGenerativeModel({
+      model: modelName,
+      generationConfig: {
+        temperature: 0.15,
+        maxOutputTokens: quality === 'high' ? 1800 : 1100,
+        responseMimeType: 'application/json'
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      tools: enableGrounding ? ([{ googleSearch: {} }] as any) : undefined
+    });
+
+    const signalSummary = lead.signals.map((signal) => `${signal.label}: ${signal.value}`).join('; ');
+    const prompt = `You are LeadDrive's Agentic Demo Strategist running on Google Cloud Vertex AI.
+Create a conversion-focused personalized demo blueprint for this prospect. Use grounded public facts when available, avoid made-up staff names, and focus on a demo that can be shown to the prospect as a proof-of-work asset.
+
+PROSPECT:
+- Company: ${lead.company_name}
+- Website: ${lead.website_url || 'No website found'}
+- Market: ${lead.city || 'Unknown'}
+- Niche: ${lead.niche}
+- Weakness: ${lead.weakness}
+- Fit Score: ${lead.fit_score}
+- Signals: ${signalSummary || 'None'}
+- Demo Quality: ${quality}
+
+Return strict JSON with:
+{
+  "title": "short demo title",
+  "positioning": "one sentence why this demo matters",
+  "heroHeadline": "specific headline for the demo",
+  "primaryCta": "specific call to action",
+  "sections": [{"title":"", "purpose":"", "copy":""}],
+  "proofPoints": ["3 to 5 specific credibility or conversion proof points"],
+  "promptEnhancement": "compact paragraph to improve a v0 prompt if hybrid mode is used"
+}`;
+
+    const result = await generativeModel.generateContent(prompt);
+    const text = result.response.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error('Empty response from Vertex agentic demo strategist.');
+
+    const parsed = JSON.parse(text.replace(/```json/g, '').replace(/```/g, '').trim());
+    return normalizeAgenticStrategy(parsed, lead);
+  } catch (err) {
+    console.warn('[Vertex AI] Agentic demo strategy warning:', err instanceof Error ? err.message : err);
+    return fallbackAgenticStrategy(lead);
+  }
+}
+
 export async function testVertexConnection(): Promise<{ success: boolean; model: string; message: string }> {
   const auth = resolveGcpCredentials();
   const vertex = getVertexAIClient();
@@ -198,5 +264,67 @@ export async function testVertexConnection(): Promise<{ success: boolean; model:
     success: text.toLowerCase().includes('vertex'),
     model: modelName,
     message: text.trim()
+  };
+}
+
+function normalizeAgenticStrategy(value: Record<string, unknown>, lead: Lead) {
+  const sections = Array.isArray(value.sections)
+    ? value.sections.slice(0, 6).map((section) => {
+        const item = section as Record<string, unknown>;
+        return {
+          title: String(item.title || 'Conversion section'),
+          purpose: String(item.purpose || 'Improve the conversion path.'),
+          copy: String(item.copy || lead.weakness)
+        };
+      })
+    : fallbackAgenticStrategy(lead).sections;
+
+  const proofPoints = Array.isArray(value.proofPoints)
+    ? value.proofPoints.slice(0, 5).map(String)
+    : fallbackAgenticStrategy(lead).proofPoints;
+
+  return {
+    title: String(value.title || `${lead.company_name} conversion demo`),
+    positioning: String(value.positioning || `A focused demo to fix ${lead.weakness.toLowerCase()}`),
+    heroHeadline: String(value.heroHeadline || `Turn more ${lead.city || 'local'} visitors into booked customers`),
+    primaryCta: String(value.primaryCta || 'Book a consultation'),
+    sections,
+    proofPoints,
+    promptEnhancement: String(
+      value.promptEnhancement ||
+        `Use the agentic strategy to emphasize ${lead.weakness}, clear CTA placement, proof points, and mobile-first conversion flow.`
+    )
+  };
+}
+
+function fallbackAgenticStrategy(lead: Lead) {
+  return {
+    title: `${lead.company_name} conversion demo`,
+    positioning: `A focused demo showing how ${lead.company_name} can fix ${lead.weakness.toLowerCase()}`,
+    heroHeadline: `A faster path from ${lead.city || 'local'} search to booked revenue`,
+    primaryCta: 'See availability',
+    sections: [
+      {
+        title: 'Mobile-first hero',
+        purpose: 'Make the offer obvious in the first screen.',
+        copy: lead.weakness
+      },
+      {
+        title: 'Trust and proof',
+        purpose: 'Turn existing credibility into conversion momentum.',
+        copy: lead.rating ? `Show ${lead.rating}/5 rating and ${lead.reviews_count || 0} reviews near the CTA.` : 'Show recent outcomes, guarantees, and local proof near the CTA.'
+      },
+      {
+        title: 'Fast booking path',
+        purpose: 'Remove friction from high-intent visitors.',
+        copy: 'Add a one-tap booking, quote, or consultation flow with direct contact options.'
+      }
+    ],
+    proofPoints: [
+      lead.website_url ? 'Existing website can be modernized without changing the brand.' : 'No website found creates a clear first-demo opportunity.',
+      lead.phone ? 'Phone contact is available for outreach.' : 'Contact enrichment should run before outreach.',
+      lead.rating ? `${lead.rating}/5 review rating can be used as social proof.` : 'Add visible local credibility above the fold.'
+    ],
+    promptEnhancement: `Design around ${lead.weakness}. Prioritize a mobile-first hero, proof near CTA, and one-step booking path.`
   };
 }

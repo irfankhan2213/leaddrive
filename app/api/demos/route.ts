@@ -1,21 +1,21 @@
 import { NextResponse } from 'next/server';
-import { createV0Demo } from '@/lib/v0';
+import { createDemoForLead, resolveDemoProvider } from '@/lib/demo-engine';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import type { AppSettings, DemoQuality, Lead } from '@/lib/types';
+import type { AppSettings, DemoProvider, DemoQuality, Lead } from '@/lib/types';
 
 export async function POST(req: Request) {
   const body = (await req.json()) as
     | Lead
-    | { lead?: Lead; leads?: Lead[]; settings?: AppSettings; demoQuality?: DemoQuality; demoMode?: DemoQuality };
+    | { lead?: Lead; leads?: Lead[]; settings?: AppSettings; demoQuality?: DemoQuality; demoMode?: DemoQuality; demoProvider?: DemoProvider; baseUrl?: string };
 
   const settings = 'settings' in body ? body.settings : undefined;
-  const v0ApiKey = settings?.v0ApiKey || process.env.V0_API_KEY;
   const demoQuality: DemoQuality =
     ('demoQuality' in body && body.demoQuality) ||
     ('demoMode' in body && body.demoMode) ||
     settings?.defaultDemoQuality ||
     'low';
-  const v0Model = settings?.v0Model || (demoQuality === 'high' ? 'v0-pro' : 'v0-mini');
+  const demoProvider = resolveDemoProvider('demoProvider' in body ? body.demoProvider : undefined, settings);
+  const baseUrl = ('baseUrl' in body && body.baseUrl) || getBaseUrl(req);
 
   // Batch generation mode
   if ('leads' in body && Array.isArray(body.leads)) {
@@ -25,9 +25,14 @@ export async function POST(req: Request) {
     for (const lead of leads) {
       if (!lead?.id || !lead?.company_name) continue;
       try {
-        const demo = await createV0Demo(lead, v0ApiKey, v0Model, demoQuality);
+        const demo = await createDemoForLead(lead, {
+          settings,
+          quality: demoQuality,
+          provider: demoProvider,
+          baseUrl
+        });
         if (demo.status === 'ready' && demo.demoUrl) {
-          await updateLeadDemoStatus(lead.id, 'demo_ready', demo.demoUrl, demo.chatId, demo.versionId, demoQuality);
+          await updateLeadDemoStatus(lead.id, 'demo_ready', demo.demoUrl, demo.provider || demoProvider, demo.chatId, demo.versionId, demoQuality, demo.demoArtifact);
           results.push({ leadId: lead.id, demoUrl: demo.demoUrl, status: 'ready' });
         } else {
           await updateLeadDemoStatus(lead.id, 'demo_failed');
@@ -51,13 +56,18 @@ export async function POST(req: Request) {
   }
 
   try {
-    const demo = await createV0Demo(lead, v0ApiKey, v0Model, demoQuality);
+    const demo = await createDemoForLead(lead, {
+      settings,
+      quality: demoQuality,
+      provider: demoProvider,
+      baseUrl
+    });
 
     if (demo.status === 'failed' || !demo.demoUrl) {
       await updateLeadDemoStatus(lead.id, 'demo_failed');
       return NextResponse.json(
         {
-          provider: 'v0',
+          provider: demo.provider || demoProvider,
           status: 'failed',
           error: demo.error || 'v0 failed to build live demo component.'
         },
@@ -65,11 +75,11 @@ export async function POST(req: Request) {
       );
     }
 
-    await updateLeadDemoStatus(lead.id, 'demo_ready', demo.demoUrl, demo.chatId, demo.versionId, demoQuality);
+    await updateLeadDemoStatus(lead.id, 'demo_ready', demo.demoUrl, demo.provider || demoProvider, demo.chatId, demo.versionId, demoQuality, demo.demoArtifact);
 
     return NextResponse.json({
       ...demo,
-      provider: 'v0',
+      provider: demo.provider || demoProvider,
       status: 'ready'
     });
   } catch (err) {
@@ -78,7 +88,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(
       {
-        provider: 'v0',
+        provider: demoProvider,
         status: 'failed',
         error: message
       },
@@ -91,9 +101,11 @@ async function updateLeadDemoStatus(
   leadId: string,
   status: 'demo_ready' | 'demo_failed',
   demoUrl?: string,
+  demoProvider?: DemoProvider,
   chatId?: string,
   versionId?: string,
-  demoQuality?: DemoQuality
+  demoQuality?: DemoQuality,
+  demoArtifact?: string
 ) {
   const supabase = getSupabaseAdmin();
   const isSupabaseLead = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(leadId);
@@ -101,10 +113,19 @@ async function updateLeadDemoStatus(
   if (supabase && isSupabaseLead) {
     const updateData: Record<string, unknown> = { status };
     if (demoUrl) updateData.demo_url = demoUrl;
+    if (demoProvider) updateData.demo_provider = demoProvider;
     if (chatId) updateData.v0_chat_id = chatId;
     if (versionId) updateData.v0_version_id = versionId;
     if (demoQuality) updateData.demo_quality = demoQuality;
+    if (demoArtifact) updateData.demo_prompt = demoArtifact;
 
     await supabase.from('leads').update(updateData).eq('id', leadId);
   }
+}
+
+function getBaseUrl(req: Request) {
+  const requestOrigin = new URL(req.url).origin;
+  const configured = process.env.APP_BASE_URL;
+  if (!configured || configured.includes('localhost')) return requestOrigin;
+  return configured;
 }
