@@ -2,12 +2,12 @@ import type { AppSettings } from '@/lib/types';
 
 export const defaultSettings: AppSettings = {
   aiProvider: 'vertex',
-  aiModel: 'gemini-2.5-flash',
+  aiModel: 'gemini-3.7-flash',
   aiApiKey: '',
   gcpProjectId: 'skillful-fx-467601-h4',
   gcpLocation: 'us-central1',
   gcpClientEmail: 'vertex-express@skillful-fx-467601-h4.iam.gserviceaccount.com',
-  vertexModel: 'gemini-2.5-flash',
+  vertexModel: 'gemini-3.7-flash',
   vertexGrounding: true,
   bigqueryEnabled: true,
   bigqueryDataset: 'leaddrive_analytics',

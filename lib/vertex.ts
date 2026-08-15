@@ -106,7 +106,7 @@ export async function generateVertexCampaignKeywords(
 ): Promise<string[]> {
   try {
     const vertex = getVertexAIClient(config);
-    const modelName = config?.model || process.env.VERTEX_AI_MODEL || 'gemini-2.5-flash';
+    const modelName = config?.model || process.env.VERTEX_AI_MODEL || 'gemini-3.7-flash';
     const enableGrounding = config?.enableGrounding ?? (process.env.VERTEX_SEARCH_GROUNDING !== 'false');
 
     const generativeModel = vertex.getGenerativeModel({
@@ -163,7 +163,7 @@ export async function analyzeLeadWithVertex(
 }> {
   try {
     const vertex = getVertexAIClient(config);
-    const modelName = config?.model || process.env.VERTEX_AI_MODEL || 'gemini-2.5-flash';
+    const modelName = config?.model || process.env.VERTEX_AI_MODEL || 'gemini-3.7-flash';
     const enableGrounding = config?.enableGrounding ?? (process.env.VERTEX_SEARCH_GROUNDING !== 'false');
 
     const generativeModel = vertex.getGenerativeModel({
@@ -255,7 +255,7 @@ export async function generateAgenticDemoStrategy(
 }> {
   try {
     const vertex = getVertexAIClient(config);
-    const modelName = config?.model || process.env.VERTEX_AI_MODEL || 'gemini-2.5-flash';
+    const modelName = config?.model || process.env.VERTEX_AI_MODEL || 'gemini-3.7-flash';
 
     const signalSummary = lead.signals.map((signal) => `${signal.label}: ${signal.value}`).join('; ');
     const prompt = `You are LeadDrive's elite Agentic Demo Strategist running on Google Cloud Vertex AI.
