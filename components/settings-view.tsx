@@ -34,21 +34,24 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
   const [savedNotice, setSavedNotice] = useState(false);
 
   const vertexModels = [
-    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash on Vertex AI (Recommended - Grounded & Ultra Fast)' },
-    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro on Vertex AI (Deep Reasoning & Multimodal)' },
-    { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash on Vertex AI' }
+    { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Active & Recommended - Grounded & Sub-Second)' },
+    { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash (Latest AI Agents & Coding Engine)' },
+    { value: 'gemini-3.5-pro', label: 'Gemini 3.5 Pro (Deep Reasoning & Complex Prospect Audits)' },
+    { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (Production Workhorse)' },
+    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Long Context Analysis)' }
   ];
 
   const geminiModels = [
     { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Recommended - Ultra Fast)' },
-    { value: 'gemini-2.0-flash', label: 'Gemini 2.0 Flash' },
-    { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite (Credit Saver)' },
-    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro (Deep Analysis)' }
+    { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash (AI Agent Specialist)' },
+    { value: 'gemini-3.5-pro', label: 'Gemini 3.5 Pro (Frontier Reasoning)' },
+    { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash (High Throughput)' },
+    { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite (Credit Saver)' }
   ];
 
   const anthropicModels = [
-    { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Recommended - Fast & Sharp)' },
-    { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet (Latest Reasoning)' },
+    { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet (Latest Extended Reasoning)' },
+    { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Fast & Sharp)' },
     { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (High Precision)' }
   ];
 
