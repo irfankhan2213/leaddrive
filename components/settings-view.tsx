@@ -5,7 +5,6 @@ import {
   Bot,
   CheckCircle2,
   Cpu,
-  Crown,
   Eye,
   EyeOff,
   Key,
@@ -146,57 +145,6 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
                   </option>
                 ))}
               </select>
-            </div>
-          </div>
-
-          <div className="pt-3 border-t border-gray-100">
-            <label className="label mb-2">Default Demo Quality & Fidelity</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setForm({ ...form, defaultDemoQuality: 'low' })}
-                className={`p-3.5 rounded-2xl border text-left transition-all ${
-                  form.defaultDemoQuality !== 'high'
-                    ? 'bg-white border-blue-500 ring-2 ring-blue-500/10 shadow-xs'
-                    : 'bg-white/60 border-gray-200 text-gray-600 hover:bg-white hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 font-extrabold text-xs text-gray-900">
-                    <Zap className="w-4 h-4 text-gray-500" />
-                    <span>Low Usage Mode (Fast / Standard)</span>
-                  </div>
-                  {form.defaultDemoQuality !== 'high' && (
-                    <span className="w-2 h-2 rounded-full bg-blue-600" />
-                  )}
-                </div>
-                <div className="text-[11px] text-gray-500 mt-1.5 leading-relaxed">
-                  Uses v0-mini with compact prompts. Fast generation times, clean layout, core services, and direct booking form.
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setForm({ ...form, defaultDemoQuality: 'high' })}
-                className={`p-3.5 rounded-2xl border text-left transition-all ${
-                  form.defaultDemoQuality === 'high'
-                    ? 'bg-white border-blue-500 ring-2 ring-blue-500/10 shadow-xs'
-                    : 'bg-white/60 border-gray-200 text-gray-600 hover:bg-white hover:border-gray-300'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 font-extrabold text-xs text-gray-900">
-                    <Crown className="w-4 h-4 text-blue-600" />
-                    <span>High-End Mode (Pro Flagship)</span>
-                  </div>
-                  {form.defaultDemoQuality === 'high' && (
-                    <span className="w-2 h-2 rounded-full bg-blue-600" />
-                  )}
-                </div>
-                <div className="text-[11px] text-gray-500 mt-1.5 leading-relaxed">
-                  Uses v0-pro with comprehensive directives. Luxury layout, dynamic multi-step price calculator, and interactive booking drawer.
-                </div>
-              </button>
             </div>
           </div>
         </div>

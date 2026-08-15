@@ -6,7 +6,6 @@ import {
   Bot,
   Check,
   CheckCircle2,
-  Crown,
   ExternalLink,
   Instagram,
   Kanban,
@@ -31,7 +30,7 @@ import {
   Zap
 } from 'lucide-react';
 import { sampleCampaign, sampleLeads } from '@/lib/mock-data';
-import type { AppSettings, Campaign, CampaignInput, DemoQuality, Lead, OutreachChannel } from '@/lib/types';
+import type { AppSettings, Campaign, CampaignInput, Lead, OutreachChannel } from '@/lib/types';
 import { defaultSettings, getStoredSettings, saveStoredSettings } from '@/lib/settings';
 
 import { Sidebar, NavTab } from '@/components/sidebar';
@@ -61,7 +60,6 @@ export default function Home() {
   const [batchOutreachLoading, setBatchOutreachLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [previewViewport, setPreviewViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-  const [demoQualityMode, setDemoQualityMode] = useState<DemoQuality>('low');
   const [outreachChannel, setOutreachChannel] = useState<OutreachChannel>('email');
   const [outreachNotice, setOutreachNotice] = useState<string | null>(null);
   const [notice, setNotice] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
@@ -69,9 +67,6 @@ export default function Home() {
   useEffect(() => {
     const loadedSettings = getStoredSettings();
     setSettings(loadedSettings);
-    if (loadedSettings.defaultDemoQuality) {
-      setDemoQualityMode(loadedSettings.defaultDemoQuality);
-    }
 
     async function loadInitialData() {
       try {
@@ -174,16 +169,15 @@ export default function Home() {
     }
   }
 
-  // Generate Single v0 AI Demo (Low vs High-End Mode)
-  async function handleGenerateDemo(targetLead: Lead, qualityOverride?: DemoQuality) {
-    const quality = qualityOverride || demoQualityMode;
+  // Generate Single v0 AI Demo
+  async function handleGenerateDemo(targetLead: Lead) {
     setDemoGeneratingId(targetLead.id);
     setNotice(null);
     try {
       const res = await fetch('/api/demos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lead: targetLead, settings, demoQuality: quality })
+        body: JSON.stringify({ lead: targetLead, settings, demoQuality: 'low' })
       });
       const data = (await res.json()) as {
         demoUrl?: string;
@@ -197,13 +191,13 @@ export default function Home() {
       if (data.demoUrl) {
         const updatedLeads = leads.map((l) =>
           l.id === targetLead.id
-            ? { ...l, status: 'demo_ready' as const, demo_url: data.demoUrl, demo_quality: quality }
+            ? { ...l, status: 'demo_ready' as const, demo_url: data.demoUrl, demo_quality: 'low' as const }
             : l
         );
         setLeads(updatedLeads);
         setNotice({
           type: 'success',
-          text: `${quality === 'high' ? '👑 High-End Flagship' : '⚡ Standard'} v0 AI Live Site generated for ${targetLead.company_name}!`
+          text: `Live v0 AI Site generated for ${targetLead.company_name}!`
         });
       }
     } catch (err) {
@@ -217,8 +211,7 @@ export default function Home() {
   }
 
   // Auto-Generate All Pending v0 Demos
-  async function handleAutoGenerateAllDemos(qualityOverride?: DemoQuality) {
-    const quality = qualityOverride || demoQualityMode;
+  async function handleAutoGenerateAllDemos() {
     const pendingLeads = leads.filter((l) => !l.demo_url || !l.demo_url.startsWith('http'));
     if (pendingLeads.length === 0) {
       setNotice({ type: 'info', text: 'All leads already have live v0 AI demos generated!' });
@@ -228,7 +221,7 @@ export default function Home() {
     setBatchDemoLoading(true);
     setNotice({
       type: 'info',
-      text: `Auto-generating ${quality === 'high' ? '👑 High-End (v0-pro)' : '⚡ Standard (v0-mini)'} demos for ${pendingLeads.length} leads in background...`
+      text: `Auto-generating live v0 AI demos for ${pendingLeads.length} leads in background...`
     });
 
     let successCount = 0;
@@ -239,7 +232,7 @@ export default function Home() {
         const res = await fetch('/api/demos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lead, settings, demoQuality: quality })
+          body: JSON.stringify({ lead, settings, demoQuality: 'low' })
         });
         const data = (await res.json()) as { demoUrl?: string; status?: string };
         if (data.demoUrl) {
@@ -250,7 +243,7 @@ export default function Home() {
               ...currentLeads[idx],
               status: 'demo_ready',
               demo_url: data.demoUrl,
-              demo_quality: quality
+              demo_quality: 'low'
             };
             setLeads([...currentLeads]);
           }
@@ -263,7 +256,7 @@ export default function Home() {
     setBatchDemoLoading(false);
     setNotice({
       type: 'success',
-      text: `Completed v0 generation! ${successCount} new ${quality === 'high' ? 'High-End' : 'Standard'} live v0 demo${successCount === 1 ? '' : 's'} built successfully.`
+      text: `Completed v0 generation! ${successCount} new live v0 demo${successCount === 1 ? '' : 's'} built successfully.`
     });
   }
 
@@ -761,43 +754,14 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2.5 flex-wrap">
-                {/* Generation Mode Selector */}
-                <div className="flex items-center bg-gray-100/80 p-0.5 rounded-xl border border-gray-200/70 text-xs font-semibold">
-                  <button
-                    onClick={() => setDemoQualityMode('low')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                      demoQualityMode === 'low'
-                        ? 'bg-white text-gray-900 font-bold shadow-xs border border-gray-200/60'
-                        : 'text-gray-500 hover:text-gray-800'
-                    }`}
-                  >
-                    <Zap className="w-3.5 h-3.5 text-gray-500" />
-                    <span>Low Usage (Fast)</span>
-                  </button>
-
-                  <button
-                    onClick={() => setDemoQualityMode('high')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                      demoQualityMode === 'high'
-                        ? 'bg-white text-blue-600 font-bold shadow-xs border border-gray-200/60'
-                        : 'text-gray-500 hover:text-gray-800'
-                    }`}
-                  >
-                    <Crown className="w-3.5 h-3.5 text-blue-600" />
-                    <span>High-End (Pro)</span>
-                  </button>
-                </div>
-
+              <div className="flex items-center gap-3 flex-wrap">
                 <button
                   onClick={() => handleAutoGenerateAllDemos()}
                   disabled={batchDemoLoading}
                   className="btn text-xs py-2 px-4 shadow-sm flex items-center gap-1.5 disabled:opacity-50"
                 >
                   {batchDemoLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
-                  <span>
-                    Auto-Generate All ({demoQualityMode === 'high' ? 'High-End' : 'Standard'})
-                  </span>
+                  <span>Auto-Generate All Pending v0 Sites</span>
                 </button>
               </div>
             </div>
@@ -809,7 +773,6 @@ export default function Home() {
                   const isSelected = lead.id === selectedDemoLead?.id;
                   const isReady = Boolean(lead.demo_url && lead.demo_url.startsWith('http'));
                   const isGenerating = demoGeneratingId === lead.id;
-                  const isHighEnd = lead.demo_quality === 'high';
                   return (
                     <div
                       key={lead.id}
@@ -820,36 +783,23 @@ export default function Home() {
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-extrabold text-gray-900">{lead.company_name}</span>
-                        <div className="flex items-center gap-1">
-                          {isReady && (
-                            <span
-                              className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${
-                                isHighEnd
-                                  ? 'bg-blue-50 text-blue-700 border-blue-100'
-                                  : 'bg-gray-50 text-gray-600 border-gray-200'
-                              }`}
-                            >
-                              {isHighEnd ? 'Pro' : 'Mini'}
-                            </span>
-                          )}
-                          <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              isGenerating
-                                ? 'bg-blue-100 text-blue-800'
-                                : isReady
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-amber-100 text-amber-800'
-                            }`}
-                          >
-                            {isGenerating ? 'Generating...' : isReady ? 'Live Ready' : 'Pending'}
-                          </span>
-                        </div>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            isGenerating
+                              ? 'bg-blue-100 text-blue-800'
+                              : isReady
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-amber-100 text-amber-800'
+                          }`}
+                        >
+                          {isGenerating ? 'Generating...' : isReady ? 'Live Ready' : 'Pending'}
+                        </span>
                       </div>
                       <div className="text-xs text-gray-500 font-medium">Recipient: {lead.contact_name || lead.company_name}</div>
                       <div className="mt-2 text-[11px] font-semibold text-blue-600 flex items-center justify-between">
                         <span className="flex items-center gap-1 text-gray-600">
                           <Sparkles className="w-3 h-3 text-blue-600" />
-                          <span>{isHighEnd ? 'Interactive Flagship Site' : 'v0 Landing Page'}</span>
+                          <span>v0 Landing Page</span>
                         </span>
                         {isReady && (
                           <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -955,30 +905,21 @@ export default function Home() {
                             {selectedDemoLead.weakness}
                           </p>
 
-                          <div className="pt-3 flex flex-col sm:flex-row items-center justify-center gap-2.5">
+                          <div className="pt-3">
                             <button
-                              onClick={() => handleGenerateDemo(selectedDemoLead, 'low')}
+                              onClick={() => handleGenerateDemo(selectedDemoLead)}
                               disabled={demoGeneratingId === selectedDemoLead.id}
-                              className="btn secondary text-xs px-4 py-2 flex items-center gap-1.5 disabled:opacity-50"
-                            >
-                              <Zap className="w-3.5 h-3.5 text-gray-500" />
-                              <span>Build Standard (Fast)</span>
-                            </button>
-
-                            <button
-                              onClick={() => handleGenerateDemo(selectedDemoLead, 'high')}
-                              disabled={demoGeneratingId === selectedDemoLead.id}
-                              className="btn text-xs px-4 py-2 flex items-center gap-1.5 shadow-sm disabled:opacity-50"
+                              className="btn text-xs px-6 py-2.5 shadow-sm flex items-center gap-2 mx-auto disabled:opacity-50"
                             >
                               {demoGeneratingId === selectedDemoLead.id ? (
                                 <>
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                                  <span>Building Live Site...</span>
+                                  <Loader2 className="w-4 h-4 animate-spin" />
+                                  <span>Building v0 AI Application...</span>
                                 </>
                               ) : (
                                 <>
-                                  <Crown className="w-3.5 h-3.5" />
-                                  <span>Build High-End Site</span>
+                                  <Sparkles className="w-4 h-4" />
+                                  <span>Build Live v0 AI Site Now</span>
                                 </>
                               )}
                             </button>
