@@ -50,9 +50,10 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
   ];
 
   const anthropicModels = [
-    { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet (Latest Extended Reasoning)' },
-    { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Fast & Sharp)' },
-    { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (High Precision)' }
+    { value: 'claude-3-7-sonnet-20250219', label: 'Claude 3.7 Sonnet (Latest Hybrid & Extended Reasoning)' },
+    { value: 'claude-3-5-sonnet-20241022', label: 'Claude 3.5 Sonnet (High-Craft Precision)' },
+    { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku (Fast & Cost Efficient)' },
+    { value: 'claude-3-opus-20240229', label: 'Claude 3 Opus (Deep Complex Reasoning)' }
   ];
 
   const v0Models = [
