@@ -66,6 +66,31 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   return NextResponse.json({ lead: data });
 }
 
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const supabase = getSupabaseAdmin();
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+  if (supabase && isUuid) {
+    // 1. Get campaign_id before deleting so we can refresh counters
+    const { data: lead } = await supabase.from('leads').select('campaign_id').eq('id', id).single();
+
+    // 2. Cascade delete outreach events
+    await supabase.from('outreach_events').delete().eq('lead_id', id);
+
+    // 3. Delete lead
+    const { error } = await supabase.from('leads').delete().eq('id', id);
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // 4. Refresh campaign counters
+    if (lead?.campaign_id) {
+      await refreshCampaignCounters(supabase, lead.campaign_id);
+    }
+  }
+
+  return NextResponse.json({ success: true, deletedId: id });
+}
+
 async function refreshCampaignCounters(
   supabase: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
   campaignId: string
@@ -79,6 +104,7 @@ async function refreshCampaignCounters(
   await supabase
     .from('campaigns')
     .update({
+      total_prospects: rows.length,
       qualified: rows.filter((lead) => ['qualified', 'demo_ready', 'outreach_sent', 'replied', 'converted'].includes(lead.status)).length,
       demos_generated: rows.filter((lead) => ['demo_ready', 'outreach_sent', 'replied', 'converted'].includes(lead.status)).length,
       outreach_sent: rows.filter((lead) => ['outreach_sent', 'replied', 'converted'].includes(lead.status)).length,

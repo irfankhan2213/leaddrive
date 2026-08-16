@@ -25,6 +25,7 @@ import {
   Sparkles,
   Tablet,
   Target,
+  Trash2,
   Users,
   Wand2,
   XCircle,
@@ -64,6 +65,7 @@ export default function Home() {
   const [batchDemoLoading, setBatchDemoLoading] = useState(false);
   const [batchOutreachLoading, setBatchOutreachLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<string>>(new Set());
   const [previewViewport, setPreviewViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [outreachChannel, setOutreachChannel] = useState<OutreachChannel>('email');
   const [outreachNotice, setOutreachNotice] = useState<string | null>(null);
@@ -133,6 +135,7 @@ export default function Home() {
   const computedMetrics = useMemo(() => {
     const totalProspects = leads.length;
     const qualified = leads.filter((l) => l.fit_score >= 70).length;
+    const skippedCount = leads.filter((l) => l.status === 'skipped' || (!l.email && !l.phone)).length;
     const demosBuilt = leads.filter((l) => Boolean(l.demo_url && l.demo_url.startsWith('http'))).length;
     const messagesSent = leads.filter((l) => ['outreach_sent', 'replied', 'converted'].includes(l.status)).length;
     const replies = leads.filter((l) => ['replied', 'converted'].includes(l.status)).length;
@@ -145,7 +148,8 @@ export default function Home() {
       messagesSent: messagesSent.toLocaleString(),
       convRate: `${convRate}%`,
       qualifiedCount: qualified,
-      conversionsCount: conversions
+      conversionsCount: conversions,
+      skippedCount
     };
   }, [leads]);
 
@@ -383,6 +387,100 @@ export default function Home() {
     }
   }
 
+  // Single Lead Deletion
+  async function handleDeleteLead(leadId: string, companyName?: string) {
+    if (!window.confirm(`Delete "${companyName || 'this lead'}"? This will remove the lead, demo, and history.`)) return;
+
+    setLeads((prev) => prev.filter((l) => l.id !== leadId));
+    setSelectedLeadIds((prev) => {
+      const next = new Set(prev);
+      next.delete(leadId);
+      return next;
+    });
+    if (selectedId === leadId) {
+      const remaining = leads.filter((l) => l.id !== leadId);
+      setSelectedId(remaining[0]?.id);
+    }
+    if (selectedDemoLeadId === leadId) {
+      const remaining = leads.filter((l) => l.id !== leadId);
+      setSelectedDemoLeadId(remaining[0]?.id);
+    }
+
+    try {
+      await fetch(`/api/leads/${leadId}`, { method: 'DELETE' });
+      setNotice({ type: 'success', text: `Lead "${companyName || leadId}" deleted successfully.` });
+    } catch {
+      setNotice({ type: 'error', text: 'Failed to delete lead from server.' });
+    }
+  }
+
+  // Bulk Selection Deletion
+  async function handleDeleteSelectedLeads() {
+    const idsToDelete = Array.from(selectedLeadIds);
+    if (idsToDelete.length === 0) return;
+    if (!window.confirm(`Delete ${idsToDelete.length} selected lead(s)?`)) return;
+
+    setLeads((prev) => prev.filter((l) => !selectedLeadIds.has(l.id)));
+    setSelectedLeadIds(new Set());
+
+    try {
+      await fetch('/api/leads', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadIds: idsToDelete, campaignId: campaign.id })
+      });
+      setNotice({ type: 'success', text: `Successfully deleted ${idsToDelete.length} lead(s).` });
+    } catch {
+      setNotice({ type: 'error', text: 'Failed to delete selected leads.' });
+    }
+  }
+
+  // Clear Skipped / Unreachable Leads
+  async function handleClearSkippedLeads() {
+    const skippedLeads = leads.filter((l) => l.status === 'skipped' || (!l.email && !l.phone));
+    if (skippedLeads.length === 0) {
+      setNotice({ type: 'info', text: 'No skipped leads found to clear.' });
+      return;
+    }
+    if (!window.confirm(`Remove all ${skippedLeads.length} skipped / uncontactable leads?`)) return;
+
+    const ids = skippedLeads.map((l) => l.id);
+    setLeads((prev) => prev.filter((l) => !ids.includes(l.id)));
+    setSelectedLeadIds((prev) => {
+      const next = new Set(prev);
+      ids.forEach((id) => next.delete(id));
+      return next;
+    });
+
+    try {
+      await fetch('/api/leads', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ leadIds: ids, campaignId: campaign.id })
+      });
+      setNotice({ type: 'success', text: `Removed ${skippedLeads.length} skipped lead(s).` });
+    } catch {
+      setNotice({ type: 'error', text: 'Failed to purge skipped leads.' });
+    }
+  }
+
+  function handleToggleSelectLead(leadId: string) {
+    setSelectedLeadIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(leadId)) next.delete(leadId);
+      else next.add(leadId);
+      return next;
+    });
+  }
+
+  function handleSelectAllLeads() {
+    if (selectedLeadIds.size === filteredLeads.length) {
+      setSelectedLeadIds(new Set());
+    } else {
+      setSelectedLeadIds(new Set(filteredLeads.map((l) => l.id)));
+    }
+  }
+
   // Pipeline kanban columns derived from real leads
   const pipelineColumns = useMemo(() => {
     return {
@@ -566,30 +664,89 @@ export default function Home() {
             {/* Left: Accounts List */}
             <div className="lg:col-span-5 panel p-5">
               <div className="flex items-center justify-between mb-1">
-                <h3 className="text-base font-extrabold text-gray-900">Target Accounts ({filteredLeads.length})</h3>
-                <span className="text-xs font-bold text-blue-600">{computedMetrics.qualifiedCount} Qualified</span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={filteredLeads.length > 0 && selectedLeadIds.size === filteredLeads.length}
+                    onChange={handleSelectAllLeads}
+                    className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                    title="Select All Leads"
+                  />
+                  <h3 className="text-base font-extrabold text-gray-900">Target Accounts ({filteredLeads.length})</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  {computedMetrics.skippedCount > 0 && (
+                    <button
+                      onClick={handleClearSkippedLeads}
+                      className="text-[10px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded border border-amber-200 transition-colors"
+                      title="Remove skipped and uncontactable leads"
+                    >
+                      Clear Skipped ({computedMetrics.skippedCount})
+                    </button>
+                  )}
+                  <span className="text-xs font-bold text-blue-600">{computedMetrics.qualifiedCount} Qualified</span>
+                </div>
               </div>
-              <p className="text-xs text-gray-500 mb-4">Select an account to view multi-keyword discovery & contact info</p>
+              <p className="text-xs text-gray-500 mb-3">Select accounts to bulk delete, build demos, or view contact info</p>
+
+              {/* Bulk Action Toolbar */}
+              {selectedLeadIds.size > 0 && (
+                <div className="mb-3 p-2.5 rounded-xl bg-slate-900 text-white flex items-center justify-between gap-2 text-xs animate-in fade-in slide-in-from-top-1 shadow-md">
+                  <div className="font-bold flex items-center gap-1.5 pl-1">
+                    <span className="w-2 h-2 rounded-full bg-blue-400" />
+                    <span>{selectedLeadIds.size} selected</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={handleDeleteSelectedLeads}
+                      className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-[11px] flex items-center gap-1 transition-colors"
+                    >
+                      <Trash2 size={11} />
+                      <span>Delete ({selectedLeadIds.size})</span>
+                    </button>
+                    <button
+                      onClick={() => setSelectedLeadIds(new Set())}
+                      className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium transition-colors"
+                    >
+                      Deselect
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2.5 max-h-[700px] overflow-y-auto pr-1 scrollbar-thin">
                 {filteredLeads.map((lead) => {
                   const isSelected = lead.id === selectedLead?.id;
+                  const isChecked = selectedLeadIds.has(lead.id);
                   const hasV0 = Boolean(lead.demo_url && lead.demo_url.startsWith('http'));
                   return (
                     <div
                       key={lead.id}
                       onClick={() => setSelectedId(lead.id)}
-                      className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
+                      className={`p-3.5 rounded-2xl border cursor-pointer transition-all relative group ${
                         isSelected
                           ? 'bg-blue-50/80 border-blue-500/80 shadow-sm'
                           : 'bg-white/60 border-gray-100 hover:bg-white hover:border-gray-200'
                       }`}
                     >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="font-extrabold text-sm text-gray-900">{lead.company_name}</div>
-                          <div className="text-xs text-gray-500 font-medium">{lead.city || 'Service Area'}</div>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-start gap-2.5 min-w-0">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleToggleSelectLead(lead.id);
+                            }}
+                            className="mt-0.5 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 cursor-pointer"
+                          />
+                          <div className="min-w-0">
+                            <div className="font-extrabold text-sm text-gray-900 truncate">{lead.company_name}</div>
+                            <div className="text-xs text-gray-500 font-medium">{lead.city || 'Service Area'}</div>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5">
+
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
                           {hasV0 && (
                             <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">
                               v0 Live
@@ -598,18 +755,28 @@ export default function Home() {
                           <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
                             Score: {lead.fit_score}/100
                           </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteLead(lead.id, lead.company_name);
+                            }}
+                            className="p-1 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
+                            title="Delete Lead"
+                          >
+                            <Trash2 size={13} />
+                          </button>
                         </div>
                       </div>
 
-                      <div className="mt-2 flex items-center gap-3 text-[11px] font-semibold text-gray-600">
+                      <div className="mt-2 flex items-center gap-3 text-[11px] font-semibold text-gray-600 pl-6">
                         {lead.email ? (
-                          <span className="flex items-center gap-1 text-emerald-700">
+                          <span className="flex items-center gap-1 text-emerald-700 truncate">
                             <Mail size={12} />
                             <span>{lead.email}</span>
                           </span>
                         ) : null}
                         {lead.phone ? (
-                          <span className="flex items-center gap-1 text-blue-700">
+                          <span className="flex items-center gap-1 text-blue-700 truncate">
                             <Phone size={12} />
                             <span>{lead.phone}</span>
                           </span>
@@ -617,12 +784,12 @@ export default function Home() {
                       </div>
 
                       {lead.matched_keyword && (
-                        <div className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-blue-700">
+                        <div className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-blue-700 pl-6">
                           <Search className="w-2.5 h-2.5" />
                           <span>Scraped via: "{lead.matched_keyword}"</span>
                         </div>
                       )}
-                      <div className="mt-1.5 text-xs font-semibold text-gray-700 line-clamp-1">
+                      <div className="mt-1.5 text-xs font-semibold text-gray-700 line-clamp-1 pl-6">
                         {lead.weakness || 'Digital gap analysis in progress'}
                       </div>
                     </div>
@@ -738,7 +905,7 @@ export default function Home() {
                       )}
                     </div>
 
-                    <div className="flex flex-wrap gap-2 pt-1">
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
                       <button
                         onClick={() => handleSendOutreach(selectedLead, 'email')}
                         disabled={!selectedLead.email}
@@ -755,6 +922,15 @@ export default function Home() {
                       >
                         <MessageSquare size={13} className="text-gray-600" />
                         <span>Send SMS Outreach</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteLead(selectedLead.id, selectedLead.company_name)}
+                        className="btn bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs py-2 px-3 flex items-center gap-1.5 ml-auto transition-colors"
+                        title="Delete this lead"
+                      >
+                        <Trash2 size={13} />
+                        <span>Delete Lead</span>
                       </button>
                     </div>
                   </div>
@@ -810,18 +986,30 @@ export default function Home() {
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs font-extrabold text-gray-900">{lead.company_name}</span>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            isGenerating
-                              ? 'bg-blue-100 text-blue-800'
-                              : isReady
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}
-                        >
-                          {isGenerating ? 'Generating...' : isReady ? 'Live Ready' : 'Pending'}
-                        </span>
+                        <span className="text-xs font-extrabold text-gray-900 truncate">{lead.company_name}</span>
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              isGenerating
+                                ? 'bg-blue-100 text-blue-800'
+                                : isReady
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : 'bg-amber-100 text-amber-800'
+                            }`}
+                          >
+                            {isGenerating ? 'Generating...' : isReady ? 'Live Ready' : 'Pending'}
+                          </span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteLead(lead.id, lead.company_name);
+                            }}
+                            className="p-1 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                            title="Delete Lead"
+                          >
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
                       </div>
                       <div className="text-xs text-gray-500 font-medium">Recipient: {lead.contact_name || lead.company_name}</div>
                       <div className="mt-2 text-[11px] font-semibold text-blue-600 flex items-center justify-between">
@@ -1086,8 +1274,17 @@ export default function Home() {
                 </div>
                 <div className="space-y-3">
                   {pipelineColumns.prospecting.map((l) => (
-                    <div key={l.id} className="p-3.5 rounded-xl bg-white border border-gray-200/80 shadow-sm">
-                      <div className="font-bold text-xs text-gray-900">{l.company_name}</div>
+                    <div key={l.id} className="p-3.5 rounded-xl bg-white border border-gray-200/80 shadow-sm relative group">
+                      <div className="flex items-center justify-between">
+                        <div className="font-bold text-xs text-gray-900 truncate">{l.company_name}</div>
+                        <button
+                          onClick={() => handleDeleteLead(l.id, l.company_name)}
+                          className="p-1 text-gray-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Delete"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      </div>
                       <div className="text-[11px] text-gray-500">{l.city || 'Target Market'}</div>
                       <div className="mt-2 flex items-center justify-between text-[10px]">
                         <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-700 font-bold">Score {l.fit_score}</span>
@@ -1111,8 +1308,17 @@ export default function Home() {
                 </div>
                 <div className="space-y-3">
                   {pipelineColumns.qualified.map((l) => (
-                    <div key={l.id} className="p-3.5 rounded-xl bg-white border border-gray-200/80 shadow-sm">
-                      <div className="font-bold text-xs text-gray-900">{l.company_name}</div>
+                    <div key={l.id} className="p-3.5 rounded-xl bg-white border border-gray-200/80 shadow-sm relative group">
+                      <div className="flex items-center justify-between">
+                        <div className="font-bold text-xs text-gray-900 truncate">{l.company_name}</div>
+                        <button
+                          onClick={() => handleDeleteLead(l.id, l.company_name)}
+                          className="p-1 text-gray-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Delete"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      </div>
                       <div className="text-[11px] text-gray-500">{l.contact_name || 'Verified Contact'}</div>
                       <div className="mt-2 flex items-center justify-between text-[10px]">
                         <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-bold">Score {l.fit_score}</span>
@@ -1142,8 +1348,17 @@ export default function Home() {
                 </div>
                 <div className="space-y-3">
                   {pipelineColumns.demoReady.map((l) => (
-                    <div key={l.id} className="p-3.5 rounded-xl bg-white border border-purple-200 shadow-sm">
-                      <div className="font-bold text-xs text-gray-900">{l.company_name}</div>
+                    <div key={l.id} className="p-3.5 rounded-xl bg-white border border-purple-200 shadow-sm relative group">
+                      <div className="flex items-center justify-between">
+                        <div className="font-bold text-xs text-gray-900 truncate">{l.company_name}</div>
+                        <button
+                          onClick={() => handleDeleteLead(l.id, l.company_name)}
+                          className="p-1 text-gray-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Delete"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      </div>
                       <div className="text-[11px] text-gray-500">{formatProviderLabel(l.demo_provider)} demo ready</div>
                       <div className="mt-2 flex items-center justify-between text-[10px]">
                         <span className="px-2 py-0.5 rounded bg-purple-50 text-purple-700 font-bold">v0 Ready</span>
@@ -1177,8 +1392,17 @@ export default function Home() {
                 </div>
                 <div className="space-y-3">
                   {[...pipelineColumns.outreachSent, ...pipelineColumns.closed].map((l) => (
-                    <div key={l.id} className="p-3.5 rounded-xl bg-white border border-emerald-200 shadow-sm">
-                      <div className="font-bold text-xs text-gray-900">{l.company_name}</div>
+                    <div key={l.id} className="p-3.5 rounded-xl bg-white border border-emerald-200 shadow-sm relative group">
+                      <div className="flex items-center justify-between">
+                        <div className="font-bold text-xs text-gray-900 truncate">{l.company_name}</div>
+                        <button
+                          onClick={() => handleDeleteLead(l.id, l.company_name)}
+                          className="p-1 text-gray-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Delete"
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      </div>
                       <div className="text-[11px] text-gray-500">{l.contact_name || 'Contact'}</div>
                       <div className="mt-2 flex items-center justify-between text-[10px]">
                         <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold">
