@@ -227,6 +227,20 @@ button {
     border-color: rgba(16, 24, 40, 0.12);
   }
 
+  .btn.danger {
+    border-color: rgba(225, 29, 72, 0.25);
+    background: #fff1f2;
+    color: #e11d48;
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.08);
+  }
+
+  .btn.danger:hover {
+    background: #ffe4e6;
+    border-color: rgba(225, 29, 72, 0.4);
+    color: #be123c;
+    box-shadow: 0 6px 18px rgba(225, 29, 72, 0.14);
+  }
+
   .metric {
     position: relative;
     overflow: hidden;

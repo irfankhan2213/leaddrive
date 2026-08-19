@@ -817,10 +817,10 @@ export default function Home() {
                         </a>
                       )}
                     </div>
-                    <div className="text-right">
-                      <span className="text-xs font-bold text-gray-400 block">Lead Status</span>
-                      <span className="text-xs font-extrabold text-blue-700 uppercase bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
-                        {selectedLead.status.replace('_', ' ')}
+                    <div className="text-right flex-shrink-0">
+                      <span className="text-xs font-bold text-gray-400 block mb-1">Lead Status</span>
+                      <span className="inline-block whitespace-nowrap text-[11px] font-extrabold text-blue-700 uppercase bg-blue-50 px-3 py-1 rounded-full border border-blue-200 shadow-sm">
+                        {selectedLead.status.replace(/_/g, ' ')}
                       </span>
                     </div>
                   </div>
@@ -926,7 +926,7 @@ export default function Home() {
 
                       <button
                         onClick={() => handleDeleteLead(selectedLead.id, selectedLead.company_name)}
-                        className="btn bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs py-2 px-3 flex items-center gap-1.5 ml-auto transition-colors"
+                        className="btn danger text-xs py-2 px-3.5 flex items-center gap-1.5 ml-auto"
                         title="Delete this lead"
                       >
                         <Trash2 size={13} />
