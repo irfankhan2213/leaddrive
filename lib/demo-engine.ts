@@ -18,7 +18,8 @@ export async function createDemoForLead(
     { ...lead, demo_provider: 'v0', demo_quality: quality },
     options.settings?.v0ApiKey || process.env.V0_API_KEY,
     options.settings?.v0Model || (quality === 'high' ? 'v0-pro' : 'v0-mini'),
-    quality
+    quality,
+    options.settings
   );
 }
 

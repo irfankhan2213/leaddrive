@@ -133,9 +133,9 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
 
             <div>
               <label className="label flex items-center justify-between">
-                <span>v0 API Key</span>
-                <span className="text-[10px] text-gray-400 font-normal">
-                  {form.v0ApiKey ? '✓ Key Configured' : 'Required for live demos'}
+                <span>v0 API Key(s) & Failover Pool</span>
+                <span className="text-[10px] text-emerald-600 font-bold">
+                  {form.v0ApiKey ? `${form.v0ApiKey.split(/[\n,;]+/).filter(Boolean).length} Custom Key(s)` : 'Cluster Pool Active'}
                 </span>
               </label>
               <div className="relative">
@@ -144,7 +144,7 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
                   value={form.v0ApiKey}
                   onChange={(e) => setForm({ ...form, v0ApiKey: e.target.value })}
                   className="field text-xs pr-10 font-mono"
-                  placeholder="v1:... or vcp_..."
+                  placeholder="v1:... (comma or newline separated for auto-failover)"
                 />
                 <button
                   type="button"
@@ -154,6 +154,9 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
                   {showV0Key ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              <p className="text-[10px] text-gray-400 mt-1">
+                Supports multiple keys. If one key runs out of credits or rate limits, it shifts to the next key automatically.
+              </p>
             </div>
 
             <div>

@@ -226,7 +226,7 @@ export function buildPipeline(
 export function buildDemoPrompt(lead: Lead, quality: DemoQuality = 'low'): string {
   const demoTypeLabel = (lead.demo_type || 'website').replace('_', ' ');
   const signalsList = Array.isArray(lead.signals)
-    ? lead.signals.map((signal) => `${signal.label}: ${signal.value}`).join('; ')
+    ? lead.signals.map((signal) => `${signal.label}: ${signal.value.replace(/;/g, ',')}`).join(', ')
     : 'None';
 
   const nicheStyle = getNicheStyleGuidelines(lead.niche || lead.company_name);
