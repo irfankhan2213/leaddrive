@@ -1,34 +1,25 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   Zap,
   ArrowRight,
   CheckCircle2,
   Sparkles,
-  Search,
   Globe,
   Mail,
-  Smartphone,
   BarChart3,
-  Kanban,
-  Target,
-  ShieldCheck,
   ChevronDown,
-  ExternalLink,
-  Layers,
-  Activity,
-  MousePointerClick,
-  FileCode2,
-  Clock,
   Play,
   RotateCw,
-  Eye,
-  Send,
-  Sliders,
+  Search,
   Check,
-  Cpu
+  Building,
+  Target,
+  Database,
+  Code2
 } from 'lucide-react';
 
 interface ProspectSample {
@@ -83,22 +74,9 @@ export default function LandingPage() {
   const [selectedProspect, setSelectedProspect] = useState<ProspectSample>(SAMPLE_PROSPECTS[0]);
   const [simState, setSimState] = useState<'idle' | 'scraping' | 'auditing' | 'synthesizing' | 'ready'>('ready');
   const [simProgress, setSimProgress] = useState(100);
-  const [activeSimTab, setActiveSimTab] = useState<'preview' | 'audit' | 'email'>('preview');
-
-  // Mouse spotlight coordinates
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeSimTab, setActiveSimTab] = useState<'preview' | 'email'>('preview');
 
   const discountMultiplier = billingCycle === 'annual' ? 0.8 : 1;
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    setMousePos({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
-  };
 
   const runSimulation = (prospect: ProspectSample) => {
     setSelectedProspect(prospect);
@@ -137,624 +115,538 @@ export default function LandingPage() {
     {
       q: 'How does LeadDrive diagnose website conversion and speed bottlenecks?',
       a: 'Our background crawlers run automated Google PageSpeed and Lighthouse audits, inspect mobile viewport responsiveness, extract missing meta tags, and scan for outdated tech stacks to give you concrete, undeniable leverage in your pitch.',
-    },
-    {
-      q: 'Can I invite my agency team members and clients?',
-      a: 'Absolutely. On the Growth Pro and Agency Scale tiers, you can invite team members with granular role-based access, organize campaigns by client workspace, and share white-labeled demo links.',
-    },
-    {
-      q: 'What is your refund and cancellation policy?',
-      a: 'You can cancel anytime with a single click from your billing settings. We offer a 14-day risk-free money-back guarantee on all subscription plans.',
-    },
+    }
   ];
 
   return (
-    <div
-      ref={containerRef}
-      onMouseMove={handleMouseMove}
-      className="glow-canvas min-h-screen text-[#111827] flex flex-col justify-between"
-    >
-      {/* Dynamic Mouse Spotlight Glow */}
-      <div
-        className="glow-spotlight"
-        style={{
-          left: `${mousePos.x}px`,
-          top: `${mousePos.y}px`,
-        }}
-      />
+    <div className="dark-canvas bg-grid-dark min-h-screen flex flex-col justify-between selection:bg-blue-500/30">
+      
+      {/* Background Glows */}
+      <div className="glow-orb top-[-200px] left-1/2 -translate-x-1/2" />
+      <div className="glow-orb bottom-1/4 right-[-400px] bg-purple-500/10" />
 
       {/* Floating Glass Navigation Bar */}
-      <header className="sticky top-3 z-50 px-4 sm:px-8 max-w-7xl mx-auto w-full">
-        <div className="panel px-4 py-3 flex items-center justify-between shadow-lg">
+      <header className="sticky top-6 z-50 px-4 sm:px-8 max-w-7xl mx-auto w-full">
+        <motion.div 
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="glass-nav rounded-full px-5 py-3 flex items-center justify-between"
+        >
           {/* Brand Mark */}
-          <Link href="/" className="flex items-center gap-3 no-underline">
-            <div className="brand-mark flex-shrink-0">
-              <Zap className="w-4 h-4 text-white" />
+          <Link href="/" className="flex items-center gap-3 no-underline group">
+            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-[0_0_15px_rgba(37,99,235,0.5)] group-hover:shadow-[0_0_25px_rgba(37,99,235,0.8)] transition-all">
+              <Zap className="w-4 h-4" />
             </div>
-            <div>
-              <div className="font-extrabold text-base tracking-tight leading-none text-gray-900">
-                LeadDrive
-              </div>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-semibold text-gray-500 font-mono">v2.4 Engine Active</span>
-              </div>
+            <div className="font-extrabold text-lg tracking-tight text-white">
+              LeadDrive
             </div>
           </Link>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-gray-600">
-            <a href="#simulator" className="hover:text-blue-600 transition-colors">Interactive Demo</a>
-            <a href="#pipeline" className="hover:text-blue-600 transition-colors">Pipeline</a>
-            <a href="#capabilities" className="hover:text-blue-600 transition-colors">Capabilities</a>
-            <a href="#pricing" className="hover:text-blue-600 transition-colors">Pricing</a>
-            <a href="#faq" className="hover:text-blue-600 transition-colors">FAQ</a>
+          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
+            <a href="#simulator" className="hover:text-white transition-colors">Simulator</a>
+            <a href="#workflow" className="hover:text-white transition-colors">Workflow</a>
+            <a href="#capabilities" className="hover:text-white transition-colors">Capabilities</a>
+            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
           </nav>
 
           {/* Auth CTA Actions */}
-          <div className="flex items-center gap-2.5">
-            <Link
-              href="/login"
-              className="btn secondary !min-h-[36px] !px-4 !text-xs font-bold"
-            >
-              Sign In
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="text-sm font-semibold text-slate-300 hover:text-white hidden sm:block">
+              Log in
             </Link>
             <Link
               href="/signup"
-              className="btn !min-h-[36px] !px-4 !text-xs shadow-md shadow-blue-500/25 font-bold"
+              className="btn-primary-glow px-5 py-2 rounded-full text-sm font-semibold flex items-center gap-1.5"
             >
-              Start Free Trial <ArrowRight className="w-3.5 h-3.5 ml-1 inline" />
+              Start Free <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
-        </div>
+        </motion.div>
       </header>
 
-      {/* Hero Section with Animated SVG Geometry & Live Telemetry */}
-      <section className="relative pt-16 pb-20 px-4 sm:px-8 max-w-7xl mx-auto w-full">
-        {/* Background Rotating SVG Orbits */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[720px] pointer-events-none opacity-35 -z-10">
-          <svg viewBox="0 0 800 800" className="w-full h-full">
-            <circle cx="400" cy="400" r="380" fill="none" stroke="rgba(0, 122, 255, 0.15)" strokeWidth="1" />
-            <circle cx="400" cy="400" r="280" fill="none" stroke="rgba(90, 200, 250, 0.2)" strokeWidth="1.5" strokeDasharray="6 6" className="orbit-ring" />
-            <circle cx="400" cy="400" r="180" fill="none" stroke="rgba(0, 122, 255, 0.25)" strokeWidth="1" className="orbit-ring-reverse" />
-            <circle cx="400" cy="20" r="6" fill="#007aff" className="orbit-ring" />
-            <circle cx="680" cy="400" r="5" fill="#5ac8fa" className="orbit-ring-reverse" />
-          </svg>
-        </div>
-
-        <div className="text-center max-w-4xl mx-auto relative z-10">
-          {/* Live Telemetry Pill */}
-          <div className="inline-flex items-center gap-2 status-pill px-3.5 py-1.5 mb-6 shadow-sm border border-white/80">
-            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-            <span className="eyebrow !text-[11px] !text-blue-700 !font-bold font-mono">
-              OCTOLANE-GRADE MOTION · MULTI-AGENT DEMO SYNTHESIS
-            </span>
+      {/* Hero Section */}
+      <section className="relative pt-32 pb-20 px-4 sm:px-8 max-w-5xl mx-auto w-full text-center z-10">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="inline-flex items-center justify-center mb-8"
+        >
+          <div className="bg-slate-900/50 border border-slate-700 rounded-full px-4 py-1.5 text-xs font-bold text-slate-300 flex items-center gap-2 backdrop-blur-md">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
+            Agentic AI Meets Outbound Sales
           </div>
+        </motion.div>
 
-          {/* Main Headline */}
-          <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-gray-900 leading-[1.05] mb-6">
-            Autonomous Outreach Intelligence <br />
-            <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-indigo-600 bg-clip-text text-transparent">
-              Powered by Proof.
-            </span>
-          </h1>
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tighter text-white leading-[1.05] mb-8"
+        >
+          Close deals with <br />
+          <span className="text-gradient-primary">Proof, not Promises.</span>
+        </motion.h1>
 
-          {/* Subtitle */}
-          <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
-            LeadDrive autonomously discovers qualified businesses, diagnoses high-friction website bottlenecks, and generates custom interactive web demos before firing precision multichannel campaigns.
-          </p>
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed mb-10 font-medium"
+        >
+          LeadDrive discovers qualified businesses, diagnoses website bottlenecks, and generates custom interactive web demos before firing precision multichannel campaigns.
+        </motion.p>
 
-          {/* Action CTAs */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-10">
-            <Link
-              href="/signup"
-              className="btn text-sm px-7 py-3 shadow-xl shadow-blue-500/30 w-full sm:w-auto font-bold"
-            >
-              Launch Free Campaign <ArrowRight className="w-4 h-4 ml-1 inline" />
-            </Link>
-            <a
-              href="#simulator"
-              className="btn secondary text-sm px-6 py-3 w-full sm:w-auto font-bold"
-            >
-              Test Live Simulator <Play className="w-3.5 h-3.5 ml-1 inline text-blue-600" />
-            </a>
-          </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20"
+        >
+          <Link
+            href="/signup"
+            className="btn-primary-glow text-base px-8 py-4 rounded-xl font-bold w-full sm:w-auto flex items-center justify-center gap-2"
+          >
+            Launch Free Campaign <ArrowRight className="w-4 h-4" />
+          </Link>
+          <a
+            href="#simulator"
+            className="btn-secondary-dark text-base px-8 py-4 rounded-xl font-bold w-full sm:w-auto flex items-center justify-center gap-2 backdrop-blur-sm"
+          >
+            Test Live Simulator <Play className="w-4 h-4 text-blue-400" />
+          </a>
+        </motion.div>
 
-          {/* Live Metric Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-gray-500 font-semibold pt-1">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span>14-day free trial</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span>No credit card required</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span>Instant Supabase sync</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Live Interactive Agent Simulation Sandbox */}
-        <div id="simulator" className="mt-14 panel p-4 sm:p-6 shadow-2xl relative overflow-hidden bg-white/90">
-          {/* Simulator Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200/80 pb-4 mb-5">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-sm text-gray-900">Live Agent Demo Simulator</span>
-                <span className="status-pill !bg-blue-50 !text-blue-700 !text-[10px] font-bold">Interactive</span>
-              </div>
-              <p className="text-xs text-gray-500 mt-0.5">Select a prospect business to trigger live multi-agent synthesis:</p>
-            </div>
-
-            {/* Business Selector Pills */}
-            <div className="flex flex-wrap items-center gap-1.5">
-              {SAMPLE_PROSPECTS.map((p) => {
-                const isSelected = selectedProspect.id === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => runSimulation(p)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                      isSelected
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
-                        : 'bg-white/80 text-gray-700 hover:bg-white border border-gray-200/80'
-                    }`}
-                  >
-                    {p.name.split(' ')[0]}
-                  </button>
-                );
-              })}
+        {/* Product Simulator Browser Window */}
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.4 }}
+          id="simulator" 
+          className="browser-chrome-dark text-left max-w-4xl mx-auto mt-8 animate-float relative z-20"
+        >
+          <div className="browser-chrome-header-dark">
+            <div className="browser-dot bg-red-500/80" />
+            <div className="browser-dot bg-amber-500/80" />
+            <div className="browser-dot bg-emerald-500/80" />
+            <div className="ml-4 bg-black/40 border border-white/5 rounded-md px-3 py-1 text-[10px] font-mono text-slate-500 flex-1 flex items-center gap-2 max-w-sm mx-auto justify-center">
+              <Search className="w-3 h-3 text-slate-500" /> demo.leaddrive.app/simulator
             </div>
           </div>
-
-          {/* Progress Bar during Simulation */}
-          <div className="mb-5">
-            <div className="flex items-center justify-between text-xs font-bold text-gray-600 mb-1.5 font-mono">
-              <span className="flex items-center gap-2">
-                {simState === 'scraping' && 'Step 1/3: Scraping Apollo & Google Maps listing...'}
-                {simState === 'auditing' && 'Step 2/3: Running Headless Lighthouse Speed Audit...'}
-                {simState === 'synthesizing' && 'Step 3/3: Synthesizing Next.js Prototype via Vertex AI...'}
-                {simState === 'ready' && '✓ Autonomous Synthesis Complete · Demo Enqueued'}
-              </span>
-              <span className="text-blue-600">{simProgress}%</span>
-            </div>
-            <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-blue-500 via-sky-400 to-emerald-500 transition-all duration-500 rounded-full"
-                style={{ width: `${simProgress}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Simulator View Tabs */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            {/* Left: Prospect Intelligence Card */}
-            <div className="panel p-4 bg-white/70 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="eyebrow text-gray-400 font-mono">Prospect Profile</span>
-                  <span className="status-pill !bg-emerald-50 !text-emerald-700 !text-[10px] font-bold">Enriched</span>
-                </div>
-                <div className="font-extrabold text-base text-gray-900">{selectedProspect.name}</div>
-                <div className="text-xs text-gray-500 font-mono mt-0.5">{selectedProspect.domain}</div>
-                <div className="text-xs text-gray-600 mt-1">{selectedProspect.city} · {selectedProspect.niche}</div>
-
-                <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-                  <div>
-                    <div className="text-[11px] font-bold text-gray-500 mb-1">Mobile Speed Diagnostic</div>
-                    <div className="flex items-center gap-3">
-                      <span className="px-2 py-0.5 rounded-lg bg-red-100 text-red-700 font-bold text-xs font-mono">
-                        {selectedProspect.speedScore} / 100
-                      </span>
-                      <span className="text-xs text-red-600 font-semibold">Critical Bottleneck</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-[11px] font-bold text-gray-500 mb-1">Diagnosed Weakness</div>
-                    <div className="text-xs text-gray-700 bg-gray-50 p-2.5 rounded-xl border border-gray-100 font-medium">
-                      &quot;{selectedProspect.weakness}&quot;
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
-                <span>Fit Score: <strong className="text-emerald-600">96%</strong></span>
-                <button
-                  onClick={() => runSimulation(selectedProspect)}
-                  className="text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1"
-                >
-                  <RotateCw className="w-3.5 h-3.5" /> Re-run
-                </button>
-              </div>
-            </div>
-
-            {/* Middle & Right: Live Interactive Prototype Sandbox */}
-            <div className="lg:col-span-2 panel p-4 bg-slate-950 text-white rounded-2xl flex flex-col justify-between">
-              {/* Sandbox Header */}
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                <div className="flex items-center gap-2 font-mono text-xs">
-                  <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
-                  </div>
-                  <span className="text-slate-400 ml-2">demo.leaddrive.app/{selectedProspect.id}</span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setActiveSimTab('preview')}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold font-mono transition-colors ${
-                      activeSimTab === 'preview' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    Live Preview
-                  </button>
-                  <button
-                    onClick={() => setActiveSimTab('email')}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold font-mono transition-colors ${
-                      activeSimTab === 'email' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    Email Angle
-                  </button>
-                </div>
-              </div>
-
-              {/* Sandbox Body Content */}
-              {activeSimTab === 'preview' && (
-                <div className="bg-slate-900 rounded-xl p-5 border border-slate-800 flex-1 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">
-                          {selectedProspect.name.charAt(0)}
-                        </div>
-                        <span className="font-bold text-sm text-white">{selectedProspect.name}</span>
-                      </div>
-                      <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                        ⚡ 0.28s Load Speed
-                      </span>
-                    </div>
-
-                    <div className="mt-4">
-                      <h4 className="font-extrabold text-base text-white">{selectedProspect.demoAngle}</h4>
-                      <p className="text-xs text-slate-400 mt-1">
-                        High-converting Next.js client interface with instant schedule confirmation and mobile-first gesture support.
-                      </p>
-                    </div>
-
-                    <div className="mt-4 grid grid-cols-2 gap-2 text-xs font-mono">
-                      <div className="p-2.5 bg-slate-950 rounded-lg border border-slate-800 text-slate-300">
-                        <div className="text-slate-500 text-[10px]">Mobile Viewport</div>
-                        <div className="text-emerald-400 font-bold mt-0.5">100% Fluid Score</div>
-                      </div>
-                      <div className="p-2.5 bg-slate-950 rounded-lg border border-slate-800 text-slate-300">
-                        <div className="text-slate-500 text-[10px]">Lighthouse Audit</div>
-                        <div className="text-emerald-400 font-bold mt-0.5">99 / 100</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-                    <span className="font-mono">Hosted on Cloudflare Edge + Supabase DB</span>
-                    <Link
-                      href="/signup"
-                      className="text-blue-400 hover:text-blue-300 font-bold flex items-center gap-1 font-mono"
+          
+          <div className="p-5 sm:p-8 bg-[#0a0a0a] border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+             <div>
+               <h3 className="font-extrabold text-lg text-white flex items-center gap-2">
+                 <Sparkles className="w-5 h-5 text-blue-400" /> Agent Synthesis Simulator
+               </h3>
+               <p className="text-xs text-slate-400 mt-1 font-medium">Select a prospect to trigger the live diagnostic and build engine.</p>
+             </div>
+             <div className="flex flex-wrap items-center gap-2">
+                {SAMPLE_PROSPECTS.map((p) => {
+                  const isSelected = selectedProspect.id === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => runSimulation(p)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                        isSelected
+                          ? 'bg-blue-600/20 text-blue-400 border-blue-500/30'
+                          : 'bg-white/5 text-slate-400 border-white/5 hover:border-white/20 hover:bg-white/10'
+                      }`}
                     >
-                      Export Full Code <ExternalLink className="w-3 h-3" />
-                    </Link>
-                  </div>
-                </div>
-              )}
+                      {p.name.split(' ')[0]}
+                    </button>
+                  );
+                })}
+             </div>
+          </div>
 
-              {activeSimTab === 'email' && (
-                <div className="bg-slate-900 rounded-xl p-5 border border-slate-800 flex-1 flex flex-col justify-between font-mono text-xs">
-                  <div>
-                    <div className="text-slate-400 mb-2">// Auto-Constructed Multichannel Copy</div>
-                    <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 text-slate-200 leading-relaxed">
-                      <div className="text-blue-400 mb-1">Subject: Quick question regarding {selectedProspect.domain} mobile load times</div>
-                      <p className="mt-2">
-                        Hi team,<br /><br />
-                        I ran a technical speed audit on {selectedProspect.domain} and noticed your mobile intake widget is suffering from a 4.8s delay.<br /><br />
-                        Rather than just talking about it, our team pre-built a 100% interactive Next.js redesign for {selectedProspect.name} with instant mobile booking:<br />
-                        👉 <span className="text-blue-400 underline">demo.leaddrive.app/{selectedProspect.id}</span><br /><br />
-                        Would you be open to a 5-min walk-through this Thursday?
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-[11px] text-emerald-400 pt-2">
-                    ✓ Verified decision-maker email ready for automated dispatch
-                  </div>
-                </div>
-              )}
+          <div className="p-5 sm:p-8 bg-[#050505] relative overflow-hidden">
+             {/* Glowing background in simulator body */}
+             <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px]" />
+
+             {/* Progress Bar during Simulation */}
+            <div className="mb-6 relative z-10">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-400 mb-2 font-mono">
+                <span className="flex items-center gap-2">
+                  {simState === 'scraping' && 'Step 1/3: Scraping Apollo & Maps...'}
+                  {simState === 'auditing' && 'Step 2/3: Running Headless Lighthouse Audit...'}
+                  {simState === 'synthesizing' && 'Step 3/3: Synthesizing Prototype via Vertex AI...'}
+                  {simState === 'ready' && <><Check className="w-3 h-3 text-emerald-400" /> Autonomous Synthesis Complete</>}
+                </span>
+                <span className="text-blue-400">{simProgress}%</span>
+              </div>
+              <div className="h-1.5 w-full rounded-full bg-white/5 overflow-hidden">
+                <div
+                  className="h-full bg-blue-500 transition-all duration-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.8)]"
+                  style={{ width: `${simProgress}%` }}
+                />
+              </div>
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+              {/* Profile Card */}
+              <div className="bg-white/5 border border-white/10 p-5 rounded-xl flex flex-col justify-between backdrop-blur-sm">
+                <div>
+                   <div className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider mb-3">Prospect Profile</div>
+                   <div className="font-extrabold text-xl text-white mb-1">{selectedProspect.name}</div>
+                   <div className="text-xs text-slate-400 font-mono mb-4">{selectedProspect.domain}</div>
+                   
+                   <div className="space-y-4 pt-4 border-t border-white/5">
+                      <div>
+                        <div className="text-[11px] font-bold text-slate-500 mb-1.5">Speed Diagnostic</div>
+                        <div className="flex items-center gap-2">
+                           <span className="px-2 py-0.5 rounded text-red-400 bg-red-950/50 border border-red-900/50 font-bold text-xs font-mono">
+                             {selectedProspect.speedScore} / 100
+                           </span>
+                           <span className="text-xs font-semibold text-red-400">Critical</span>
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[11px] font-bold text-slate-500 mb-1.5">Diagnosed Weakness</div>
+                        <div className="text-xs text-slate-300 bg-black/40 p-2.5 rounded-lg border border-white/5 font-medium">
+                          "{selectedProspect.weakness}"
+                        </div>
+                      </div>
+                   </div>
+                </div>
+                <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500">Fit: <span className="text-emerald-400">96%</span></span>
+                  <button onClick={() => runSimulation(selectedProspect)} className="text-xs font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                    <RotateCw className="w-3 h-3" /> Re-run
+                  </button>
+                </div>
+              </div>
+
+              {/* Angle/Email Preview */}
+              <div className="bg-black/80 border border-white/10 p-5 rounded-xl text-slate-300 font-mono text-xs flex flex-col justify-between shadow-inner">
+                 <div>
+                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/5">
+                     <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">// Outreach Draft</span>
+                     <div className="flex gap-2">
+                        <button onClick={() => setActiveSimTab('preview')} className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${activeSimTab === 'preview' ? 'bg-blue-600/20 text-blue-400' : 'text-slate-500 hover:text-slate-300'}`}>Demo</button>
+                        <button onClick={() => setActiveSimTab('email')} className={`px-2 py-1 rounded text-[10px] font-bold transition-colors ${activeSimTab === 'email' ? 'bg-blue-600/20 text-blue-400' : 'text-slate-500 hover:text-slate-300'}`}>Email</button>
+                     </div>
+                   </div>
+
+                   {activeSimTab === 'preview' && (
+                     <div className="space-y-4">
+                       <div>
+                         <div className="text-slate-500 mb-1">Generated Prototype URL:</div>
+                         <a href="#" className="text-blue-400 underline decoration-blue-500/30 underline-offset-2">demo.leaddrive.app/{selectedProspect.id}</a>
+                       </div>
+                       <div>
+                         <div className="text-slate-500 mb-1">Value Prop:</div>
+                         <div className="text-slate-200">{selectedProspect.demoAngle}</div>
+                       </div>
+                       <div className="grid grid-cols-2 gap-3 mt-4">
+                         <div className="bg-white/5 p-2.5 rounded-lg border border-white/5">
+                           <div className="text-[10px] text-slate-500">Mobile Score</div>
+                           <div className="text-emerald-400 font-bold mt-1 shadow-[0_0_10px_rgba(52,211,153,0.2)] inline-block">100 / 100</div>
+                         </div>
+                         <div className="bg-white/5 p-2.5 rounded-lg border border-white/5">
+                           <div className="text-[10px] text-slate-500">Load Time</div>
+                           <div className="text-emerald-400 font-bold mt-1">0.3s</div>
+                         </div>
+                       </div>
+                     </div>
+                   )}
+
+                   {activeSimTab === 'email' && (
+                     <div className="space-y-3 leading-relaxed">
+                       <div><span className="text-slate-500">Subject:</span> Quick question regarding {selectedProspect.domain} speed</div>
+                       <div className="pt-2 text-slate-400">
+                         Hi team,<br/><br/>
+                         Ran an audit on your site and noticed {selectedProspect.weakness.toLowerCase()}.<br/><br/>
+                         We went ahead and built a functioning Next.js mockup to show how it should work: <span className="text-blue-400">demo.leaddrive.app/{selectedProspect.id}</span><br/><br/>
+                         Open to a 5-min walk-through?
+                       </div>
+                     </div>
+                   )}
+                 </div>
+                 
+                 <div className="mt-4 pt-3 border-t border-white/5 text-[10px] text-slate-500 flex items-center justify-between">
+                   <span>Status: Ready for Dispatch</span>
+                   <span className="flex items-center gap-1 text-emerald-400"><Check className="w-3 h-3" /> Validated</span>
+                 </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Social Proof Strip */}
+      <section className="py-12 border-y border-white/5 bg-[#030303] relative z-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 text-center">
+          <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-widest mb-8">Powering outreach for top B2B agencies</p>
+          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-40 hover:opacity-100 transition-opacity duration-500">
+             <div className="flex items-center gap-2 font-bold text-xl text-slate-300"><Building className="w-6 h-6"/> AcmeCorp</div>
+             <div className="flex items-center gap-2 font-bold text-xl text-slate-300"><Target className="w-6 h-6"/> Zenith Media</div>
+             <div className="flex items-center gap-2 font-bold text-xl text-slate-300"><Globe className="w-6 h-6"/> Global Reach</div>
+             <div className="flex items-center gap-2 font-bold text-xl text-slate-300"><Code2 className="w-6 h-6"/> DevStudio</div>
           </div>
         </div>
       </section>
 
-      {/* Capabilities Bento Grid */}
-      <section id="capabilities" className="py-20 px-4 sm:px-8 max-w-7xl mx-auto w-full">
-        <div className="text-center max-w-3xl mx-auto mb-14">
-          <span className="eyebrow text-blue-600 mb-2 block">Platform Capabilities</span>
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-gray-900">
-            Engineered for Modern Outbound Teams.
-          </h2>
+      {/* Bento Box Capabilities Grid */}
+      <section id="capabilities" className="py-24 px-4 sm:px-8 max-w-7xl mx-auto w-full relative z-20">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4"
+          >
+            Everything you need. <span className="text-slate-500">In one platform.</span>
+          </motion.h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="panel panel-pad bg-white/80 flex flex-col justify-between hover:shadow-xl transition-all">
-            <div>
-              <div className="w-10 h-10 rounded-2xl bg-blue-500/10 text-blue-600 flex items-center justify-center mb-4">
-                <Globe className="w-5 h-5" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
+          {/* Card 1: Wide */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bento-card-dark md:col-span-2 p-8 flex flex-col justify-between group"
+          >
+            <div className="absolute right-0 top-0 w-64 h-64 bg-blue-600/10 rounded-full blur-[80px] group-hover:bg-blue-600/20 transition-colors duration-500" />
+            <div className="relative z-10">
+              <div className="w-12 h-12 rounded-xl bg-blue-900/40 text-blue-400 flex items-center justify-center mb-6 border border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.1)] group-hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all">
+                <Globe className="w-6 h-6" />
               </div>
-              <h3 className="font-extrabold text-lg text-gray-900 mb-2">Automated Discovery</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Scrape Google Maps and Apollo with deep contact enrichment and location-based semantic keyword clustering.
+              <h3 className="font-extrabold text-2xl text-white mb-3">Automated Discovery</h3>
+              <p className="text-slate-400 font-medium max-w-md">
+                Scrape Google Maps and Apollo with deep contact enrichment and location-based semantic keyword clustering. Build verified lists instantly.
               </p>
             </div>
-            <div className="pt-4 border-t border-gray-100 mt-4 text-[11px] font-bold text-blue-600 font-mono">
-              MAPS · APOLLO · LINKEDIN
-            </div>
-          </div>
+          </motion.div>
 
-          <div className="panel panel-pad bg-white/80 flex flex-col justify-between hover:shadow-xl transition-all">
-            <div>
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center mb-4">
+          {/* Card 2: Square */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="bento-card-dark p-8 flex flex-col justify-between group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative z-10">
+              <div className="w-10 h-10 rounded-xl bg-amber-900/30 text-amber-400 flex items-center justify-center mb-5 border border-amber-500/20">
                 <BarChart3 className="w-5 h-5" />
               </div>
-              <h3 className="font-extrabold text-lg text-gray-900 mb-2">Lighthouse Audits</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Run automated PageSpeed, mobile responsiveness, and SEO checks to identify concrete leverage for cold pitches.
+              <h3 className="font-extrabold text-xl text-white mb-3">Lighthouse Audits</h3>
+              <p className="text-sm text-slate-400 font-medium">
+                Run automated PageSpeed, mobile responsiveness, and SEO checks to identify concrete leverage for outreach.
               </p>
             </div>
-            <div className="pt-4 border-t border-gray-100 mt-4 text-[11px] font-bold text-amber-600 font-mono">
-              SPEED · SEO · CORE VITALS
-            </div>
-          </div>
+          </motion.div>
 
-          <div className="panel panel-pad bg-white/80 flex flex-col justify-between hover:shadow-xl transition-all">
-            <div>
-              <div className="w-10 h-10 rounded-2xl bg-purple-500/10 text-purple-600 flex items-center justify-center mb-4">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <h3 className="font-extrabold text-lg text-gray-900 mb-2">AI Demo Synthesis</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Build bespoke interactive prototypes in seconds using Vertex AI and v0 models with live hosted demo URLs.
-              </p>
-            </div>
-            <div className="pt-4 border-t border-gray-100 mt-4 text-[11px] font-bold text-purple-600 font-mono">
-              VERTEX · V0 · AGENTIC
-            </div>
-          </div>
-
-          <div className="panel panel-pad bg-white/80 flex flex-col justify-between hover:shadow-xl transition-all">
-            <div>
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-4">
+          {/* Card 3: Square */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="bento-card-dark p-8 flex flex-col justify-between group"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="relative z-10">
+              <div className="w-10 h-10 rounded-xl bg-emerald-900/30 text-emerald-400 flex items-center justify-center mb-5 border border-emerald-500/20">
                 <Mail className="w-5 h-5" />
               </div>
-              <h3 className="font-extrabold text-lg text-gray-900 mb-2">Multichannel Dispatch</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">
-                Send tailored email and SMS sequences with real-time open, click, and dwell time webhooks and CRM integration.
+              <h3 className="font-extrabold text-xl text-white mb-3">Smart Dispatch</h3>
+              <p className="text-sm text-slate-400 font-medium">
+                Send tailored email and SMS sequences with real-time open and click telemetry directly to Slack.
               </p>
             </div>
-            <div className="pt-4 border-t border-gray-100 mt-4 text-[11px] font-bold text-emerald-600 font-mono">
-              EMAIL · SMS · WEBHOOKS
+          </motion.div>
+
+          {/* Card 4: Wide */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="bento-card-dark md:col-span-2 p-8 flex flex-col justify-between group"
+          >
+            <div className="absolute left-0 bottom-0 w-64 h-64 bg-purple-600/10 rounded-full blur-[80px] group-hover:bg-purple-600/20 transition-colors duration-500" />
+            <div className="relative z-10">
+              <div className="w-12 h-12 rounded-xl bg-purple-900/30 text-purple-400 flex items-center justify-center mb-6 border border-purple-500/20 shadow-[0_0_15px_rgba(168,85,247,0.1)] group-hover:shadow-[0_0_20px_rgba(168,85,247,0.3)] transition-all">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-2xl text-white mb-3">AI Demo Synthesis</h3>
+              <p className="text-slate-400 font-medium max-w-md">
+                Build bespoke interactive prototypes in seconds using Vertex AI and v0 models with live hosted demo URLs on our edge network. Show, don't tell.
+              </p>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* SaaS Pricing Section */}
-      <section id="pricing" className="py-20 px-4 sm:px-8 max-w-7xl mx-auto w-full">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="eyebrow text-blue-600 mb-2 block">Simple SaaS Pricing</span>
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-gray-900 mb-4">
-            Predictable Plans for Growing Pipelines.
+      <section id="pricing" className="py-24 px-4 sm:px-8 max-w-7xl mx-auto w-full relative z-20">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-8">
+            Predictable Pricing.
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 mb-8">
-            Every subscription includes a 14-day trial, multi-tenant Supabase DB sync, and live demo hosting.
-          </p>
-
+          
           {/* Billing Switch */}
-          <div className="inline-flex items-center panel p-1 bg-white/80 shadow-sm rounded-full">
+          <div className="inline-flex items-center bg-white/5 p-1 rounded-full border border-white/10 backdrop-blur-md">
             <button
               onClick={() => setBillingCycle('monthly')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+              className={`px-5 py-2 rounded-full text-sm font-bold transition-all ${
                 billingCycle === 'monthly'
-                  ? 'btn !min-h-[30px] shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white/10 text-white shadow'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               Monthly
             </button>
             <button
               onClick={() => setBillingCycle('annual')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+              className={`px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${
                 billingCycle === 'annual'
-                  ? 'btn !min-h-[30px] shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white/10 text-white shadow'
+                  : 'text-slate-400 hover:text-white'
               }`}
             >
               <span>Annual</span>
-              <span className="bg-emerald-100 text-emerald-800 text-[9px] px-1.5 py-0.5 rounded-full font-extrabold">
-                SAVE 20%
+              <span className="bg-blue-900/50 text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-black uppercase tracking-wide border border-blue-500/30">
+                Save 20%
               </span>
             </button>
           </div>
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-          {/* Starter Card */}
-          <div className="panel panel-pad bg-white/80 flex flex-col justify-between hover:shadow-xl transition-all">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch max-w-5xl mx-auto">
+          {/* Starter */}
+          <motion.div 
+            whileHover={{ y: -5 }}
+            className="bento-card-dark p-8 flex flex-col justify-between"
+          >
             <div>
-              <div className="eyebrow text-gray-500 mb-2">Starter Plan</div>
-              <div className="flex items-baseline gap-1 mb-3">
-                <span className="text-4xl font-extrabold text-gray-900">${Math.round(49 * discountMultiplier)}</span>
-                <span className="text-xs text-gray-500 font-semibold">/ month</span>
+              <div className="text-slate-400 font-bold mb-4">Starter</div>
+              <div className="flex items-baseline gap-1 mb-2">
+                <span className="text-4xl font-extrabold text-white">${Math.round(49 * discountMultiplier)}</span>
+                <span className="text-sm text-slate-500 font-semibold">/mo</span>
               </div>
-              <p className="text-xs text-gray-600 leading-relaxed mb-6">
-                Ideal for solo agency founders and freelancers launching outbound campaigns.
+              <p className="text-sm text-slate-400 font-medium mb-8">
+                Ideal for solo agency founders launching outbound campaigns.
               </p>
-              <div className="space-y-3 text-xs font-semibold text-gray-700 border-t border-gray-100 pt-5">
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-600" /> 500 Qualified Leads / mo</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-600" /> 100 AI Demos Synthesized</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-600" /> Google Maps &amp; Apollo Scraper</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-600" /> PageSpeed Diagnostic Audits</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-600" /> Email Outreach Sequences</div>
+              <div className="space-y-4 text-sm font-semibold text-slate-300">
+                <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-slate-600" /> 500 Leads / mo</div>
+                <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-slate-600" /> 100 AI Demos</div>
+                <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-slate-600" /> Maps & Apollo Scraper</div>
               </div>
             </div>
-            <div className="pt-6 mt-6 border-t border-gray-100">
-              <Link href="/signup" className="btn secondary w-full text-xs font-bold">
-                Start 14-Day Free Trial
+            <div className="mt-8">
+              <Link href="/signup" className="block w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white text-center py-3 rounded-xl font-bold transition-colors">
+                Start Free Trial
               </Link>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Growth Pro Card (Featured) */}
-          <div className="panel panel-pad bg-gradient-to-b from-blue-600 to-indigo-700 text-white flex flex-col justify-between shadow-2xl relative scale-105 border-blue-400">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-white text-blue-700 px-3 py-0.5 rounded-full font-extrabold text-[10px] tracking-wider uppercase shadow-md">
-              MOST POPULAR
-            </div>
-            <div>
-              <div className="eyebrow !text-blue-100 mb-2">Growth Pro</div>
-              <div className="flex items-baseline gap-1 mb-3">
+          {/* Pro */}
+          <motion.div 
+            whileHover={{ y: -5 }}
+            className="bento-card-dark p-8 flex flex-col justify-between border-blue-500/30 shadow-[0_0_30px_rgba(37,99,235,0.15)] relative overflow-hidden transform md:-translate-y-4 bg-blue-950/20"
+          >
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-400 via-blue-500 to-indigo-500 shadow-[0_0_15px_rgba(59,130,246,0.5)]" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] pointer-events-none" />
+            <div className="relative z-10">
+              <div className="flex justify-between items-center mb-4">
+                <div className="text-blue-400 font-bold">Growth Pro</div>
+                <div className="text-[10px] font-black tracking-widest uppercase bg-blue-500/20 text-blue-300 px-2 py-1 rounded border border-blue-500/30">Popular</div>
+              </div>
+              <div className="flex items-baseline gap-1 mb-2">
                 <span className="text-4xl font-extrabold text-white">${Math.round(149 * discountMultiplier)}</span>
-                <span className="text-xs text-blue-200 font-semibold">/ month</span>
+                <span className="text-sm text-blue-200/50 font-semibold">/mo</span>
               </div>
-              <p className="text-xs text-blue-100 leading-relaxed mb-6">
-                For scaling agencies needing high volume lead ingestion and automated demo building.
+              <p className="text-sm text-slate-300 font-medium mb-8">
+                For scaling agencies needing high volume lead ingestion.
               </p>
-              <div className="space-y-3 text-xs font-semibold text-blue-50 border-t border-white/20 pt-5">
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-white" /> 2,500 Qualified Leads / mo</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-white" /> 500 AI Demos Synthesized</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-white" /> Vertex AI + v0 Hybrid Generation</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-white" /> Multichannel Email + SMS Dispatch</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-white" /> Real-time Dwell Time Telemetry</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-white" /> HubSpot &amp; Webhook Sync</div>
+              <div className="space-y-4 text-sm font-semibold text-slate-200">
+                <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-blue-400" /> 2,500 Leads / mo</div>
+                <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-blue-400" /> 500 AI Demos</div>
+                <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-blue-400" /> Vertex AI + v0 Hybrid</div>
+                <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-blue-400" /> Webhook Sync</div>
               </div>
             </div>
-            <div className="pt-6 mt-6 border-t border-white/20">
-              <Link href="/signup" className="btn bg-white !text-blue-700 hover:bg-gray-100 w-full text-xs font-extrabold shadow-lg">
-                Start 14-Day Free Trial
+            <div className="mt-8 relative z-10">
+              <Link href="/signup" className="btn-primary-glow block w-full text-center py-3 rounded-xl font-bold transition-all">
+                Start Free Trial
               </Link>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Agency Scale Card */}
-          <div className="panel panel-pad bg-white/80 flex flex-col justify-between hover:shadow-xl transition-all">
+          {/* Agency */}
+          <motion.div 
+            whileHover={{ y: -5 }}
+            className="bento-card-dark p-8 flex flex-col justify-between"
+          >
             <div>
-              <div className="eyebrow text-gray-500 mb-2">Agency Scale</div>
-              <div className="flex items-baseline gap-1 mb-3">
-                <span className="text-4xl font-extrabold text-gray-900">${Math.round(399 * discountMultiplier)}</span>
-                <span className="text-xs text-gray-500 font-semibold">/ month</span>
+              <div className="text-slate-400 font-bold mb-4">Agency Scale</div>
+              <div className="flex items-baseline gap-1 mb-2">
+                <span className="text-4xl font-extrabold text-white">${Math.round(399 * discountMultiplier)}</span>
+                <span className="text-sm text-slate-500 font-semibold">/mo</span>
               </div>
-              <p className="text-xs text-gray-600 leading-relaxed mb-6">
-                For established agencies requiring maximum throughput and custom white-labeling.
+              <p className="text-sm text-slate-400 font-medium mb-8">
+                For established agencies requiring maximum throughput.
               </p>
-              <div className="space-y-3 text-xs font-semibold text-gray-700 border-t border-gray-100 pt-5">
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-600" /> Unlimited Lead Discovery</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-600" /> 2,000 AI Demos Synthesized / mo</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-600" /> Custom Domain Demo Hosting</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-600" /> Multi-Seat Team Workspaces</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-600" /> Dedicated Sending IPs &amp; Warmup</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-blue-600" /> Priority 24/7 Slack Channel</div>
+              <div className="space-y-4 text-sm font-semibold text-slate-300">
+                <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-slate-600" /> Unlimited Discovery</div>
+                <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-slate-600" /> 2,000 AI Demos / mo</div>
+                <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-slate-600" /> Custom Domain Hosting</div>
               </div>
             </div>
-            <div className="pt-6 mt-6 border-t border-gray-100">
-              <Link href="/signup" className="btn secondary w-full text-xs font-bold">
+            <div className="mt-8">
+              <Link href="/signup" className="block w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white text-center py-3 rounded-xl font-bold transition-colors">
                 Contact Sales
               </Link>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* FAQ Accordion Section */}
-      <section id="faq" className="py-20 px-4 sm:px-8 max-w-4xl mx-auto w-full">
-        <div className="text-center mb-12">
-          <span className="eyebrow text-blue-600 mb-2 block">Support &amp; Clarity</span>
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-gray-900">
-            Frequently Asked Questions
-          </h2>
-        </div>
-
-        <div className="space-y-3">
-          {faqs.map((faq, idx) => {
-            const isOpen = openFaq === idx;
-            return (
-              <div key={idx} className="panel bg-white/80 overflow-hidden shadow-sm">
-                <button
-                  onClick={() => setOpenFaq(isOpen ? null : idx)}
-                  className="w-full p-5 text-left flex items-center justify-between gap-4 font-extrabold text-sm text-gray-900"
+      {/* Massive Bottom CTA */}
+      <section className="py-24 px-4 sm:px-8 max-w-5xl mx-auto w-full relative z-20">
+        <div className="bg-[#0a0a0a] border border-white/10 rounded-[2.5rem] p-10 sm:p-20 text-center relative overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)]">
+           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-blue-600/5 rounded-full blur-[100px] pointer-events-none" />
+           <div className="relative z-10">
+              <h2 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6">
+                Scale Your Agency. <br/> Close More Deals.
+              </h2>
+              <p className="text-lg text-slate-400 mb-10 max-w-2xl mx-auto font-medium">
+                Start building bespoke interactive demos for qualified leads today. No credit card required.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                 <Link
+                  href="/signup"
+                  className="btn-primary-glow text-lg px-10 py-4 rounded-xl font-bold transition-all w-full sm:w-auto"
                 >
-                  <span>{faq.q}</span>
-                  <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-blue-600' : ''}`} />
-                </button>
-                {isOpen && (
-                  <div className="px-5 pb-5 text-xs text-gray-600 leading-relaxed border-t border-gray-100 pt-3">
-                    {faq.a}
-                  </div>
-                )}
+                  Start 14-Day Free Trial
+                </Link>
               </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Bottom CTA Glass Banner */}
-      <section className="py-16 px-4 sm:px-8 max-w-7xl mx-auto w-full">
-        <div className="panel p-8 sm:p-14 bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 text-white text-center rounded-[32px] shadow-2xl relative overflow-hidden">
-          <div className="max-w-2xl mx-auto relative z-10">
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-blue-100 mb-3 block">
-              Scale Your Agency Outbound
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
-              Ready to automate high-converting outreach?
-            </h2>
-            <p className="text-sm sm:text-base text-blue-100 mb-8 leading-relaxed">
-              Start building bespoke interactive demos for qualified leads today. No credit card required.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link
-                href="/signup"
-                className="btn bg-white !text-blue-700 hover:bg-gray-100 text-sm px-8 py-3.5 font-extrabold shadow-xl w-full sm:w-auto"
-              >
-                Start 14-Day Free Trial <ArrowRight className="w-4 h-4 ml-1 inline" />
-              </Link>
-              <Link
-                href="/login"
-                className="btn secondary !bg-white/20 !text-white !border-white/30 hover:!bg-white/30 text-sm px-6 py-3.5 font-bold w-full sm:w-auto"
-              >
-                Sign In to Console
-              </Link>
-            </div>
-          </div>
+           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-4 sm:px-8 max-w-7xl mx-auto w-full border-t border-gray-200/60 text-xs text-gray-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <div className="brand-mark !w-6 !h-6 !text-[11px] rounded-lg">
-            <Zap className="w-3 h-3 text-white" />
+      <footer className="py-12 px-4 sm:px-8 max-w-7xl mx-auto w-full border-t border-white/5 text-sm font-medium text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-6 relative z-20">
+        <div className="flex items-center gap-3">
+          <div className="w-6 h-6 rounded bg-blue-900/30 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <Zap className="w-3 h-3" />
           </div>
-          <span className="font-extrabold text-gray-900">LeadDrive</span>
-          <span>© {new Date().getFullYear()} LeadDrive Inc. All rights reserved.</span>
+          <span className="font-extrabold text-white">LeadDrive</span>
+          <span>© {new Date().getFullYear()} LeadDrive Inc.</span>
         </div>
 
-        <div className="flex items-center gap-6 font-semibold">
-          <Link href="/login" className="hover:text-blue-600 transition-colors">Sign In</Link>
-          <Link href="/signup" className="hover:text-blue-600 transition-colors">Sign Up</Link>
-          <a href="#pipeline" className="hover:text-blue-600 transition-colors">Pipeline</a>
-          <a href="#pricing" className="hover:text-blue-600 transition-colors">Pricing</a>
-          <a href="#faq" className="hover:text-blue-600 transition-colors">FAQ</a>
+        <div className="flex items-center gap-8">
+          <Link href="/login" className="hover:text-white transition-colors">Sign In</Link>
+          <a href="#workflow" className="hover:text-white transition-colors">Workflow</a>
+          <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
         </div>
       </footer>
     </div>
