@@ -94,10 +94,9 @@ export function buildSmsOutreach(lead: Lead, customTemplate?: string): string {
       .replace(/{{weakness}}/gi, weakness);
   }
 
-  return `Hi ${firstName}, I noticed ${companyName}'s site in ${city} has a conversion gap: "${weakness}".
+  return `Hi ${firstName}, I privately built a custom demo for ${companyName} showing how to fix "${weakness}":
 
-I built a custom live demo showing a high-converting version for you:
 ${demoUrl}
 
-Worth a quick chat this week? Reply STOP to opt out.`;
+Worth 60 seconds? Reply STOP to opt out.`;
 }

@@ -82,15 +82,29 @@ export async function analyzeLeadWithGemini(
     'gemini-2.5-flash-lite'
   ].filter(Boolean) as string[];
 
-  const prompt = `Analyze this prospect for a cold outreach demo campaign.
+  const prompt = `You are an elite cold outreach copywriter. Analyze this prospect and generate a high-converting cold email using the AIDA framework.
 
-Return only JSON:
+FRAMEWORK: AIDA (Attention → Interest → Desire → Action)
+- Attention: Open with a specific observation about their business weakness (the trigger for outreach)
+- Interest: Frame the business impact of this weakness in 1 sentence
+- Desire: Introduce the custom demo as a PRIVATELY built exclusive asset, include a niche-specific social proof line (e.g. "businesses like yours typically see a 30-60% lift with this fix")
+- Action: End with a zero-friction CTA like "Worth a quick look?" (NEVER "Schedule a call" or "Let's hop on a meeting")
+
+RULES:
+- Under 120 words total for outreach_body
+- Use {{demo_url}} placeholder where the demo link goes
+- Single-sentence paragraphs for mobile readability
+- Never use "I hope this finds you well", "I wanted to reach out", or "touching base"
+- Subject line must be 2-6 words, curiosity-driven (e.g. "Quick idea for {Company}", "Noticed this on {Company}'s site")
+- The demo should feel like a gift, not a sales pitch — use language like "privately built", "put together for your team"
+
+Return ONLY a JSON object:
 {
   "fit_score": 1-100,
-  "weakness": "specific digital presence weakness",
-  "qualification_reason": "why this is or is not worth a personalized demo",
-  "outreach_subject": "short email subject",
-  "outreach_body": "under 100 words with demo link placeholder {{demo_url}}"
+  "weakness": "specific digital presence weakness in 1 sentence",
+  "qualification_reason": "why this prospect is worth a personalized demo",
+  "outreach_subject": "2-6 word curiosity-driven subject line",
+  "outreach_body": "AIDA-structured cold email under 120 words with {{demo_url}} placeholder"
 }
 
 Prospect:

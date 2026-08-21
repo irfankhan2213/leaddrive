@@ -102,7 +102,7 @@ export function renderProfessionalEmailHtml(text: string, lead: Lead, senderName
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Growth Proposal for ${companyName}</title>
+  <title>Something for ${companyName}</title>
 </head>
 <body style="margin: 0; padding: 24px; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
   <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e5e7eb; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
@@ -113,10 +113,10 @@ export function renderProfessionalEmailHtml(text: string, lead: Lead, senderName
           <tr>
             <td>
               <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; color: #60a5fa; background: rgba(96,165,250,0.15); padding: 4px 10px; border-radius: 20px; border: 1px solid rgba(96,165,250,0.3);">
-                Digital Audit & Concept
+                Privately Built for You
               </span>
               <h1 style="margin: 12px 0 0 0; font-size: 20px; font-weight: 800; color: #ffffff; line-height: 1.3;">
-                Personalized Growth Blueprint for ${companyName}
+                Custom Demo for ${companyName}
               </h1>
             </td>
           </tr>
@@ -138,7 +138,7 @@ export function renderProfessionalEmailHtml(text: string, lead: Lead, senderName
           <table width="100%" border="0" cellspacing="0" cellpadding="0">
             <tr>
               <td style="font-size: 12px; font-weight: 700; color: #0f172a; padding-bottom: 6px;">
-                🔍 Identified Conversion Bottleneck:
+                🔍 What We Found:
               </td>
             </tr>
             <tr>
@@ -158,7 +158,7 @@ export function renderProfessionalEmailHtml(text: string, lead: Lead, senderName
           Sent by ${senderName}
         </p>
         <p style="margin: 0; font-size: 11px; color: #9ca3af;">
-          If you prefer not to receive growth audits, you can reply directly with "Unsubscribe".
+          Not interested? Reply "unsubscribe" and you won't hear from us again.
         </p>
       </td>
     </tr>

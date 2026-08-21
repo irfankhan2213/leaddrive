@@ -92,15 +92,28 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
           <span className="truncate">Help & Documentation</span>
         </button>
 
-        <div className="p-2.5 rounded-xl bg-white/70 border border-white/80 flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center text-[11px] shadow-sm flex-shrink-0">
-            LD
+        <div className="p-2.5 rounded-xl bg-white/70 border border-white/80 flex items-center justify-between gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold flex items-center justify-center text-[11px] shadow-sm flex-shrink-0">
+              LD
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-xs font-bold text-gray-900 truncate">LeadDrive User</div>
+              <div className="text-[10px] text-gray-500 truncate">Pro Workspace</div>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold text-gray-900 truncate">LeadDrive User</div>
-            <div className="text-[10px] text-gray-500 truncate">Pro Workspace</div>
-          </div>
-          <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" title="Online" />
+          <button
+            onClick={async () => {
+              const { createClient } = await import('@/lib/supabase-browser');
+              const supabase = createClient();
+              await supabase.auth.signOut();
+              window.location.href = '/login';
+            }}
+            title="Sign out"
+            className="text-[11px] text-gray-500 hover:text-red-600 font-semibold px-2 py-1 rounded-md hover:bg-red-50 transition-colors"
+          >
+            Exit
+          </button>
         </div>
       </div>
     </aside>

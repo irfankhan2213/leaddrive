@@ -122,6 +122,9 @@ begin
 end;
 $$;
 
+alter table public.campaigns add column if not exists user_id uuid references auth.users(id);
+alter table public.leads add column if not exists user_id uuid references auth.users(id);
+
 alter table public.campaigns enable row level security;
 alter table public.leads enable row level security;
 alter table public.outreach_events enable row level security;
@@ -143,3 +146,23 @@ on public.outreach_events
 for all
 using (auth.role() = 'service_role')
 with check (auth.role() = 'service_role');
+
+-- Authenticated User Multi-Tenant Policies
+create policy "users can manage own campaigns"
+on public.campaigns
+for all
+using (auth.uid() = user_id or user_id is null or auth.role() = 'service_role')
+with check (auth.uid() = user_id or user_id is null or auth.role() = 'service_role');
+
+create policy "users can manage own leads"
+on public.leads
+for all
+using (auth.uid() = user_id or user_id is null or auth.role() = 'service_role')
+with check (auth.uid() = user_id or user_id is null or auth.role() = 'service_role');
+
+create policy "users can manage own outreach events"
+on public.outreach_events
+for all
+using (auth.role() = 'service_role' or auth.uid() is not null)
+with check (auth.role() = 'service_role' or auth.uid() is not null);
+

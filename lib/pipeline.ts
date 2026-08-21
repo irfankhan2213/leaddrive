@@ -194,7 +194,7 @@ export function buildPipeline(
       demo_provider: input.demoProvider || 'v0',
       demo_quality: input.demoQuality || 'low',
       demo_prompt: '',
-      outreach_subject: `${prospect.company_name.split(' ')[0]} ${prospect.city ? `in ${prospect.city}` : ''} demo idea`,
+      outreach_subject: generateOutreachSubject(prospect.company_name, prospect.city),
       outreach_body: '',
       matched_keyword: prospect.matched_keyword,
       opens: 0,
@@ -285,6 +285,41 @@ LUXURY DESIGN TOKENS & VISUAL POLISH:
 - Code Standard: Complete, self-contained React + Next.js + Tailwind CSS component using Lucide icons, full state interactivity, and rich realistic copy.`;
 }
 
+export function generateOutreachSubject(company: string, city?: string): string {
+  const companyShort = company.split(' ')[0];
+  const subjects = [
+    `Quick idea for ${companyShort}`,
+    `Noticed this on ${companyShort}'s site`,
+    `${companyShort} — 60s concept`,
+    `Thought about ${companyShort}${city ? ` in ${city}` : ''}`,
+    `${companyShort} growth concept`,
+    `Built something for ${companyShort}`
+  ];
+  // Deterministic rotation based on company name length
+  return subjects[company.length % subjects.length];
+}
+
+function getNicheSocialProof(niche?: string): string {
+  const lower = (niche || '').toLowerCase();
+  if (lower.includes('dental') || lower.includes('clinic') || lower.includes('doctor'))
+    return 'dental and healthcare practices typically see a 35-50% lift in online bookings';
+  if (lower.includes('law') || lower.includes('legal') || lower.includes('attorney'))
+    return 'law firms using this approach have increased consultation bookings by 40-60%';
+  if (lower.includes('spa') || lower.includes('wellness') || lower.includes('salon') || lower.includes('beauty'))
+    return 'wellness businesses using this approach have doubled their mobile booking rate';
+  if (lower.includes('hvac') || lower.includes('plumb') || lower.includes('electric') || lower.includes('roofing') || lower.includes('contract'))
+    return 'home service companies using this approach have cut their cost-per-lead by 40%';
+  if (lower.includes('real estate') || lower.includes('realtor') || lower.includes('property'))
+    return 'real estate teams using this approach have increased their inquiry-to-showing rate by 45%';
+  if (lower.includes('restaurant') || lower.includes('food') || lower.includes('catering'))
+    return 'restaurants using this approach have boosted online orders and reservations by 35%';
+  if (lower.includes('saas') || lower.includes('tech') || lower.includes('app') || lower.includes('software'))
+    return 'SaaS companies using this approach have improved free-trial activation by 50%';
+  if (lower.includes('fitness') || lower.includes('gym') || lower.includes('yoga') || lower.includes('personal train'))
+    return 'fitness businesses using this approach have increased class bookings by 40%';
+  return 'businesses using this approach typically see a 30-60% increase in their conversion rate';
+}
+
 export function buildOutreach({
   company,
   contactName,
@@ -302,31 +337,46 @@ export function buildOutreach({
   channel: OutreachChannel;
   niche?: string;
 }): string {
-  const nameGreeting = contactName ? `Hi ${contactName.split(' ')[0]},` : 'Hi,';
-  const locationLine = city ? ` in ${city}` : '';
+  const firstName = contactName ? contactName.split(' ')[0] : '';
+  const greeting = firstName ? `Hi ${firstName},` : 'Hi,';
+  const locationTag = city ? ` in ${city}` : '';
+  const proof = getNicheSocialProof(niche);
 
+  // ── LinkedIn (concise, peer-to-peer, conversational) ──
   if (channel === 'linkedin') {
-    return `${nameGreeting} Noticed ${company}${locationLine} has a clear growth opportunity: ${weakness}
+    return `${greeting}
 
-I put together a quick 1-minute interactive demo showing how I'd tighten up your mobile booking for local buyers: ${demoUrl}
-
-Worth sending over the notes?`;
-  }
-
-  if (channel === 'sms') {
-    return `Hi ${contactName ? contactName.split(' ')[0] : 'there'}, noticed ${company}'s mobile booking has a gap: "${weakness}". Built a custom live demo for you: ${demoUrl} - Let me know if you want to chat!`;
-  }
-
-  return `${nameGreeting}
-
-I was analyzing high-performing ${niche || 'service'} businesses${locationLine} and noticed a fixable gap on ${company}'s digital presence:
+I was looking at ${company}'s site${locationTag} and spotted something that's probably costing you leads:
 
 "${weakness}"
 
-Instead of a generic pitch, I built a custom, interactive demo showing what a high-converting version could look like for your brand:
+Instead of just flagging it, I privately put together a custom interactive concept for ${company}:
 ${demoUrl}
 
-Would you be open to a 5-minute chat this week to review the concept?`;
+Worth 60 seconds of your time?`;
+  }
+
+  // ── SMS (ultra-tight, value-first, demo link prominent) ──
+  if (channel === 'sms') {
+    return `Hi ${firstName || 'there'}, I privately built a custom demo for ${company} showing how to fix "${weakness}": ${demoUrl}
+
+Worth 60 seconds? Reply STOP to opt out.`;
+  }
+
+  // ── Email (full AIDA: Attention → Interest → Desire → Action) ──
+  return `${greeting}
+
+I was looking at ${company}'s site${locationTag} and noticed one thing that's likely costing you conversions:
+
+"${weakness}"
+
+Rather than just pointing it out, I privately built a custom interactive demo showing exactly what a high-converting version would look like for ${company}:
+
+${demoUrl}
+
+For context, ${proof} with this kind of fix.
+
+Would you be open to taking a quick look?`;
 }
 
 function generateTailoredWeakness(

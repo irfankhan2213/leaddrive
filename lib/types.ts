@@ -52,6 +52,7 @@ export interface OutreachEvent {
 
 export interface Lead {
   id: string;
+  user_id?: string;
   campaign_id?: string;
   company_name: string;
   contact_name?: string;
@@ -91,6 +92,7 @@ export interface Lead {
 
 export interface Campaign {
   id: string;
+  user_id?: string;
   name: string;
   audience: string;
   locations?: string;
