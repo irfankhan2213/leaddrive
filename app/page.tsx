@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Zap,
@@ -14,30 +14,117 @@ import {
   BarChart3,
   Kanban,
   Target,
-  LayoutDashboard,
   ShieldCheck,
   ChevronDown,
   ExternalLink,
   Layers,
-  Flame,
   Activity,
   MousePointerClick,
   FileCode2,
   Clock,
-  Play
+  Play,
+  RotateCw,
+  Eye,
+  Send,
+  Sliders,
+  Check,
+  Cpu
 } from 'lucide-react';
+
+interface ProspectSample {
+  id: string;
+  name: string;
+  niche: string;
+  domain: string;
+  city: string;
+  speedScore: number;
+  weakness: string;
+  demoAngle: string;
+}
+
+const SAMPLE_PROSPECTS: ProspectSample[] = [
+  {
+    id: 'austin-dental',
+    name: 'Austin Precision Dental',
+    niche: 'Healthcare / Dental',
+    domain: 'austinprecisiondental.com',
+    city: 'Austin, TX',
+    speedScore: 24,
+    weakness: 'Mobile booking widget takes 4.8s to load on 4G',
+    demoAngle: 'Interactive 1-Click Patient Booking & Clean Next.js Prototype',
+  },
+  {
+    id: 'beacon-legal',
+    name: 'Beacon Hill Legal Partners',
+    niche: 'Corporate Law',
+    domain: 'beaconhilllegal.com',
+    city: 'Boston, MA',
+    speedScore: 38,
+    weakness: 'Outdated copyright (2020), no mobile consultation intake',
+    demoAngle: 'Modern Retainer Intake Portal with Instant Secure Case Evaluation',
+  },
+  {
+    id: 'nexus-cloud',
+    name: 'Nexus Security Systems',
+    niche: 'B2B Security / Tech',
+    domain: 'nexussecurityhq.com',
+    city: 'San Francisco, CA',
+    speedScore: 31,
+    weakness: 'Broken mobile responsiveness on case studies page',
+    demoAngle: 'Sleek Cyber Platform Mockup with Interactive ROI Calculator',
+  },
+];
 
 export default function LandingPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
-  const [activeTab, setActiveTab] = useState<'prospecting' | 'audit' | 'demos' | 'pipeline'>('demos');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
+  // Interactive Agent Simulator State
+  const [selectedProspect, setSelectedProspect] = useState<ProspectSample>(SAMPLE_PROSPECTS[0]);
+  const [simState, setSimState] = useState<'idle' | 'scraping' | 'auditing' | 'synthesizing' | 'ready'>('ready');
+  const [simProgress, setSimProgress] = useState(100);
+  const [activeSimTab, setActiveSimTab] = useState<'preview' | 'audit' | 'email'>('preview');
+
+  // Mouse spotlight coordinates
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const discountMultiplier = billingCycle === 'annual' ? 0.8 : 1;
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  const runSimulation = (prospect: ProspectSample) => {
+    setSelectedProspect(prospect);
+    setSimState('scraping');
+    setSimProgress(15);
+
+    setTimeout(() => {
+      setSimState('auditing');
+      setSimProgress(50);
+    }, 700);
+
+    setTimeout(() => {
+      setSimState('synthesizing');
+      setSimProgress(85);
+    }, 1500);
+
+    setTimeout(() => {
+      setSimState('ready');
+      setSimProgress(100);
+    }, 2300);
+  };
 
   const faqs = [
     {
       q: 'How does LeadDrive generate custom website demos for cold prospects?',
-      a: 'LeadDrive integrates directly with high-performance AI engines (including Vercel v0, Google Vertex AI, and our custom Agentic HTML builder). When a prospect is qualified, our agents scrape the prospect’s existing branding, diagnose flaws in their current web design, and synthesize a complete, interactive, mobile-responsive prototype that you can link directly in your cold outreach.',
+      a: 'LeadDrive connects directly to high-performance AI generation engines (including Vercel v0, Google Vertex AI, and our custom Agentic HTML builder). When a prospect is qualified, our agents scrape the prospect’s branding, diagnose flaws in their current web design, and synthesize a complete, interactive, mobile-responsive prototype that you can link directly in your cold outreach.',
     },
     {
       q: 'Which lead sources are supported out of the box?',
@@ -62,8 +149,21 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen text-[#111827] flex flex-col justify-between">
-      {/* Top Glass Navigation Bar */}
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      className="glow-canvas min-h-screen text-[#111827] flex flex-col justify-between"
+    >
+      {/* Dynamic Mouse Spotlight Glow */}
+      <div
+        className="glow-spotlight"
+        style={{
+          left: `${mousePos.x}px`,
+          top: `${mousePos.y}px`,
+        }}
+      />
+
+      {/* Floating Glass Navigation Bar */}
       <header className="sticky top-3 z-50 px-4 sm:px-8 max-w-7xl mx-auto w-full">
         <div className="panel px-4 py-3 flex items-center justify-between shadow-lg">
           {/* Brand Mark */}
@@ -77,14 +177,15 @@ export default function LandingPage() {
               </div>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-semibold text-gray-500">v2.4 Engine Active</span>
+                <span className="text-[10px] font-semibold text-gray-500 font-mono">v2.4 Engine Active</span>
               </div>
             </div>
           </Link>
 
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-gray-600">
-            <a href="#pipeline" className="hover:text-blue-600 transition-colors">Command Pipeline</a>
+            <a href="#simulator" className="hover:text-blue-600 transition-colors">Interactive Demo</a>
+            <a href="#pipeline" className="hover:text-blue-600 transition-colors">Pipeline</a>
             <a href="#capabilities" className="hover:text-blue-600 transition-colors">Capabilities</a>
             <a href="#pricing" className="hover:text-blue-600 transition-colors">Pricing</a>
             <a href="#faq" className="hover:text-blue-600 transition-colors">FAQ</a>
@@ -108,48 +209,59 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="pt-16 pb-20 px-4 sm:px-8 max-w-7xl mx-auto w-full">
-        <div className="text-center max-w-4xl mx-auto">
-          {/* Eyebrow Status Pill */}
+      {/* Hero Section with Animated SVG Geometry & Live Telemetry */}
+      <section className="relative pt-16 pb-20 px-4 sm:px-8 max-w-7xl mx-auto w-full">
+        {/* Background Rotating SVG Orbits */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] h-[720px] pointer-events-none opacity-35 -z-10">
+          <svg viewBox="0 0 800 800" className="w-full h-full">
+            <circle cx="400" cy="400" r="380" fill="none" stroke="rgba(0, 122, 255, 0.15)" strokeWidth="1" />
+            <circle cx="400" cy="400" r="280" fill="none" stroke="rgba(90, 200, 250, 0.2)" strokeWidth="1.5" strokeDasharray="6 6" className="orbit-ring" />
+            <circle cx="400" cy="400" r="180" fill="none" stroke="rgba(0, 122, 255, 0.25)" strokeWidth="1" className="orbit-ring-reverse" />
+            <circle cx="400" cy="20" r="6" fill="#007aff" className="orbit-ring" />
+            <circle cx="680" cy="400" r="5" fill="#5ac8fa" className="orbit-ring-reverse" />
+          </svg>
+        </div>
+
+        <div className="text-center max-w-4xl mx-auto relative z-10">
+          {/* Live Telemetry Pill */}
           <div className="inline-flex items-center gap-2 status-pill px-3.5 py-1.5 mb-6 shadow-sm border border-white/80">
             <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-            <span className="eyebrow !text-[11px] !text-blue-700 !font-bold">
-              AI-POWERED COLD OUTREACH &amp; DEMO SYNTHESIS ENGINE
+            <span className="eyebrow !text-[11px] !text-blue-700 !font-bold font-mono">
+              OCTOLANE-GRADE MOTION · MULTI-AGENT DEMO SYNTHESIS
             </span>
           </div>
 
-          {/* Main Title */}
+          {/* Main Headline */}
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-gray-900 leading-[1.05] mb-6">
             Autonomous Outreach Intelligence <br />
             <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-indigo-600 bg-clip-text text-transparent">
-              for High-Growth Agencies.
+              Powered by Proof.
             </span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8">
-            Discover verified leads across Google Maps and Apollo, diagnose real website bottlenecks, synthesize bespoke interactive web demos, and fire personalized multichannel outreach in seconds.
+            LeadDrive autonomously discovers qualified businesses, diagnoses high-friction website bottlenecks, and generates custom interactive web demos before firing precision multichannel campaigns.
           </p>
 
           {/* Action CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-10">
             <Link
               href="/signup"
-              className="btn text-sm px-7 py-3 shadow-xl shadow-blue-500/30 w-full sm:w-auto"
+              className="btn text-sm px-7 py-3 shadow-xl shadow-blue-500/30 w-full sm:w-auto font-bold"
             >
               Launch Free Campaign <ArrowRight className="w-4 h-4 ml-1 inline" />
             </Link>
-            <Link
-              href="/login"
-              className="btn secondary text-sm px-6 py-3 w-full sm:w-auto"
+            <a
+              href="#simulator"
+              className="btn secondary text-sm px-6 py-3 w-full sm:w-auto font-bold"
             >
-              Open Live Console
-            </Link>
+              Test Live Simulator <Play className="w-3.5 h-3.5 ml-1 inline text-blue-600" />
+            </a>
           </div>
 
-          {/* Trust Guarantees */}
-          <div className="flex items-center justify-center gap-6 text-xs text-gray-500 font-semibold">
+          {/* Live Metric Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-gray-500 font-semibold pt-1">
             <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               <span>14-day free trial</span>
@@ -158,351 +270,211 @@ export default function LandingPage() {
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               <span>No credit card required</span>
             </div>
-            <div className="hidden sm:flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span>Supabase DB sync</span>
+              <span>Instant Supabase sync</span>
             </div>
           </div>
         </div>
 
-        {/* Hero Interactive Frosted Glass Dashboard Canvas */}
-        <div className="mt-14 panel p-4 sm:p-6 shadow-2xl relative overflow-hidden">
-          {/* Top Bar of Window */}
-          <div className="flex items-center justify-between border-b border-white/60 pb-3 mb-5 px-1">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-400/80" />
-              <div className="w-3 h-3 rounded-full bg-amber-400/80" />
-              <div className="w-3 h-3 rounded-full bg-emerald-400/80" />
-              <span className="text-xs font-semibold text-gray-400 ml-2">LeadDrive Command Center · Live Multi-Agent Workspace</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="status-pill !bg-emerald-50 !border-emerald-200 !text-emerald-700 font-bold text-[10px]">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                PIPELINE LIVE
-              </span>
-            </div>
-          </div>
-
-          {/* 4 Metric Cards inside Canvas */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-            <div className="panel panel-pad metric bg-white/70">
-              <div className="eyebrow text-gray-500 flex items-center justify-between">
-                <span>Discovered Leads</span>
-                <Target className="w-3.5 h-3.5 text-blue-500" />
-              </div>
-              <div className="metric-value text-gray-900 mt-2">1,840</div>
-              <div className="text-[11px] font-semibold text-emerald-600 mt-1 flex items-center gap-1">
-                <span>↑ 24% from Maps &amp; Apollo</span>
-              </div>
-            </div>
-
-            <div className="panel panel-pad metric bg-white/70">
-              <div className="eyebrow text-gray-500 flex items-center justify-between">
-                <span>Qualified Prospects</span>
-                <ShieldCheck className="w-3.5 h-3.5 text-indigo-500" />
-              </div>
-              <div className="metric-value text-gray-900 mt-2">1,420</div>
-              <div className="text-[11px] font-semibold text-blue-600 mt-1">
-                Avg Fit Score: 88/100
-              </div>
-            </div>
-
-            <div className="panel panel-pad metric bg-white/70">
-              <div className="eyebrow text-gray-500 flex items-center justify-between">
-                <span>AI Demos Synthesized</span>
-                <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-              </div>
-              <div className="metric-value text-gray-900 mt-2">980</div>
-              <div className="text-[11px] font-semibold text-purple-600 mt-1">
-                Vertex &amp; v0 Live Previews
-              </div>
-            </div>
-
-            <div className="panel panel-pad metric bg-white/70">
-              <div className="eyebrow text-gray-500 flex items-center justify-between">
-                <span>Reply Rate Lift</span>
-                <Activity className="w-3.5 h-3.5 text-emerald-500" />
-              </div>
-              <div className="metric-value text-emerald-600 mt-2">4.8x</div>
-              <div className="text-[11px] font-semibold text-gray-500 mt-1">
-                18.4% Booked Call Conversion
-              </div>
-            </div>
-          </div>
-
-          {/* Interactive Lead Inspection Table Mock */}
-          <div className="panel p-4 bg-white/80 border border-white">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
+        {/* Live Interactive Agent Simulation Sandbox */}
+        <div id="simulator" className="mt-14 panel p-4 sm:p-6 shadow-2xl relative overflow-hidden bg-white/90">
+          {/* Simulator Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200/80 pb-4 mb-5">
+            <div>
               <div className="flex items-center gap-2">
-                <span className="font-extrabold text-xs text-gray-900">Prospect Intelligence Stream</span>
-                <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Automated Batch #104</span>
+                <span className="font-extrabold text-sm text-gray-900">Live Agent Demo Simulator</span>
+                <span className="status-pill !bg-blue-50 !text-blue-700 !text-[10px] font-bold">Interactive</span>
               </div>
-              <span className="text-[11px] text-gray-500 font-medium">Updated 3 seconds ago</span>
+              <p className="text-xs text-gray-500 mt-0.5">Select a prospect business to trigger live multi-agent synthesis:</p>
             </div>
 
-            <div className="space-y-2.5 text-xs">
-              {/* Row 1 */}
-              <div className="p-3 rounded-2xl bg-white border border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-xs hover:border-blue-200 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 font-extrabold flex items-center justify-center text-xs">
-                    AP
-                  </div>
-                  <div>
-                    <div className="font-extrabold text-gray-900 flex items-center gap-2">
-                      Austin Precision Dental
-                      <span className="status-pill !text-[9px] !py-0 !px-1.5 bg-emerald-50 text-emerald-700 font-bold">Healthcare</span>
-                    </div>
-                    <div className="text-[11px] text-gray-500">austinprecisiondental.com · Austin, TX</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="w-28">
-                    <div className="flex justify-between text-[10px] font-bold text-gray-500 mb-1">
-                      <span>Fit Score</span>
-                      <span className="text-emerald-600">96%</span>
-                    </div>
-                    <div className="score-bar">
-                      <div className="score-fill" style={{ width: '96%' }} />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 rounded-lg bg-red-50 text-red-700 font-bold text-[10px] border border-red-100">
-                      Mobile Speed: 24/100
-                    </span>
-                    <span className="px-2 py-1 rounded-lg bg-purple-50 text-purple-700 font-bold text-[10px] border border-purple-100 flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" /> Demo Ready
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Row 2 */}
-              <div className="p-3 rounded-2xl bg-white border border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-xs hover:border-blue-200 transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-100 text-indigo-700 font-extrabold flex items-center justify-center text-xs">
-                    BH
-                  </div>
-                  <div>
-                    <div className="font-extrabold text-gray-900 flex items-center gap-2">
-                      Beacon Hill Legal Partners
-                      <span className="status-pill !text-[9px] !py-0 !px-1.5 bg-blue-50 text-blue-700 font-bold">Legal</span>
-                    </div>
-                    <div className="text-[11px] text-gray-500">beaconhilllegal.com · Boston, MA</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="w-28">
-                    <div className="flex justify-between text-[10px] font-bold text-gray-500 mb-1">
-                      <span>Fit Score</span>
-                      <span className="text-emerald-600">89%</span>
-                    </div>
-                    <div className="score-bar">
-                      <div className="score-fill" style={{ width: '89%' }} />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-1 rounded-lg bg-amber-50 text-amber-700 font-bold text-[10px] border border-amber-100">
-                      Lighthouse: 38/100
-                    </span>
-                    <span className="px-2 py-1 rounded-lg bg-purple-50 text-purple-700 font-bold text-[10px] border border-purple-100 flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" /> Demo Ready
-                    </span>
-                  </div>
-                </div>
-              </div>
+            {/* Business Selector Pills */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {SAMPLE_PROSPECTS.map((p) => {
+                const isSelected = selectedProspect.id === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => runSimulation(p)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                      isSelected
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
+                        : 'bg-white/80 text-gray-700 hover:bg-white border border-gray-200/80'
+                    }`}
+                  >
+                    {p.name.split(' ')[0]}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Interactive Command Pipeline Visualizer */}
-      <section id="pipeline" className="py-20 px-4 sm:px-8 max-w-7xl mx-auto w-full">
-        <div className="text-center max-w-3xl mx-auto mb-12">
-          <span className="eyebrow text-blue-600 mb-2 block">Command Pipeline Architecture</span>
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-gray-900">
-            From Search to Signed Retainer in 4 Steps.
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600 mt-3">
-            Every step is managed autonomously by specialized background AI agents with real-time telemetry.
-          </p>
-        </div>
+          {/* Progress Bar during Simulation */}
+          <div className="mb-5">
+            <div className="flex items-center justify-between text-xs font-bold text-gray-600 mb-1.5 font-mono">
+              <span className="flex items-center gap-2">
+                {simState === 'scraping' && 'Step 1/3: Scraping Apollo & Google Maps listing...'}
+                {simState === 'auditing' && 'Step 2/3: Running Headless Lighthouse Speed Audit...'}
+                {simState === 'synthesizing' && 'Step 3/3: Synthesizing Next.js Prototype via Vertex AI...'}
+                {simState === 'ready' && '✓ Autonomous Synthesis Complete · Demo Enqueued'}
+              </span>
+              <span className="text-blue-600">{simProgress}%</span>
+            </div>
+            <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 via-sky-400 to-emerald-500 transition-all duration-500 rounded-full"
+                style={{ width: `${simProgress}%` }}
+              />
+            </div>
+          </div>
 
-        {/* Tab Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 mb-10">
-          {[
-            { id: 'prospecting', label: '1. Multi-Vector Discovery', icon: Target },
-            { id: 'audit', label: '2. Technical Site Diagnostic', icon: BarChart3 },
-            { id: 'demos', label: '3. AI Demo Synthesis Lab', icon: Sparkles },
-            { id: 'pipeline', label: '4. Multichannel Dispatch', icon: Kanban },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold transition-all ${
-                  isActive
-                    ? 'btn shadow-lg shadow-blue-500/20'
-                    : 'btn secondary'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Active Stage Display Panel */}
-        <div className="panel panel-pad p-6 sm:p-10 shadow-xl bg-white/80 border border-white">
-          {activeTab === 'prospecting' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          {/* Simulator View Tabs */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {/* Left: Prospect Intelligence Card */}
+            <div className="panel p-4 bg-white/70 flex flex-col justify-between">
               <div>
-                <span className="status-pill bg-blue-50 text-blue-700 font-bold mb-3">STAGE 01 · PROSPECTING HUB</span>
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">
-                  Multi-Source Lead Extraction
-                </h3>
-                <p className="text-gray-600 text-sm leading-relaxed mb-6">
-                  Target high-value businesses by niche and geolocation. LeadDrive orchestrates parallel scrapers across Google Maps, Apollo.io, LinkedIn, and CSV spreadsheets with automatic enrichment.
-                </p>
-                <div className="space-y-2.5 text-xs font-semibold text-gray-700">
-                  <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Direct decision-maker email and phone extraction</div>
-                  <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Live domain validation and SSL certificate check</div>
-                  <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> AI qualification scoring to eliminate irrelevant listings</div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="eyebrow text-gray-400 font-mono">Prospect Profile</span>
+                  <span className="status-pill !bg-emerald-50 !text-emerald-700 !text-[10px] font-bold">Enriched</span>
+                </div>
+                <div className="font-extrabold text-base text-gray-900">{selectedProspect.name}</div>
+                <div className="text-xs text-gray-500 font-mono mt-0.5">{selectedProspect.domain}</div>
+                <div className="text-xs text-gray-600 mt-1">{selectedProspect.city} · {selectedProspect.niche}</div>
+
+                <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                  <div>
+                    <div className="text-[11px] font-bold text-gray-500 mb-1">Mobile Speed Diagnostic</div>
+                    <div className="flex items-center gap-3">
+                      <span className="px-2 py-0.5 rounded-lg bg-red-100 text-red-700 font-bold text-xs font-mono">
+                        {selectedProspect.speedScore} / 100
+                      </span>
+                      <span className="text-xs text-red-600 font-semibold">Critical Bottleneck</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="text-[11px] font-bold text-gray-500 mb-1">Diagnosed Weakness</div>
+                    <div className="text-xs text-gray-700 bg-gray-50 p-2.5 rounded-xl border border-gray-100 font-medium">
+                      &quot;{selectedProspect.weakness}&quot;
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="panel p-5 bg-gray-900 text-white rounded-2xl">
-                <div className="flex items-center justify-between text-xs text-gray-400 pb-2 border-b border-gray-800">
-                  <span className="font-mono">// Discovery Agent Output</span>
-                  <span className="text-emerald-400 font-bold">Active</span>
-                </div>
-                <div className="font-mono text-xs text-gray-300 space-y-2 mt-3">
-                  <div className="text-blue-400">Query: &quot;dentists in Austin TX rating &lt; 4.8&quot;</div>
-                  <div>✓ Found 142 business listings</div>
-                  <div>✓ Enriched 118 verified contact emails</div>
-                  <div>✓ Scanned 94 live websites</div>
-                  <div className="text-emerald-400 font-bold pt-1">→ 94 High-Intent Prospects Enqueued</div>
-                </div>
+
+              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                <span>Fit Score: <strong className="text-emerald-600">96%</strong></span>
+                <button
+                  onClick={() => runSimulation(selectedProspect)}
+                  className="text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1"
+                >
+                  <RotateCw className="w-3.5 h-3.5" /> Re-run
+                </button>
               </div>
             </div>
-          )}
 
-          {activeTab === 'audit' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              <div>
-                <span className="status-pill bg-amber-50 text-amber-700 font-bold mb-3">STAGE 02 · TECHNICAL AUDIT</span>
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">
-                  Automated PageSpeed &amp; UX Diagnostic
-                </h3>
-                <p className="text-gray-600 text-sm leading-relaxed mb-6">
-                  Our headless diagnostic bots test each prospect&apos;s site for mobile responsiveness, load speeds, missing meta tags, and broken layouts—giving you undeniable proof in your outreach.
-                </p>
-                <div className="space-y-2.5 text-xs font-semibold text-gray-700">
-                  <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Google Lighthouse mobile and desktop audit score (0–100)</div>
-                  <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Identification of uncompressed images and 4+ second delays</div>
-                  <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Auto-generation of customized pitch hooks targeting real flaws</div>
-                </div>
-              </div>
-              <div className="panel p-5 bg-gray-900 text-white rounded-2xl">
-                <div className="flex items-center justify-between text-xs text-gray-400 pb-2 border-b border-gray-800">
-                  <span className="font-mono">// Diagnostic Report</span>
-                  <span className="text-red-400 font-bold">Flaws Detected</span>
-                </div>
-                <div className="font-mono text-xs space-y-2 mt-3">
-                  <div className="flex justify-between bg-gray-800/80 p-2 rounded-xl">
-                    <span className="text-gray-300">Mobile Speed Score:</span>
-                    <span className="text-red-400 font-bold">24 / 100</span>
+            {/* Middle & Right: Live Interactive Prototype Sandbox */}
+            <div className="lg:col-span-2 panel p-4 bg-slate-950 text-white rounded-2xl flex flex-col justify-between">
+              {/* Sandbox Header */}
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                <div className="flex items-center gap-2 font-mono text-xs">
+                  <div className="flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80" />
                   </div>
-                  <div className="flex justify-between bg-gray-800/80 p-2 rounded-xl">
-                    <span className="text-gray-300">Largest Contentful Paint:</span>
-                    <span className="text-amber-400">4.8 seconds</span>
-                  </div>
-                  <div className="flex justify-between bg-gray-800/80 p-2 rounded-xl">
-                    <span className="text-gray-300">Mobile Layout:</span>
-                    <span className="text-red-400">CTA button broken</span>
-                  </div>
-                  <div className="text-emerald-400 pt-1">✓ Automated pitch angle constructed</div>
+                  <span className="text-slate-400 ml-2">demo.leaddrive.app/{selectedProspect.id}</span>
                 </div>
-              </div>
-            </div>
-          )}
 
-          {activeTab === 'demos' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              <div>
-                <span className="status-pill bg-purple-50 text-purple-700 font-bold mb-3">STAGE 03 · AI DEMO LAB</span>
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">
-                  Instant Working Web Demo Synthesis
-                </h3>
-                <p className="text-gray-600 text-sm leading-relaxed mb-6">
-                  Synthesize complete, interactive, mobile-responsive website redesigns using v0, Vertex AI, and our Agentic builder. Send prospects a personalized working demo before you even hop on a call.
-                </p>
-                <div className="space-y-2.5 text-xs font-semibold text-gray-700">
-                  <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Multi-model engine: Google Vertex AI + Vercel v0 + HTML Builder</div>
-                  <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Instant hosting on fast, trackable demo URLs</div>
-                  <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Live interactive buttons, booking forms, and modern UI tokens</div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setActiveSimTab('preview')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold font-mono transition-colors ${
+                      activeSimTab === 'preview' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Live Preview
+                  </button>
+                  <button
+                    onClick={() => setActiveSimTab('email')}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold font-mono transition-colors ${
+                      activeSimTab === 'email' ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    Email Angle
+                  </button>
                 </div>
               </div>
-              <div className="panel p-5 bg-gray-900 text-white rounded-2xl">
-                <div className="flex items-center justify-between text-xs text-gray-400 pb-2 border-b border-gray-800">
-                  <span className="font-mono">// Demo Synthesis Output</span>
-                  <span className="text-purple-400 font-bold">100% Bespoke</span>
-                </div>
-                <div className="font-mono text-xs space-y-2 mt-3">
-                  <div className="p-3 bg-gray-800/80 rounded-xl border border-gray-700">
-                    <div className="text-emerald-400 font-bold">Austin Dental Studio Prototype</div>
-                    <div className="text-gray-400 text-[11px]">Hosted: https://demo.leaddrive.app/lead-8429</div>
-                    <div className="text-sky-300 text-[11px] mt-1">Load Time: 0.28s · Performance: 99/100</div>
-                  </div>
-                  <div className="text-purple-300 pt-1">✓ Ready for multichannel dispatch</div>
-                </div>
-              </div>
-            </div>
-          )}
 
-          {activeTab === 'pipeline' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              <div>
-                <span className="status-pill bg-emerald-50 text-emerald-700 font-bold mb-3">STAGE 04 · OUTREACH PIPELINE</span>
-                <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-3">
-                  Multichannel Dispatch &amp; Telemetry
-                </h3>
-                <p className="text-gray-600 text-sm leading-relaxed mb-6">
-                  Deliver personalized emails and SMS embedded with the custom demo link. Get real-time notifications the exact second a prospect views the demo, enabling instant high-intent follow-up.
-                </p>
-                <div className="space-y-2.5 text-xs font-semibold text-gray-700">
-                  <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Real-time open, click, and demo dwell time tracking</div>
-                  <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Dynamic follow-up sequences triggered by prospect clicks</div>
-                  <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500" /> Automated webhooks to Slack, HubSpot, and CRM</div>
-                </div>
-              </div>
-              <div className="panel p-5 bg-gray-900 text-white rounded-2xl">
-                <div className="flex items-center justify-between text-xs text-gray-400 pb-2 border-b border-gray-800">
-                  <span className="font-mono">// Dispatch Telemetry</span>
-                  <span className="text-emerald-400 font-bold">Engaged</span>
-                </div>
-                <div className="font-mono text-xs space-y-2 mt-3">
-                  <div className="flex justify-between bg-gray-800/80 p-2 rounded-xl">
-                    <span className="text-gray-300">Outreach Email:</span>
-                    <span className="text-emerald-400 font-bold">Opened (2m ago)</span>
+              {/* Sandbox Body Content */}
+              {activeSimTab === 'preview' && (
+                <div className="bg-slate-900 rounded-xl p-5 border border-slate-800 flex-1 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs">
+                          {selectedProspect.name.charAt(0)}
+                        </div>
+                        <span className="font-bold text-sm text-white">{selectedProspect.name}</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                        ⚡ 0.28s Load Speed
+                      </span>
+                    </div>
+
+                    <div className="mt-4">
+                      <h4 className="font-extrabold text-base text-white">{selectedProspect.demoAngle}</h4>
+                      <p className="text-xs text-slate-400 mt-1">
+                        High-converting Next.js client interface with instant schedule confirmation and mobile-first gesture support.
+                      </p>
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-2 gap-2 text-xs font-mono">
+                      <div className="p-2.5 bg-slate-950 rounded-lg border border-slate-800 text-slate-300">
+                        <div className="text-slate-500 text-[10px]">Mobile Viewport</div>
+                        <div className="text-emerald-400 font-bold mt-0.5">100% Fluid Score</div>
+                      </div>
+                      <div className="p-2.5 bg-slate-950 rounded-lg border border-slate-800 text-slate-300">
+                        <div className="text-slate-500 text-[10px]">Lighthouse Audit</div>
+                        <div className="text-emerald-400 font-bold mt-0.5">99 / 100</div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex justify-between bg-gray-800/80 p-2 rounded-xl">
-                    <span className="text-gray-300">Interactive Demo Click:</span>
-                    <span className="text-emerald-400 font-bold">Active (3m 12s dwell)</span>
-                  </div>
-                  <div className="flex justify-between bg-gray-800/80 p-2 rounded-xl">
-                    <span className="text-gray-300">Outcome:</span>
-                    <span className="text-purple-400 font-bold">Booked Discovery Call</span>
+
+                  <div className="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+                    <span className="font-mono">Hosted on Cloudflare Edge + Supabase DB</span>
+                    <Link
+                      href="/signup"
+                      className="text-blue-400 hover:text-blue-300 font-bold flex items-center gap-1 font-mono"
+                    >
+                      Export Full Code <ExternalLink className="w-3 h-3" />
+                    </Link>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {activeSimTab === 'email' && (
+                <div className="bg-slate-900 rounded-xl p-5 border border-slate-800 flex-1 flex flex-col justify-between font-mono text-xs">
+                  <div>
+                    <div className="text-slate-400 mb-2">// Auto-Constructed Multichannel Copy</div>
+                    <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 text-slate-200 leading-relaxed">
+                      <div className="text-blue-400 mb-1">Subject: Quick question regarding {selectedProspect.domain} mobile load times</div>
+                      <p className="mt-2">
+                        Hi team,<br /><br />
+                        I ran a technical speed audit on {selectedProspect.domain} and noticed your mobile intake widget is suffering from a 4.8s delay.<br /><br />
+                        Rather than just talking about it, our team pre-built a 100% interactive Next.js redesign for {selectedProspect.name} with instant mobile booking:<br />
+                        👉 <span className="text-blue-400 underline">demo.leaddrive.app/{selectedProspect.id}</span><br /><br />
+                        Would you be open to a 5-min walk-through this Thursday?
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-[11px] text-emerald-400 pt-2">
+                    ✓ Verified decision-maker email ready for automated dispatch
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </section>
 
@@ -511,7 +483,7 @@ export default function LandingPage() {
         <div className="text-center max-w-3xl mx-auto mb-14">
           <span className="eyebrow text-blue-600 mb-2 block">Platform Capabilities</span>
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-gray-900">
-            Engineered for Modern Agencies.
+            Engineered for Modern Outbound Teams.
           </h2>
         </div>
 
@@ -526,7 +498,7 @@ export default function LandingPage() {
                 Scrape Google Maps and Apollo with deep contact enrichment and location-based semantic keyword clustering.
               </p>
             </div>
-            <div className="pt-4 border-t border-gray-100 mt-4 text-[11px] font-bold text-blue-600">
+            <div className="pt-4 border-t border-gray-100 mt-4 text-[11px] font-bold text-blue-600 font-mono">
               MAPS · APOLLO · LINKEDIN
             </div>
           </div>
@@ -541,7 +513,7 @@ export default function LandingPage() {
                 Run automated PageSpeed, mobile responsiveness, and SEO checks to identify concrete leverage for cold pitches.
               </p>
             </div>
-            <div className="pt-4 border-t border-gray-100 mt-4 text-[11px] font-bold text-amber-600">
+            <div className="pt-4 border-t border-gray-100 mt-4 text-[11px] font-bold text-amber-600 font-mono">
               SPEED · SEO · CORE VITALS
             </div>
           </div>
@@ -556,7 +528,7 @@ export default function LandingPage() {
                 Build bespoke interactive prototypes in seconds using Vertex AI and v0 models with live hosted demo URLs.
               </p>
             </div>
-            <div className="pt-4 border-t border-gray-100 mt-4 text-[11px] font-bold text-purple-600">
+            <div className="pt-4 border-t border-gray-100 mt-4 text-[11px] font-bold text-purple-600 font-mono">
               VERTEX · V0 · AGENTIC
             </div>
           </div>
@@ -571,7 +543,7 @@ export default function LandingPage() {
                 Send tailored email and SMS sequences with real-time open, click, and dwell time webhooks and CRM integration.
               </p>
             </div>
-            <div className="pt-4 border-t border-gray-100 mt-4 text-[11px] font-bold text-emerald-600">
+            <div className="pt-4 border-t border-gray-100 mt-4 text-[11px] font-bold text-emerald-600 font-mono">
               EMAIL · SMS · WEBHOOKS
             </div>
           </div>
