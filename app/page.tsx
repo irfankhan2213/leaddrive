@@ -8,29 +8,23 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
-  CheckCircle2,
-  Sparkles,
-  Globe,
-  Mail,
-  BarChart3,
+  Star,
   ChevronDown,
   Menu,
   X,
   Search,
   Bell,
-  Phone,
-  MapPin,
-  Layers,
-  Star,
-  ShieldCheck,
+  BarChart3,
   TrendingUp,
   Database,
+  Layers,
   Bot,
+  Plus,
+  Compass,
+  FileText,
   Clock,
-  Send,
-  Users,
-  Activity,
-  Flame
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -88,422 +82,396 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen text-[#0f172a] bg-white font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col justify-between overflow-x-hidden">
-      {/* Schema Markup for SEO/CRO */}
+      {/* FAQ Schema for SEO */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      {/* 1. Header Navigation Bar */}
-      <header className="fixed top-0 z-50 w-full px-4 sm:px-6 py-3.5 bg-white/90 backdrop-blur-md border-b border-gray-100/90 transition-all duration-300">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 no-underline group">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-[0_4px_14px_0_rgba(37,99,235,0.35)] group-hover:scale-105 transition-transform duration-200">
-              <Zap className="w-5 h-5 fill-white" />
-            </div>
-            <span className="font-extrabold text-xl tracking-tight text-gray-900">
-              LeadDrive
-            </span>
-          </Link>
+      {/* ========================================================================= */}
+      {/* 1. HERO & TOP NAVIGATION (SAME TO SAME AS REFERENCE IMAGE) */}
+      {/* ========================================================================= */}
+      <div className="relative w-full overflow-hidden bg-[#eaf4fe]">
+        {/* Photorealistic Atmospheric Sky & Fluffy Cloud Background */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Sky Gradient Base */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#bfe0fe] via-[#dcf0ff] to-[#f4faff]" />
+          
+          {/* Atmospheric Fluffy Cloud Elements */}
+          <div className="absolute -top-10 left-10 w-[500px] h-[300px] bg-white/70 rounded-full blur-3xl" />
+          <div className="absolute top-10 right-10 w-[600px] h-[350px] bg-white/80 rounded-full blur-3xl" />
+          <div className="absolute top-48 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-white/90 rounded-full blur-3xl" />
+          <div className="absolute -bottom-10 left-0 w-full h-48 bg-gradient-to-t from-white via-white/80 to-transparent" />
+        </div>
 
-          {/* Floating Pill Navigation */}
-          <nav className="hidden md:flex items-center bg-gray-50/90 px-1.5 py-1.5 rounded-full border border-gray-200/80 text-[13px] font-semibold text-gray-600">
-            <a href="#why" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
-              Why LeadDrive
-            </a>
-            <a href="#proof" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
-              Results
-            </a>
-            <a href="#features" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
-              Features
-            </a>
-            <a href="#pricing" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
-              Pricing
-            </a>
-            <a href="#faq" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
-              FAQ
-            </a>
-          </nav>
-
-          {/* Right Action Cluster */}
-          <div className="hidden md:flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-sm font-semibold text-gray-700 hover:text-black px-3 py-2 transition-colors min-h-[44px] flex items-center"
-            >
-              Sign In
+        {/* Top Floating Navbar (Exact Match to Reference) */}
+        <header className="relative z-50 w-full px-6 sm:px-10 py-5">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2 no-underline group">
+              <div className="flex items-center gap-1">
+                <div className="w-2.5 h-6 bg-blue-600 rounded-full transform -rotate-12" />
+                <div className="w-2.5 h-6 bg-blue-500 rounded-full transform -rotate-12" />
+                <div className="w-2.5 h-6 bg-sky-400 rounded-full transform -rotate-12" />
+              </div>
+              <span className="font-extrabold text-xl tracking-tight text-gray-900 ml-1">
+                Relink.
+              </span>
             </Link>
+
+            {/* Centered Floating Pill Menu */}
+            <nav className="hidden md:flex items-center bg-white/85 backdrop-blur-md px-1.5 py-1.5 rounded-full border border-white/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)] text-[13px] font-semibold text-gray-600">
+              <Link href="/" className="px-5 py-1.5 rounded-full bg-white text-gray-900 font-bold shadow-xs transition-all">
+                Home
+              </Link>
+              <button className="px-4 py-1.5 rounded-full hover:text-gray-900 flex items-center gap-1 transition-colors">
+                Solution <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              </button>
+              <button className="px-4 py-1.5 rounded-full hover:text-gray-900 flex items-center gap-1 transition-colors">
+                Resources <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+              </button>
+              <a href="#pricing" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
+                Pricing
+              </a>
+            </nav>
+
+            {/* Right Header Buttons */}
+            <div className="hidden md:flex items-center gap-4">
+              {/* Language Selector Pill */}
+              <div className="flex items-center bg-white/90 backdrop-blur-md p-1 rounded-full border border-gray-200/80 text-xs font-bold text-gray-600 shadow-xs">
+                <span className="px-2 py-0.5 rounded-full bg-[#0a0f1d] text-white flex items-center gap-1 text-[10px]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white" /> EN
+                </span>
+                <span className="px-2 py-0.5 text-gray-400 text-[10px]">SP</span>
+              </div>
+
+              <Link
+                href="/login"
+                className="text-xs font-bold text-gray-700 hover:text-black transition-colors"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-5 py-2.5 rounded-full shadow-[0_4px_14px_rgba(37,99,235,0.35)] transition-all"
+              >
+                Get Started
+              </Link>
+            </div>
+
+            {/* Mobile Hamburger */}
+            <button
+              className="md:hidden p-2 rounded-xl text-gray-700 hover:bg-white/50"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label="Toggle Menu"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+
+          {/* Mobile dropdown */}
+          {isMobileMenuOpen && (
+            <div className="absolute top-full left-0 w-full bg-white border-b border-gray-200 p-6 flex flex-col gap-4 shadow-2xl md:hidden">
+              <a href="#why" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Why Relink</a>
+              <a href="#features" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Features</a>
+              <a href="#pricing" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Pricing</a>
+              <a href="#faq" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>FAQ</a>
+              <hr className="border-gray-100 my-1" />
+              <Link href="/login" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Log in</Link>
+              <Link href="/signup" className="bg-blue-600 text-white text-center font-bold text-sm py-3 rounded-full mt-1" onClick={() => setIsMobileMenuOpen(false)}>Get Started</Link>
+            </div>
+          )}
+        </header>
+
+        {/* Hero Centered Typography (Exact Match to Reference) */}
+        <div className="relative z-10 max-w-4xl mx-auto text-center pt-10 sm:pt-14 pb-14 px-4">
+          <h1 className="text-4xl sm:text-5xl md:text-[3.8rem] font-extrabold tracking-tight text-[#0a0f1d] leading-[1.12] mb-5">
+            Data-Driven Decisions<br />
+            Powered by AI
+          </h1>
+
+          <p className="text-sm sm:text-base text-gray-600 max-w-lg mx-auto leading-relaxed mb-8 font-medium">
+            Effortlessly analyze large datasets, uncover trends, and make better decisions in minutes.
+          </p>
+
+          {/* Dual Action CTA Buttons (Exact Match to Reference) */}
+          <div className="flex items-center justify-center gap-3 mb-12 sm:mb-16">
             <Link
               href="/signup"
-              className="relink-btn-blue relink-pill-btn text-xs font-bold min-h-[44px]"
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-7 py-3 rounded-full shadow-[0_6px_20px_rgba(37,99,235,0.4)] transition-all hover:scale-105"
             >
-              Start Free Trial
+              Try for free
+            </Link>
+            <Link
+              href="/login"
+              className="bg-[#0a0f1d] hover:bg-[#1a233a] text-white text-xs font-bold px-6 py-3 rounded-full shadow-lg transition-all flex items-center gap-2 hover:scale-105"
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              Schedule a Demo
             </Link>
           </div>
 
-          {/* Mobile menu hamburger */}
-          <button
-            className="md:hidden p-2 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label="Toggle Menu"
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
-        </div>
-
-        {/* Mobile menu dropdown */}
-        {isMobileMenuOpen && (
-          <div className="absolute top-full left-0 w-full bg-white border-b border-gray-200 p-6 flex flex-col gap-4 shadow-2xl md:hidden animate-in slide-in-from-top-2">
-            <a href="#why" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Why LeadDrive</a>
-            <a href="#proof" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Case Studies</a>
-            <a href="#features" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Features</a>
-            <a href="#pricing" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Pricing</a>
-            <a href="#faq" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>FAQ</a>
-            <hr className="border-gray-100 my-1" />
-            <Link href="/login" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
-            <Link href="/signup" className="relink-btn-blue relink-pill-btn text-center text-sm py-3.5 mt-1 min-h-[44px]" onClick={() => setIsMobileMenuOpen(false)}>Start Your Free 14-Day Trial</Link>
-          </div>
-        )}
-      </header>
-
-      {/* 2. Redesigned 2-Column Hero Section: Left Text + Right Interactive Dashboard Cards */}
-      <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 px-4 sm:px-6 relink-sky-gradient overflow-hidden border-b border-gray-100/60">
-        {/* Soft atmospheric sky glow */}
-        <div className="absolute inset-0 pointer-events-none opacity-60">
-          <div className="absolute -top-12 left-1/4 w-[800px] h-[500px] bg-gradient-to-b from-sky-200/50 via-blue-100/30 to-transparent blur-3xl rounded-full" />
-          <div className="absolute top-20 -right-20 w-96 h-96 bg-white/80 blur-3xl rounded-full" />
-        </div>
-
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
-            
-            {/* LEFT COLUMN: Redesigned Left-Aligned Copy, CTAs, and Social Badges */}
-            <div className="lg:col-span-6 xl:col-span-5 text-left">
-              {/* Pill Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-blue-200/70 shadow-xs text-xs font-bold text-blue-700 mb-6">
-                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-                Autonomous Outbound Intelligence
+          {/* Hero Dashboard Preview (Exact Layered Perspective Stack from Reference) */}
+          <div className="relative mx-auto max-w-5xl">
+            {/* 1. Tilted Back-Left Card 1 (Perspective Peek) */}
+            <div className="hidden lg:block absolute -left-16 top-16 w-56 h-[440px] bg-white/90 backdrop-blur-md rounded-[2rem] border-[4px] border-[#0a0f1d]/90 shadow-2xl transform -rotate-12 z-0 p-4 pointer-events-none opacity-85">
+              <div className="flex items-center gap-2 mb-6 pb-3 border-b border-gray-100">
+                <div className="w-5 h-5 bg-blue-600 rounded-md" />
+                <span className="font-bold text-xs text-gray-900">Relink.</span>
               </div>
-
-              {/* Outcome-Led Headline */}
-              <h1 className="text-4xl sm:text-5xl xl:text-[3.6rem] font-extrabold tracking-tight text-[#0f172a] leading-[1.08] mb-6">
-                Book 4x More<br />
-                Client Meetings<br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">
-                  on Total Autopilot
-                </span>
-              </h1>
-
-              {/* Subtitle */}
-              <p className="text-base sm:text-lg text-gray-600 leading-relaxed mb-8 font-normal max-w-lg">
-                Synthesize interactive website redesigns and launch hyper-personalized cold outreach in minutes with zero manual prospecting.
-              </p>
-
-              {/* Action Button Cluster */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mb-5">
-                <Link
-                  href="/signup"
-                  className="relink-pill-btn relink-btn-blue px-7 py-3.5 text-sm sm:text-base font-bold shadow-lg min-h-[48px] justify-center"
-                >
-                  Start Your Free 14-Day Trial <ArrowRight className="w-4 h-4 ml-1" />
-                </Link>
-                <Link
-                  href="/login"
-                  className="relink-pill-btn relink-btn-dark px-6 py-3.5 text-sm font-bold flex items-center justify-center gap-2 min-h-[48px]"
-                >
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                  See It in Action
-                </Link>
-              </div>
-
-              {/* Trust Checkmarks */}
-              <div className="text-xs font-semibold text-gray-500 mb-8 flex flex-wrap items-center gap-x-4 gap-y-1.5">
-                <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> No credit card required</span>
-                <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> 2-minute setup</span>
-                <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> Cancel anytime</span>
-              </div>
-
-              {/* Social Proof Mini Bar */}
-              <div className="pt-6 border-t border-gray-200/80 flex items-center gap-4">
-                <div className="flex -space-x-2 overflow-hidden">
-                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-blue-600 text-white font-bold text-[10px] flex items-center justify-center">JD</div>
-                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-indigo-600 text-white font-bold text-[10px] flex items-center justify-center">SK</div>
-                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-emerald-600 text-white font-bold text-[10px] flex items-center justify-center">AL</div>
-                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-amber-600 text-white font-bold text-[10px] flex items-center justify-center">MV</div>
-                </div>
-                <div>
-                  <div className="flex text-amber-400">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <div className="text-xs text-gray-500 font-semibold mt-0.5">
-                    <span className="font-bold text-gray-900">4.9/5</span> from 450+ agency founders
-                  </div>
-                </div>
+              <div className="space-y-3 text-[11px] font-semibold text-gray-500">
+                <div className="p-2 rounded-xl bg-blue-50 text-blue-600 flex items-center gap-2"><BarChart3 className="w-3.5 h-3.5" /> Dashboard</div>
+                <div className="p-2 flex items-center gap-2"><TrendingUp className="w-3.5 h-3.5" /> Tracking</div>
+                <div className="p-2 flex items-center gap-2"><Database className="w-3.5 h-3.5" /> Analytics</div>
+                <div className="p-2 flex items-center gap-2"><Layers className="w-3.5 h-3.5" /> Inventory</div>
+                <div className="p-2 flex items-center gap-2"><Compass className="w-3.5 h-3.5" /> Courses</div>
               </div>
             </div>
 
-            {/* RIGHT COLUMN: Layered Interactive Dashboard Cards & Live Telemetry Widgets */}
-            <div className="lg:col-span-6 xl:col-span-7 relative">
-              {/* Decorative background ambient glow */}
-              <div className="absolute -top-10 -right-10 w-80 h-80 bg-blue-300/30 rounded-full blur-3xl pointer-events-none" />
-
-              {/* Floating top tag */}
-              <div className="hidden sm:flex absolute -top-4 -left-4 z-20 items-center gap-2 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-gray-200 shadow-xl text-xs font-bold text-gray-800 animate-bounce duration-1000">
-                <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
-                <span>Live Demo Clicked (3x by CEO)</span>
-                <span className="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-extrabold">Hot Lead</span>
+            {/* 2. Layered Back Card 2 (Secondary Peek) */}
+            <div className="hidden md:block absolute -left-6 top-8 w-64 h-[440px] bg-white rounded-[2rem] border-[5px] border-[#0a0f1d] shadow-2xl transform -rotate-6 z-10 p-5 pointer-events-none opacity-90">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold flex items-center justify-center">MJ</div>
+                <span className="text-xs font-bold text-gray-800">Squarekroo...</span>
               </div>
+              <div className="space-y-2 text-[11px] font-semibold text-gray-500">
+                <div className="p-2 rounded-xl bg-blue-50 text-blue-600 font-bold">Dashboard &gt;</div>
+                <div className="p-2">Tracking</div>
+                <div className="p-2">Analytics</div>
+                <div className="p-2">Inventory</div>
+                <div className="p-2">Courses</div>
+              </div>
+            </div>
 
-              {/* Main Dashboard Preview Card */}
-              <div className="relative bg-white rounded-3xl border border-gray-200/90 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.12)] p-5 sm:p-6 text-left">
-                {/* Header bar inside preview card */}
-                <div className="flex items-center justify-between pb-5 border-b border-gray-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md">
-                      <Zap className="w-5 h-5 fill-white" />
-                    </div>
-                    <div>
-                      <h3 className="font-extrabold text-sm text-gray-900">Outbound Intelligence Feed</h3>
-                      <div className="text-[11px] text-gray-400 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        14 high-intent prospects active now
+            {/* 3. Main Foreground Dashboard Tablet Window (Exact Match) */}
+            <div className="relative z-20 bg-white rounded-[2rem] sm:rounded-[2.4rem] border-[5px] sm:border-[6px] border-[#0a0f1d] shadow-[0_30px_80px_rgba(0,0,0,0.2)] overflow-hidden text-left">
+              <div className="grid grid-cols-1 md:grid-cols-12 min-h-[460px]">
+                
+                {/* Dashboard Sidebar (Left Column) */}
+                <div className="hidden md:flex md:col-span-3 border-r border-gray-100 p-5 flex-col justify-between bg-white">
+                  <div>
+                    {/* Brand */}
+                    <div className="flex items-center gap-2 mb-6">
+                      <div className="flex items-center gap-0.5">
+                        <div className="w-2 h-4 bg-blue-600 rounded-full" />
+                        <div className="w-2 h-4 bg-blue-500 rounded-full" />
+                        <div className="w-2 h-4 bg-sky-400 rounded-full" />
                       </div>
+                      <span className="font-extrabold text-sm text-gray-900">Relink.</span>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2">
-                    <div className="hidden sm:flex items-center bg-gray-50 border border-gray-200 px-3 py-1 rounded-full text-xs font-semibold text-gray-600">
-                      <span>May 2026</span>
-                    </div>
-                    <div className="w-7 h-7 rounded-full bg-blue-100 border border-blue-200 text-blue-700 flex items-center justify-center font-bold text-xs">
-                      IK
-                    </div>
-                  </div>
-                </div>
-
-                {/* Metrics Stats Grid */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-3 my-5">
-                  <div className="bg-[#fafcff] p-3 rounded-2xl border border-blue-50">
-                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Leads Scraped</div>
-                    <div className="text-base sm:text-lg font-extrabold text-gray-900 mt-0.5">352,781</div>
-                    <div className="text-[10px] font-bold text-emerald-600">▲ 28.4%</div>
-                  </div>
-                  <div className="bg-[#fafcff] p-3 rounded-2xl border border-blue-50">
-                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Demos Viewed</div>
-                    <div className="text-base sm:text-lg font-extrabold text-gray-900 mt-0.5">2,751</div>
-                    <div className="text-[10px] font-bold text-emerald-600">▲ 41.8%</div>
-                  </div>
-                  <div className="bg-[#fafcff] p-3 rounded-2xl border border-blue-50">
-                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Meetings</div>
-                    <div className="text-base sm:text-lg font-extrabold text-blue-600 mt-0.5">246</div>
-                    <div className="text-[10px] font-bold text-emerald-600">▲ 3.8x ROI</div>
-                  </div>
-                </div>
-
-                {/* High-Contrast SVG Bar Chart */}
-                <div className="bg-[#fafcff] rounded-2xl border border-blue-50/80 p-4 mb-4">
-                  <div className="flex items-center justify-between mb-3 text-xs">
-                    <span className="font-bold text-gray-800">Demo Engagement Timeline</span>
-                    <span className="text-[11px] font-extrabold text-blue-600 bg-white px-2 py-0.5 rounded-full border border-blue-100 shadow-xs">
-                      Peak Conversion Rate: 48.64%
-                    </span>
-                  </div>
-
-                  <div className="relative h-28 sm:h-32 w-full flex items-end justify-between px-2 pt-2 border-b border-gray-100">
-                    {[
-                      { m: 'Jan', val: 40, active: false },
-                      { m: 'Feb', val: 65, active: false },
-                      { m: 'Mar', val: 50, active: false },
-                      { m: 'Apr', val: 85, active: false },
-                      { m: 'May', val: 98, active: true },
-                      { m: 'Jun', val: 70, active: false },
-                      { m: 'Jul', val: 55, active: false },
-                      { m: 'Aug', val: 80, active: false },
-                    ].map((item, idx) => (
-                      <div key={idx} className="flex flex-col items-center gap-1.5 flex-1 max-w-[36px]">
-                        <div className="w-full bg-gray-100 rounded-t-md h-20 sm:h-24 flex items-end overflow-hidden p-0.5">
-                          <div
-                            style={{ height: `${item.val}%` }}
-                            className={`w-full rounded-t ${
-                              item.active
-                                ? 'bg-blue-600 shadow-[0_0_12px_rgba(37,99,235,0.6)]'
-                                : 'bg-blue-200'
-                            }`}
-                          />
+                    {/* User Profile Selector */}
+                    <div className="flex items-center justify-between p-2.5 rounded-2xl bg-gray-50 border border-gray-100 mb-6">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">
+                          MJ
                         </div>
-                        <span className={`text-[9px] font-bold ${item.active ? 'text-blue-600' : 'text-gray-400'}`}>
-                          {item.m}
-                        </span>
+                        <div>
+                          <div className="text-[11px] font-bold text-gray-900">Maycolle John</div>
+                          <div className="text-[9px] text-gray-400">Squarekroo...</div>
+                        </div>
                       </div>
-                    ))}
+                      <span className="text-[10px] font-bold text-gray-400">5</span>
+                    </div>
+
+                    {/* Nav Links */}
+                    <div className="space-y-1 text-xs font-semibold text-gray-500">
+                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50 text-blue-600 font-bold">
+                        <div className="flex items-center gap-2.5">
+                          <BarChart3 className="w-4 h-4 text-blue-600" />
+                          <span>Dashboard</span>
+                        </div>
+                        <span className="text-[11px]">&gt;</span>
+                      </div>
+                      <div className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-gray-50">
+                        <TrendingUp className="w-4 h-4" />
+                        <span>Tracking</span>
+                      </div>
+                      <div className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-gray-50">
+                        <Database className="w-4 h-4" />
+                        <span>Analytics</span>
+                      </div>
+                      <div className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-gray-50">
+                        <Layers className="w-4 h-4" />
+                        <span>Inventory</span>
+                      </div>
+                      <div className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-gray-50">
+                        <Compass className="w-4 h-4" />
+                        <span>Courses</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-[10px] text-gray-400 font-medium pt-4 border-t border-gray-100">
+                    LeadDrive Engine v2.4
                   </div>
                 </div>
 
-                {/* Bottom Interactive Feed Row */}
-                <div className="bg-gray-50 rounded-2xl p-3 border border-gray-100 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
-                      ✓
-                    </div>
+                {/* Dashboard Main Workspace (Right Column) */}
+                <div className="md:col-span-9 p-5 sm:p-6 bg-white flex flex-col justify-between">
+                  {/* Top Bar inside Workspace */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-gray-100">
                     <div>
-                      <div className="font-bold text-gray-900 text-[11px]">Apex Digital Redesign Demo Synthesized</div>
-                      <div className="text-[10px] text-gray-400">PageSpeed Score 98/100 · Dispatched via SendGrid</div>
+                      <div className="text-[11px] text-gray-400 font-semibold">Hi Maycolle,</div>
+                      <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">Good morning!</h2>
+                      <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full mt-1">
+                        <span>🔴 You have 12 pending shipments ready to track</span>
+                        <ArrowUpRight className="w-3 h-3 text-amber-600" />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500">
+                        <Search className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500">
+                        <Bell className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex items-center gap-2 bg-blue-600 text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-sm">
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add new shipment</span>
+                      </div>
                     </div>
                   </div>
-                  <span className="text-[10px] font-extrabold text-blue-600 bg-white px-2 py-1 rounded-lg border border-gray-200 shadow-xs">
-                    12s ago
-                  </span>
-                </div>
-              </div>
 
-              {/* Floating Bottom Card Tag */}
-              <div className="hidden sm:flex absolute -bottom-5 -right-4 z-20 items-center gap-3 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-gray-200 shadow-xl text-xs font-bold text-gray-800">
-                <div className="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <Activity className="w-4 h-4" />
-                </div>
-                <div>
-                  <div className="font-extrabold text-gray-900">12 Parallel Scrapers</div>
-                  <div className="text-[10px] text-emerald-600 font-bold">99.4% Delivery Rate</div>
+                  {/* Main Analytics + Avg Working Time Split */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-5 items-start">
+                    
+                    {/* Left: Shipment analytics with Blue Bar Chart */}
+                    <div className="lg:col-span-8 bg-[#fafcff] rounded-2xl border border-blue-50/80 p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-blue-600" />
+                          <h3 className="text-xs font-extrabold text-gray-900">Shipment analytics</h3>
+                        </div>
+                        <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-white px-2 py-1 rounded-lg border border-gray-200 shadow-2xs">
+                          <span>January 2024 - May 2024</span>
+                          <ChevronDown className="w-3 h-3" />
+                        </div>
+                      </div>
+
+                      {/* Stat Metrics Row */}
+                      <div className="flex items-center justify-between text-[10px] pb-3 mb-2 border-b border-gray-100">
+                        <div>
+                          <span className="text-gray-400">Total deliver: </span>
+                          <span className="font-extrabold text-gray-900">352,781</span>
+                          <span className="text-emerald-600 font-bold ml-1">▲ 2.84%</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">On Delivery: </span>
+                          <span className="font-extrabold text-gray-900">2,751</span>
+                          <span className="text-emerald-600 font-bold ml-1">▲ 1.48%</span>
+                        </div>
+                        <div>
+                          <span className="text-gray-400">Pending: </span>
+                          <span className="font-extrabold text-gray-900">246</span>
+                          <span className="text-emerald-600 font-bold ml-1">▲ 3.12%</span>
+                        </div>
+                      </div>
+
+                      {/* Bar Chart with Glowing Active Blue Bar in May */}
+                      <div className="relative h-32 sm:h-36 w-full flex items-end justify-between px-2 pt-2">
+                        {/* Threshold Line */}
+                        <div className="absolute top-10 left-0 right-0 border-b border-dashed border-gray-300 flex justify-end">
+                          <span className="text-[8px] bg-white px-1 text-gray-400 font-bold -mt-2">Threshold</span>
+                        </div>
+
+                        {[
+                          { m: 'Jan', val: 35, active: false },
+                          { m: 'Feb', val: 55, active: false },
+                          { m: 'Mar', val: 45, active: false },
+                          { m: 'Apr', val: 80, active: false },
+                          { m: 'May', val: 98, active: true }, // Highlighted Blue Bar
+                          { m: 'Jun', val: 65, active: false },
+                          { m: 'Jul', val: 50, active: false },
+                          { m: 'Aug', val: 75, active: false },
+                        ].map((bar, i) => (
+                          <div key={i} className="flex flex-col items-center gap-1 z-10 flex-1 max-w-[28px]">
+                            <div className="w-full bg-gray-100 rounded-t-md h-24 sm:h-28 flex items-end overflow-hidden p-0.5">
+                              <div
+                                style={{ height: `${bar.val}%` }}
+                                className={`w-full rounded-t-sm ${
+                                  bar.active
+                                    ? 'bg-blue-600 shadow-[0_0_14px_rgba(37,99,235,0.7)]'
+                                    : 'bg-blue-200'
+                                }`}
+                              />
+                            </div>
+                            <span className={`text-[9px] font-bold ${bar.active ? 'text-blue-600' : 'text-gray-400'}`}>
+                              {bar.m}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Right: Avg. working time Widget */}
+                    <div className="lg:col-span-4 bg-white rounded-2xl border border-gray-100 p-4 shadow-xs">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-blue-600" />
+                          <h4 className="text-xs font-extrabold text-gray-900">Avg. working time</h4>
+                        </div>
+                        <span className="text-gray-400 text-xs">...</span>
+                      </div>
+
+                      <div className="my-2">
+                        <div className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">48.64%</div>
+                        <div className="text-[10px] text-emerald-600 font-bold">Completion rate ▲ 2.84%</div>
+                      </div>
+
+                      {/* Blue progress pills matching reference */}
+                      <div className="flex gap-1 my-3">
+                        <div className="w-8 h-4 rounded-full bg-blue-900 text-[8px] text-white flex items-center justify-center font-bold">70%</div>
+                        <div className="w-8 h-4 rounded-full bg-blue-600 text-[8px] text-white flex items-center justify-center font-bold">30%</div>
+                        <div className="w-8 h-4 rounded-full bg-blue-500" />
+                        <div className="w-8 h-4 rounded-full bg-blue-400" />
+                      </div>
+
+                      <div className="space-y-2 text-[10px] pt-2 border-t border-gray-100">
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500">🔵 On the way</span>
+                          <span className="font-bold text-gray-900">2h 14m</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500">🔵 Completing</span>
+                          <span className="font-bold text-gray-900">45 minutes</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-500">🔵 Waiting</span>
+                          <span className="font-bold text-gray-900">18 minutes</span>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 pt-2 text-right">
+                        <a href="#features" className="text-[10px] font-bold text-blue-600 hover:underline">
+                          View details ↗
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* 3. Social Proof Section (Directly under Hero) */}
-      <section id="proof" className="py-16 px-4 sm:px-6 bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col items-center justify-center text-center mb-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold mb-4">
-              <div className="flex text-amber-500">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <span>4.9/5 Rating on G2 & Capterra — Top Outbound Solution 2026</span>
-            </div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
-              Trusted by 450+ high-growth agencies & B2B outbound teams
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-14 opacity-75 grayscale hover:grayscale-0 transition-all duration-300 mb-16">
-            <div className="flex items-center gap-2 font-extrabold text-base text-gray-800 tracking-tight">
-              <div className="w-6 h-6 rounded bg-black text-white flex items-center justify-center text-xs">A</div> ApexGrowth
-            </div>
-            <div className="flex items-center gap-2 font-extrabold text-base text-gray-800 tracking-tight">
-              <div className="w-6 h-6 rounded bg-blue-600 text-white flex items-center justify-center text-xs">H</div> HyperScale Labs
-            </div>
-            <div className="flex items-center gap-2 font-extrabold text-base text-gray-800 tracking-tight">
-              <div className="w-6 h-6 rounded bg-indigo-600 text-white flex items-center justify-center text-xs">V</div> Veloce Media
-            </div>
-            <div className="flex items-center gap-2 font-extrabold text-base text-gray-800 tracking-tight">
-              <div className="w-6 h-6 rounded bg-emerald-600 text-white flex items-center justify-center text-xs">D</div> DemandForge
-            </div>
-            <div className="flex items-center gap-2 font-extrabold text-base text-gray-800 tracking-tight">
-              <div className="w-6 h-6 rounded bg-rose-600 text-white flex items-center justify-center text-xs">O</div> OutboundHQ
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-1 text-amber-400 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-current" />
-                  ))}
-                </div>
-                <p className="text-sm text-gray-700 font-medium leading-relaxed mb-6">
-                  &ldquo;Sending personalized interactive website demos increased our cold email reply rates from <span className="font-bold text-blue-600">1.8% to 8.4%</span> in our very first week.&rdquo;
-                </p>
-              </div>
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-800 font-bold flex items-center justify-center text-xs">
-                  SJ
-                </div>
-                <div>
-                  <div className="font-bold text-xs text-gray-900">Sarah Jenkins</div>
-                  <div className="text-[11px] text-gray-400">Founder, ScaleMedia Agency</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-1 text-amber-400 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-current" />
-                  ))}
-                </div>
-                <p className="text-sm text-gray-700 font-medium leading-relaxed mb-6">
-                  &ldquo;We booked <span className="font-bold text-blue-600">34 qualified client calls</span> in our first 10 days. The automated Google PageSpeed audit hook gives our reps instant credibility.&rdquo;
-                </p>
-              </div>
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs">
-                  MV
-                </div>
-                <div>
-                  <div className="font-bold text-xs text-gray-900">Marcus Vance</div>
-                  <div className="text-[11px] text-gray-400">VP of Outbound, Velocity B2B</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-1 text-amber-400 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-current" />
-                  ))}
-                </div>
-                <p className="text-sm text-gray-700 font-medium leading-relaxed mb-6">
-                  &ldquo;Saved our team <span className="font-bold text-blue-600">15+ hours every week</span> on manual lead prospecting and custom slide deck preparation. It pays for itself on day one.&rdquo;
-                </p>
-              </div>
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-800 font-bold flex items-center justify-center text-xs">
-                  DK
-                </div>
-                <div>
-                  <div className="font-bold text-xs text-gray-900">David Kim</div>
-                  <div className="text-[11px] text-gray-400">Managing Partner, Apex Ventures</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Value Proposition Banner */}
-      <section className="py-12 px-4 sm:px-6 bg-[#fafcff] border-b border-gray-100 text-center">
-        <div className="max-w-4xl mx-auto">
-          <span className="text-xs font-bold text-blue-600 uppercase tracking-widest block mb-2">
-            The LeadDrive Advantage
-          </span>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
-            Stop pitching generic copy. Send working AI prototypes before your competitors even send an email.
-          </h2>
-        </div>
-      </section>
-
-      {/* 5. Section: "The Outreach Challenge Every Business Faces" (3-Column Problem Cards) */}
+      {/* ========================================================================= */}
+      {/* 2. SECTION: "The Data Challenge Every Business Faces" (3-COLUMN CARDS) */}
+      {/* ========================================================================= */}
       <section id="why" className="py-24 px-4 sm:px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
             <div>
               <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-3">
-                WHY LEADDRIVE
+                WHY RELINK
               </span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight">
-                The Outreach Challenge Every<br className="hidden sm:inline" /> Agency Faces
+                The Data Challenge Every<br className="hidden sm:inline" /> Business Faces
               </h2>
               <p className="text-gray-500 text-sm sm:text-base max-w-2xl mt-4 font-normal leading-relaxed">
-                Generic cold emails end up in spam. Prospects ignore walls of text. LeadDrive gives you unfair leverage with real-time website diagnostics and bespoke interactive demo redesigns.
+                Turning vast amounts of data into actionable business outcomes is a challenge for every company. Our platform simplifies data processes, enabling faster, smarter decisions.
               </p>
             </div>
 
@@ -516,20 +484,21 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            {/* Card 1: Market Research (White Card) */}
             <div className="relink-card-white p-7 sm:p-8 flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-6 shadow-sm">
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-6 shadow-xs">
                   <ArrowUpRight className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Multi-Vector Lead Discovery</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Market Research</h3>
                 <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-8">
-                  Scraping leads across disconnected Google Maps, Apollo, and LinkedIn searches takes hours. We unify all vectors into one clean verified feed.
+                  Managing vast amounts of data can be overwhelming, with disconnected sources and complex systems making it challenging to gain a unified view.
                 </p>
               </div>
 
-              <div className="bg-[#fafcff] border border-gray-100 rounded-2xl p-4 shadow-sm">
+              <div className="bg-[#fafcff] border border-gray-100 rounded-2xl p-4 shadow-xs">
                 <div className="flex items-center justify-between mb-3 text-[11px] font-bold text-gray-700">
-                  <span>Verified Lead Discovery</span>
+                  <span>Insights Market Growth</span>
                   <ArrowUpRight className="w-3.5 h-3.5 text-gray-400" />
                 </div>
                 <div className="h-16 flex items-end justify-between gap-1.5 px-1 pt-2">
@@ -542,22 +511,23 @@ export default function LandingPage() {
               </div>
             </div>
 
+            {/* Card 2: Time-Consuming Manual (Vibrant Blue Card) */}
             <div className="relink-card-blue p-7 sm:p-8 flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-full bg-white text-blue-600 flex items-center justify-center mb-6 shadow-md">
                   <ArrowUpRight className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-extrabold text-white mb-3 tracking-tight">Automated Site Diagnostics</h3>
+                <h3 className="text-xl font-extrabold text-white mb-3 tracking-tight">Time-Consuming Manual</h3>
                 <p className="text-xs sm:text-sm text-blue-100 leading-relaxed mb-8">
-                  Never pitch without undeniable leverage. Headless crawlers run PageSpeed and mobile UX audits on every prospect to build instant trust.
+                  Teams often spend hours on manual data processing, slowing down decision-making. We automate these steps, freeing up your time to focus on strategic insights.
                 </p>
               </div>
 
               <div className="bg-white rounded-2xl p-4 shadow-md text-gray-900">
                 <div className="flex items-center justify-between mb-2 text-[11px] font-bold text-gray-800">
-                  <span>Audit Diagnostics</span>
+                  <span>Data · Analysis</span>
                   <div className="flex items-center gap-1 text-[11px] font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                    452 verified <ArrowUpRight className="w-3 h-3" />
+                    452 <ArrowUpRight className="w-3 h-3" />
                   </div>
                 </div>
                 <div className="h-16 flex items-end justify-between gap-1 px-1 pt-2">
@@ -570,20 +540,21 @@ export default function LandingPage() {
               </div>
             </div>
 
+            {/* Card 3: Missed Business Insights (White Card) */}
             <div className="relink-card-white p-7 sm:p-8 flex flex-col justify-between">
               <div>
-                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-6 shadow-sm">
+                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-6 shadow-xs">
                   <ArrowUpRight className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">AI Demo Synthesis Lab</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Missed Business Insights</h3>
                 <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-8">
-                  Synthesize working, mobile-responsive website prototypes personalized with the prospect&apos;s brand to turn cold leads into warm sales conversations.
+                  Without the right tools, crucial trends and opportunities can go unnoticed. Our platform turns raw data into actionable insights.
                 </p>
               </div>
 
-              <div className="bg-[#fafcff] border border-gray-100 rounded-2xl p-4 shadow-sm">
+              <div className="bg-[#fafcff] border border-gray-100 rounded-2xl p-4 shadow-xs">
                 <div className="flex items-center justify-between mb-3 text-[11px] font-bold text-gray-700">
-                  <span>Demo Engagement</span>
+                  <span>Insights Market Growth</span>
                   <ArrowUpRight className="w-3.5 h-3.5 text-gray-400" />
                 </div>
                 <div className="h-16 flex items-end justify-between gap-1.5 px-1 pt-2">
@@ -599,19 +570,22 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 6. Feature Highlights */}
+      {/* ========================================================================= */}
+      {/* 3. SECTION: "All the Tools You Need for Powerful Data Analysis" */}
+      {/* ========================================================================= */}
       <section id="features" className="py-24 px-4 sm:px-6 bg-[#fafcff] border-t border-gray-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight mb-4">
-              All the Tools You Need for Powerful<br />Outbound Operations
+              All the Tools You Need for Powerful<br />Data Analysis
             </h2>
             <p className="text-gray-500 text-sm sm:text-base font-normal leading-relaxed">
-              Every step is managed autonomously by specialized background AI agents so your sales reps only speak with high-intent buyers.
+              Get the best value for your money with our tailored pricing options. Whether you need basic features or a fully customized solution, we&apos;ve got you covered.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            {/* Tool 1 */}
             <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between bg-white">
               <div>
                 <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6 h-48 sm:h-52 flex flex-col justify-between">
@@ -621,13 +595,13 @@ export default function LandingPage() {
                   </div>
                   <div className="flex items-end justify-between gap-2 h-32 px-2">
                     {[
-                      { label: 'LCP', badge: '1.2s', h: '45%' },
-                      { label: 'CLS', badge: '0.01', h: '65%' },
-                      { label: 'Score', badge: '98%', h: '95%', active: true },
-                      { label: 'SEO', badge: '100%', h: '88%' },
+                      { label: 'Q1', badge: '98%', h: '45%' },
+                      { label: 'Q2', badge: '92%', h: '65%' },
+                      { label: 'Q3', badge: '$3.4M', h: '95%', active: true },
+                      { label: 'Q4', badge: '88%', h: '55%' },
                     ].map((bar, i) => (
                       <div key={i} className="flex flex-col items-center gap-1.5 flex-1">
-                        <span className="text-[10px] font-bold text-gray-600 bg-white px-1.5 py-0.5 rounded shadow-xs border border-gray-100">
+                        <span className="text-[10px] font-bold text-gray-600 bg-white px-1.5 py-0.5 rounded shadow-2xs border border-gray-100">
                           {bar.badge}
                         </span>
                         <div className="w-full bg-gray-200/80 rounded-t-lg h-24 flex items-end p-0.5">
@@ -644,9 +618,9 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Pinpoint Exact Conversion Leaks</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">AI-Powered Insights</h3>
                 <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-6 font-normal">
-                  Identify slow load times, mobile viewport failures, and missing meta tags to give you undeniable, factual proof in your pitch.
+                  Leverage cutting-edge AI to uncover hidden patterns and trends in your data, helping you make smarter, data-driven decisions with ease.
                 </p>
               </div>
 
@@ -654,10 +628,11 @@ export default function LandingPage() {
                 href="/signup"
                 className="relink-pill-btn relink-btn-light w-full text-xs font-bold py-3 min-h-[44px]"
               >
-                Start Auditing Leads
+                Get Started
               </Link>
             </div>
 
+            {/* Tool 2 */}
             <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between bg-white">
               <div>
                 <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6 h-48 sm:h-52 flex flex-col justify-between">
@@ -680,9 +655,9 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Real-Time Demo Engagement Telemetry</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Real-Time Data Visualization</h3>
                 <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-6 font-normal">
-                  Receive instant alerts the exact second a decision-maker clicks or scrolls your custom demo, empowering immediate hot follow-ups.
+                  Interact with dynamic charts, graphs, and dashboards that update in real-time, offering instant clarity and actionable insights as your data evolves.
                 </p>
               </div>
 
@@ -690,10 +665,11 @@ export default function LandingPage() {
                 href="/signup"
                 className="relink-pill-btn relink-btn-blue w-full text-xs font-bold py-3 min-h-[44px]"
               >
-                Track Live Opens
+                Try for free
               </Link>
             </div>
 
+            {/* Tool 3 */}
             <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between bg-white">
               <div>
                 <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6 h-48 sm:h-52 flex items-center justify-center relative overflow-hidden">
@@ -701,17 +677,17 @@ export default function LandingPage() {
                     <Zap className="w-6 h-6 fill-white" />
                   </div>
 
-                  <div className="absolute top-5 left-8 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-xs flex items-center justify-center text-[10px] font-bold text-gray-700">
-                    MS
+                  <div className="absolute top-5 left-8 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-2xs flex items-center justify-center text-[10px] font-bold text-gray-700">
+                    EX
                   </div>
-                  <div className="absolute top-5 right-8 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-xs flex items-center justify-center text-[10px] font-bold text-orange-600">
-                    HS
+                  <div className="absolute top-5 right-8 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-2xs flex items-center justify-center text-[10px] font-bold text-orange-600">
+                    GA
                   </div>
-                  <div className="absolute bottom-5 left-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-xs flex items-center justify-center text-[10px] font-bold text-emerald-600">
-                    GS
+                  <div className="absolute bottom-5 left-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-2xs flex items-center justify-center text-[10px] font-bold text-emerald-600">
+                    TB
                   </div>
-                  <div className="absolute bottom-5 right-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-xs flex items-center justify-center text-[10px] font-bold text-blue-500">
-                    AP
+                  <div className="absolute bottom-5 right-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-2xs flex items-center justify-center text-[10px] font-bold text-blue-500">
+                    SQL
                   </div>
 
                   <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-blue-200 stroke-1">
@@ -722,9 +698,9 @@ export default function LandingPage() {
                   </svg>
                 </div>
 
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Sync With Your Existing Tech Stack</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Easy Integration</h3>
                 <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-6 font-normal">
-                  Connect effortlessly with Apollo, SendGrid, Resend, HubSpot, and Google Sheets to automate your pipeline end-to-end.
+                  Seamlessly connect with popular tools like Excel, Google Analytics, and more, ensuring smooth data flow across all your favorite platforms.
                 </p>
               </div>
 
@@ -732,37 +708,16 @@ export default function LandingPage() {
                 href="/signup"
                 className="relink-pill-btn relink-btn-light w-full text-xs font-bold py-3 min-h-[44px]"
               >
-                Explore Integrations
+                Get Started
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 7. Mid-Page Conversion CTA */}
-      <section className="py-16 px-4 sm:px-6 bg-blue-600 text-white text-center">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-4">
-            Ready to fill your calendar with high-ticket clients?
-          </h2>
-          <p className="text-blue-100 text-sm sm:text-base mb-8 max-w-xl mx-auto font-normal">
-            Join 450+ agencies automating their prospecting and demo creation today.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/signup"
-              className="bg-white hover:bg-gray-50 text-blue-600 px-8 py-3.5 rounded-full font-extrabold text-sm sm:text-base shadow-lg transition-all min-h-[44px] flex items-center justify-center w-full sm:w-auto"
-            >
-              Start Your Free 14-Day Trial
-            </Link>
-          </div>
-          <p className="text-xs text-blue-200 mt-4 font-semibold">
-            No credit card required · Instant 2-minute setup
-          </p>
-        </div>
-      </section>
-
-      {/* 8. Pricing Section */}
+      {/* ========================================================================= */}
+      {/* 4. SECTION: "Choose Your Plan" (PRICING) */}
+      {/* ========================================================================= */}
       <section id="pricing" className="py-24 px-4 sm:px-6 bg-white border-t border-gray-100">
         <div className="max-w-5xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-14">
@@ -770,7 +725,7 @@ export default function LandingPage() {
               Choose Your Plan
             </h2>
             <p className="text-gray-500 text-sm sm:text-base font-normal leading-relaxed mb-8">
-              Transparent, high-value plans tailored for solo consultants, fast-growing agencies, and enterprise sales teams.
+              Get the best value for your money with our tailored pricing options. Whether you need basic features or a fully customized solution, we&apos;ve got you covered.
             </p>
 
             <div className="inline-flex items-center bg-gray-100 p-1 rounded-full border border-gray-200 shadow-inner">
@@ -802,14 +757,15 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
+            {/* Basic */}
             <div className="relink-card-white p-8 sm:p-9 flex flex-col justify-between bg-white">
               <div>
                 <div className="w-8 h-8 rounded-lg bg-gray-100 text-gray-800 flex items-center justify-center mb-4">
                   <Zap className="w-4 h-4" />
                 </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-1">Starter</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-1">Basic</h3>
                 <p className="text-xs text-gray-500 mb-6">
-                  Ideal for solo founders launching their first outbound campaigns.
+                  Ideal for solo analysts and growing teams looking to explore data trends.
                 </p>
 
                 <div className="flex items-baseline gap-1 mb-8 pb-6 border-b border-gray-100">
@@ -822,19 +778,19 @@ export default function LandingPage() {
                 <div className="space-y-3.5 mb-8 text-xs font-medium text-gray-600">
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>500 Qualified Leads / mo</span>
+                    <span>Unlimited data uploads</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>50 AI Demo Syntheses</span>
+                    <span>Priority support</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Google Maps & Apollo Scrapers</span>
+                    <span>Top-level security</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Top-level data security</span>
+                    <span>Community access</span>
                   </div>
                 </div>
               </div>
@@ -844,14 +800,12 @@ export default function LandingPage() {
                   href="/signup"
                   className="relink-pill-btn relink-btn-light w-full text-xs font-bold py-3.5 min-h-[44px]"
                 >
-                  Start 14-Day Free Trial
+                  Get Started
                 </Link>
-                <p className="text-center text-[11px] text-gray-400 mt-2 font-medium">
-                  No credit card required
-                </p>
               </div>
             </div>
 
+            {/* Pro */}
             <div className="relink-card-white p-8 sm:p-9 flex flex-col justify-between bg-white border-2 border-blue-600 shadow-[0_12px_40px_rgba(37,99,235,0.15)] relative">
               <div className="absolute -top-3.5 right-8 bg-blue-600 text-white text-[10px] font-extrabold uppercase px-3.5 py-1 rounded-full tracking-wider shadow-sm">
                 Most Popular
@@ -861,14 +815,14 @@ export default function LandingPage() {
                 <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
                   <Sparkles className="w-4 h-4" />
                 </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-1">Agency Pro</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-1">Pro</h3>
                 <p className="text-xs text-gray-500 mb-6">
-                  For scaling agencies needing maximum booking volume and custom branding.
+                  Dedicated solution for fast-growing agencies needing deep customized pipelines.
                 </p>
 
                 <div className="flex items-baseline gap-1 mb-8 pb-6 border-b border-gray-100">
                   <span className="text-4xl sm:text-5xl font-extrabold text-gray-900">
-                    ${Math.round(149 * discountMultiplier)}
+                    ${Math.round(269 * discountMultiplier)}
                   </span>
                   <span className="text-xs font-bold text-gray-400">/ Per month</span>
                 </div>
@@ -876,23 +830,23 @@ export default function LandingPage() {
                 <div className="space-y-3.5 mb-8 text-xs font-medium text-gray-700">
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span className="font-bold text-gray-900">2,500 Qualified Leads / mo</span>
+                    <span className="font-bold text-gray-900">Unlimited data</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span className="font-bold text-gray-900">500 Bespoke Interactive AI Demos</span>
+                    <span className="font-bold text-gray-900">Advanced + Custom AI Models</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Multichannel auto-dispatch (Email + SMS)</span>
+                    <span>Dedicated account manager</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Custom domain & white-label links</span>
+                    <span>Custom integrations</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>CRM Webhooks & 2-way sync</span>
+                    <span>Enterprise-level security</span>
                   </div>
                 </div>
               </div>
@@ -902,25 +856,24 @@ export default function LandingPage() {
                   href="/signup"
                   className="relink-pill-btn relink-btn-blue w-full text-xs font-bold py-3.5 min-h-[44px]"
                 >
-                  Start Your Free 14-Day Trial
+                  Get Started
                 </Link>
-                <p className="text-center text-[11px] text-gray-400 mt-2 font-medium">
-                  Instant activation · No credit card required
-                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 9. Integrations Section */}
+      {/* ========================================================================= */}
+      {/* 5. SECTION: "Seamless Integrations" */}
+      {/* ========================================================================= */}
       <section id="integrations" className="py-24 px-4 sm:px-6 bg-[#fafcff] border-t border-gray-100">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight mb-4">
             Seamless Integrations
           </h2>
           <p className="text-gray-500 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed mb-8">
-            Connect effortlessly with your existing CRM, inbox, and outreach stack.
+            Get the best value for your money with our tailored pricing options. Whether you need basic features or a fully customized solution, we&apos;ve got you covered.
           </p>
 
           <div className="mb-14">
@@ -942,11 +895,11 @@ export default function LandingPage() {
                 { name: 'Dropbox', bg: 'bg-blue-50 text-blue-700' },
                 { name: 'Slack', bg: 'bg-purple-50 text-purple-700' },
                 { name: 'Google Sheets', bg: 'bg-emerald-50 text-emerald-700' },
-                { name: 'Apollo.io', bg: 'bg-blue-50 text-blue-600' },
+                { name: 'Excel', bg: 'bg-green-50 text-green-700' },
               ].map((app, i) => (
                 <div
                   key={i}
-                  className={`w-11 h-11 rounded-2xl ${app.bg} border border-gray-200 shadow-sm flex items-center justify-center font-extrabold text-xs hover:scale-110 transition-transform`}
+                  className={`w-11 h-11 rounded-2xl ${app.bg} border border-gray-200 shadow-xs flex items-center justify-center font-extrabold text-xs hover:scale-110 transition-transform`}
                   title={app.name}
                 >
                   {app.name.slice(0, 2).toUpperCase()}
@@ -970,7 +923,7 @@ export default function LandingPage() {
               ].map((app, i) => (
                 <div
                   key={i}
-                  className={`w-11 h-11 rounded-2xl ${app.bg} border border-gray-200 shadow-sm flex items-center justify-center font-extrabold text-xs hover:scale-110 transition-transform`}
+                  className={`w-11 h-11 rounded-2xl ${app.bg} border border-gray-200 shadow-xs flex items-center justify-center font-extrabold text-xs hover:scale-110 transition-transform`}
                   title={app.name}
                 >
                   {app.name.slice(0, 2).toUpperCase()}
@@ -981,13 +934,15 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 10. FAQ Section */}
+      {/* ========================================================================= */}
+      {/* 6. SECTION: "Frequently Asked Questions" */}
+      {/* ========================================================================= */}
       <section id="faq" className="py-24 px-4 sm:px-6 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
             <div className="lg:col-span-5 space-y-6">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight">
-                Frequently Asked<br />Questions
+                Frequently Asked a<br />Questions
               </h2>
 
               <Link
@@ -997,18 +952,18 @@ export default function LandingPage() {
                 Contact us
               </Link>
 
-              <div className="bg-[#f8fafc] border border-gray-200/80 rounded-3xl p-6 sm:p-7 space-y-5 text-xs text-gray-600 mt-6 shadow-sm">
+              <div className="bg-[#f8fafc] border border-gray-200/80 rounded-3xl p-6 sm:p-7 space-y-5 text-xs text-gray-600 mt-6 shadow-xs">
                 <div>
                   <div className="font-bold text-gray-400 uppercase tracking-wider text-[10px] mb-1">Location</div>
-                  <div className="font-bold text-gray-900 text-sm">75 9A Queenswood Blvd, San Francisco, CA, United States</div>
+                  <div className="font-bold text-gray-900 text-sm">75 9A Queenswood Blvd, Queens, NY, United States</div>
                 </div>
                 <div>
                   <div className="font-bold text-gray-400 uppercase tracking-wider text-[10px] mb-1">Phone</div>
-                  <div className="font-bold text-gray-900 text-sm">+1 800-555-7382</div>
+                  <div className="font-bold text-gray-900 text-sm">+1 845-555-7382</div>
                 </div>
                 <div>
                   <div className="font-bold text-gray-400 uppercase tracking-wider text-[10px] mb-1">Email</div>
-                  <div className="font-bold text-gray-900 text-sm">support@leaddrive.io</div>
+                  <div className="font-bold text-gray-900 text-sm">contact@relink.study</div>
                 </div>
               </div>
             </div>
@@ -1044,34 +999,27 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 11. Redesigned Newsletter / Closing CTA Banner (High-Contrast Sky Gradient with Visible Crisp Typography) */}
+      {/* ========================================================================= */}
+      {/* 7. SECTION: "Join Us Our Newsletter" */}
+      {/* ========================================================================= */}
       <section className="py-20 px-4 sm:px-6 bg-white">
         <div className="max-w-7xl mx-auto">
-          {/* Explicit rich blue sky container with visible high contrast content */}
-          <div className="relative rounded-[2.2rem] sm:rounded-[3rem] p-8 sm:p-12 lg:p-16 bg-gradient-to-br from-[#0284c7] via-[#0369a1] to-[#0f172a] text-white shadow-2xl overflow-hidden border border-sky-400/20">
-            {/* Background glowing clouds/particles */}
+          <div className="relative rounded-[2.2rem] sm:rounded-[3rem] p-8 sm:p-12 lg:p-16 bg-gradient-to-br from-[#38bdf8] via-[#0284c7] to-[#0369a1] text-white shadow-2xl overflow-hidden border border-sky-300/40">
             <div className="absolute inset-0 pointer-events-none opacity-40">
-              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-300/30 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-400/20 rounded-full blur-3xl" />
+              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/30 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-sky-200/20 rounded-full blur-3xl" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
-              {/* Left Column: Clear, High-Contrast Heading & Playbook Form */}
               <div className="lg:col-span-7">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-400/20 border border-sky-300/30 text-sky-200 text-xs font-bold mb-4">
-                  <Sparkles className="w-3.5 h-3.5 text-sky-300" />
-                  <span>Weekly Outbound Playbooks</span>
-                </div>
-
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight mb-4 drop-shadow-sm">
-                  Join Our Newsletter & Get Free Outreach Playbooks
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight mb-4 drop-shadow-xs">
+                  Join Us Our Newsletter
                 </h2>
                 
-                <p className="text-sky-100 text-sm sm:text-base max-w-xl font-medium leading-relaxed mb-8">
-                  Get weekly high-converting cold email teardowns, niche discovery prompts, and AI demo scripts delivered straight to your inbox.
+                <p className="text-sky-50 text-sm sm:text-base max-w-xl font-medium leading-relaxed mb-8">
+                  Turning data into insights is a challenge for every business. Our platform simplifies data processes, enabling faster, smarter decisions.
                 </p>
 
-                {/* Email Form */}
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -1081,7 +1029,7 @@ export default function LandingPage() {
                 >
                   <input
                     type="email"
-                    placeholder="Enter your work email"
+                    placeholder="Enter your email"
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     required
@@ -1089,28 +1037,26 @@ export default function LandingPage() {
                   />
                   <button
                     type="submit"
-                    className="relink-pill-btn bg-blue-500 hover:bg-blue-400 text-white text-xs sm:text-sm font-bold px-7 py-3.5 shadow-xl whitespace-nowrap min-h-[46px] transition-all"
+                    className="relink-pill-btn bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold px-7 py-3.5 shadow-xl whitespace-nowrap min-h-[46px] transition-all"
                   >
-                    {subscribed ? 'Subscribed!' : 'Get Free Playbooks'}
+                    {subscribed ? 'Subscribed!' : 'Contact us'}
                   </button>
                 </form>
 
-                {/* Visible Info Badges */}
                 <div className="space-y-2.5 text-xs font-semibold text-sky-100">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-sky-300" />
-                    <span>Market Research — 75 9A Queenswood Blvd, San Francisco, CA</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-sky-200" />
+                    <span>Market Research — 75 9A Queenswood Blvd, Queens, NY, United States</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-300" />
                     <span>Investment Analytics — 99.4% Automated Outreach Delivery</span>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: High-Contrast Floating Glass Card */}
               <div className="lg:col-span-5 flex justify-center lg:justify-end">
-                <div className="bg-white rounded-3xl p-6 sm:p-7 text-gray-900 border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-sm">
+                <div className="bg-white rounded-3xl p-6 sm:p-7 text-gray-900 border border-white/60 shadow-[0_20px_50px_rgba(0,0,0,0.25)] w-full max-w-sm">
                   <div className="flex items-center justify-between pb-4 border-b border-gray-100">
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md">
@@ -1140,7 +1086,7 @@ export default function LandingPage() {
 
                   <Link
                     href="/signup"
-                    className="block w-full text-center py-3.5 rounded-full bg-gray-900 hover:bg-black text-white text-xs font-bold shadow-lg transition-all min-h-[44px] flex items-center justify-center mt-2"
+                    className="block w-full text-center py-3.5 rounded-full bg-[#0a0f1d] hover:bg-black text-white text-xs font-bold shadow-lg transition-all min-h-[44px] flex items-center justify-center mt-2"
                   >
                     Start Free 14-Day Trial
                   </Link>
@@ -1151,41 +1097,44 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 12. Footer */}
+      {/* ========================================================================= */}
+      {/* 8. FOOTER */}
+      {/* ========================================================================= */}
       <footer className="py-16 px-4 sm:px-6 bg-white border-t border-gray-100 text-xs text-gray-500">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-10 pb-12 border-b border-gray-100">
             <div className="md:col-span-2 space-y-4">
               <Link href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md">
-                  <Zap className="w-4 h-4 fill-white" />
+                <div className="flex items-center gap-0.5">
+                  <div className="w-2 h-4 bg-blue-600 rounded-full" />
+                  <div className="w-2 h-4 bg-blue-500 rounded-full" />
+                  <div className="w-2 h-4 bg-sky-400 rounded-full" />
                 </div>
                 <span className="font-extrabold text-lg tracking-tight text-gray-900">
-                  LeadDrive
+                  Relink.
                 </span>
               </Link>
               <p className="text-gray-400 text-xs max-w-sm leading-relaxed">
-                Autonomous outbound intelligence, real-time website diagnostics, and bespoke AI demo synthesis for modern sales teams.
+                Effortlessly analyze large datasets, uncover trends, and make better decisions in minutes.
               </p>
             </div>
 
             <div>
               <h4 className="font-bold text-gray-900 text-xs mb-4">Company</h4>
               <ul className="space-y-2.5">
-                <li><a href="#why" className="hover:text-gray-900 transition-colors">Why LeadDrive</a></li>
-                <li><a href="#proof" className="hover:text-gray-900 transition-colors">Case Studies</a></li>
-                <li><a href="#pricing" className="hover:text-gray-900 transition-colors">Pricing</a></li>
-                <li><a href="#faq" className="hover:text-gray-900 transition-colors">FAQ</a></li>
+                <li><a href="#why" className="hover:text-gray-900 transition-colors">About</a></li>
+                <li><a href="#features" className="hover:text-gray-900 transition-colors">Solution</a></li>
+                <li><a href="#pricing" className="hover:text-gray-900 transition-colors">Features</a></li>
+                <li><a href="#faq" className="hover:text-gray-900 transition-colors">Resources</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="font-bold text-gray-900 text-xs mb-4">Features</h4>
               <ul className="space-y-2.5">
-                <li><a href="#features" className="hover:text-gray-900 transition-colors">Multi-Vector Discovery</a></li>
-                <li><a href="#features" className="hover:text-gray-900 transition-colors">Website Diagnostics</a></li>
-                <li><a href="#features" className="hover:text-gray-900 transition-colors">AI Demo Synthesis</a></li>
-                <li><a href="#integrations" className="hover:text-gray-900 transition-colors">Integrations</a></li>
+                <li><a href="#features" className="hover:text-gray-900 transition-colors">AI-Powered Insights</a></li>
+                <li><a href="#features" className="hover:text-gray-900 transition-colors">Real-Time Data Visualization</a></li>
+                <li><a href="#integrations" className="hover:text-gray-900 transition-colors">Easy Integration</a></li>
               </ul>
             </div>
 
@@ -1200,7 +1149,7 @@ export default function LandingPage() {
           </div>
 
           <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-gray-400">
-            <div>© {new Date().getFullYear()} LeadDrive Inc. All rights reserved.</div>
+            <div>© {new Date().getFullYear()} Relink Inc. All rights reserved.</div>
             <div className="flex gap-6">
               <a href="#" className="hover:text-gray-600">Twitter / X</a>
               <a href="#" className="hover:text-gray-600">LinkedIn</a>
