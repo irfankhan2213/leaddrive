@@ -13,3 +13,7 @@ dist
 gcp-key*.json
 gcp-service-account.json
 tsconfig.tsbuildinfo
+
+# macOS duplicate-file artifacts
+** 2.ts
+** 2.tsx
