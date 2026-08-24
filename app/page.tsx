@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import AntimetalArchitecture3D from '@/components/AntimetalArchitecture3D';
 import {
   Zap,
   ArrowRight,
@@ -865,74 +866,9 @@ export default function LandingPage() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 5. SECTION: "Seamless Integrations" */}
+      {/* 5. SECTION: ANTIMETAL 3D THREE.JS ARCHITECTURE & WORLD MODEL */}
       {/* ========================================================================= */}
-      <section id="integrations" className="py-24 px-4 sm:px-6 bg-[#fafcff] border-t border-gray-100">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight mb-4">
-            Seamless Integrations
-          </h2>
-          <p className="text-gray-500 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed mb-8">
-            Get the best value for your money with our tailored pricing options. Whether you need basic features or a fully customized solution, we&apos;ve got you covered.
-          </p>
-
-          <div className="mb-14">
-            <Link
-              href="/signup"
-              className="relink-pill-btn relink-btn-dark text-xs font-bold px-6 py-3 inline-flex items-center gap-2 min-h-[44px]"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              Try for free in minutes today
-            </Link>
-          </div>
-
-          <div className="relative max-w-3xl mx-auto pt-4 pb-12">
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-12 relative z-10">
-              {[
-                { name: 'Microsoft Teams', bg: 'bg-indigo-50 text-indigo-700' },
-                { name: 'Zapier', bg: 'bg-orange-50 text-orange-600' },
-                { name: 'HubSpot', bg: 'bg-amber-50 text-amber-700' },
-                { name: 'Dropbox', bg: 'bg-blue-50 text-blue-700' },
-                { name: 'Slack', bg: 'bg-purple-50 text-purple-700' },
-                { name: 'Google Sheets', bg: 'bg-emerald-50 text-emerald-700' },
-                { name: 'Excel', bg: 'bg-green-50 text-green-700' },
-              ].map((app, i) => (
-                <div
-                  key={i}
-                  className={`w-11 h-11 rounded-2xl ${app.bg} border border-gray-200 shadow-xs flex items-center justify-center font-extrabold text-xs hover:scale-110 transition-transform`}
-                  title={app.name}
-                >
-                  {app.name.slice(0, 2).toUpperCase()}
-                </div>
-              ))}
-            </div>
-
-            <div className="relative flex items-center justify-center my-8 z-10">
-              <div className="w-16 h-16 rounded-3xl bg-blue-600 text-white flex items-center justify-center shadow-[0_10px_30px_rgba(37,99,235,0.4)] border-4 border-white">
-                <Zap className="w-8 h-8 fill-white" />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-12 relative z-10">
-              {[
-                { name: 'Shopify', bg: 'bg-emerald-50 text-emerald-700' },
-                { name: 'Zendesk', bg: 'bg-teal-50 text-teal-700' },
-                { name: 'QuickBooks', bg: 'bg-green-50 text-green-700' },
-                { name: 'Stripe', bg: 'bg-indigo-50 text-indigo-700' },
-                { name: 'Asana', bg: 'bg-rose-50 text-rose-600' },
-              ].map((app, i) => (
-                <div
-                  key={i}
-                  className={`w-11 h-11 rounded-2xl ${app.bg} border border-gray-200 shadow-xs flex items-center justify-center font-extrabold text-xs hover:scale-110 transition-transform`}
-                  title={app.name}
-                >
-                  {app.name.slice(0, 2).toUpperCase()}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <AntimetalArchitecture3D />
 
       {/* ========================================================================= */}
       {/* 6. SECTION: "Frequently Asked Questions" */}
