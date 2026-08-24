@@ -42,7 +42,8 @@ import { MetricCard } from '@/components/metric-card';
 import { CampaignChart } from '@/components/campaign-chart';
 import { ActivityFeed } from '@/components/activity-feed';
 import { SourceTable } from '@/components/source-table';
-import { NewCampaignModal } from '@/components/new-campaign-modal';
+import { CampaignComposer } from '@/components/campaign-composer';
+import { CampaignLivePanel } from '@/components/campaign-live-panel';
 import { SettingsView } from '@/components/settings-view';
 import { HelpView } from '@/components/help-view';
 
@@ -60,7 +61,11 @@ export default function Home() {
   const [leads, setLeads] = useState<Lead[]>(sampleLeads);
   const [selectedId, setSelectedId] = useState<string | undefined>(sampleLeads[0]?.id);
   const [selectedDemoLeadId, setSelectedDemoLeadId] = useState<string | undefined>(sampleLeads[0]?.id);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [liveOpen, setLiveOpen] = useState(false);
+  const [liveRequest, setLiveRequest] = useState('');
+  const [liveLimit, setLiveLimit] = useState(25);
+  const [allCampaigns, setAllCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(false);
   const [demoGeneratingId, setDemoGeneratingId] = useState<string | null>(null);
   const [batchDemoLoading, setBatchDemoLoading] = useState(false);
@@ -176,35 +181,30 @@ export default function Home() {
     };
   }, [leads]);
 
-  async function handleLaunchCampaign(input: CampaignInput) {
-    setLoading(true);
-    setNotice(null);
-    try {
-      const res = await fetch('/api/campaigns', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...input })
-      });
-      const data = (await res.json()) as { campaign: Campaign; leads: Lead[]; error?: string };
-      if (data.error) throw new Error(data.error);
+  async function handleStartCampaign(request: string, limit: number) {
+    setComposerOpen(false);
+    setLiveRequest(request);
+    setLiveLimit(limit);
+    setLiveOpen(true);
+  }
 
-      if (data.campaign && data.leads) {
-        setCampaign(data.campaign);
-        setLeads(data.leads);
-        setSelectedId(data.leads[0]?.id);
-        setSelectedDemoLeadId(data.leads[0]?.id);
-
-        const generatedCount = data.leads.filter((l) => Boolean(l.demo_url && l.demo_url.startsWith('http'))).length;
-        setNotice({
-          type: 'success',
-          text: `Scraped ${data.leads.length} real leads. ${generatedCount} demo${generatedCount === 1 ? '' : 's'} generated automatically.`
-        });
-      }
-    } catch (err) {
-      setNotice({ type: 'error', text: err instanceof Error ? err.message : 'Campaign launch failed.' });
-    } finally {
-      setLoading(false);
-    }
+  function handleCampaignDone(newCampaign: Campaign, newLeads: Lead[]) {
+    setCampaign(newCampaign);
+    setLeads(newLeads);
+    setSelectedId(newLeads[0]?.id);
+    setSelectedDemoLeadId(newLeads[0]?.id);
+    // Refresh the campaigns list in the background
+    fetch('/api/campaigns')
+      .then((res) => res.json())
+      .then((data: { campaigns?: Campaign[]; leads?: Lead[] }) => {
+        if (data.campaigns?.length) setAllCampaigns(data.campaigns);
+      })
+      .catch(() => {});
+    const generatedCount = newLeads.filter((l) => Boolean(l.demo_url && l.demo_url.startsWith('http'))).length;
+    setNotice({
+      type: 'success',
+      text: `Campaign complete: ${newLeads.length} leads, ${generatedCount} live demo${generatedCount === 1 ? '' : 's'} built.`
+    });
   }
 
   // Generate Single AI Demo
@@ -538,7 +538,7 @@ export default function Home() {
               ? 'Dispatch Email (Resend) and SMS (Twilio) outreach with live variable replacement.'
               : 'Configure demo engines, Resend Email, Twilio SMS, and AI providers.'
           }
-          onNewCampaignClick={() => setIsModalOpen(true)}
+          onNewCampaignClick={() => setComposerOpen(true)}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
         />
@@ -1446,12 +1446,19 @@ export default function Home() {
           <HelpView />
         )}
 
-        {/* Interactive Modal for Launching New Campaigns */}
-        <NewCampaignModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          onLaunch={handleLaunchCampaign}
-          loading={loading}
+        {/* Simple campaign composer + live activity panel */}
+        <CampaignComposer
+          isOpen={composerOpen}
+          onClose={() => setComposerOpen(false)}
+          onStart={handleStartCampaign}
+          starting={false}
+        />
+        <CampaignLivePanel
+          isOpen={liveOpen}
+          request={liveRequest}
+          limit={liveLimit}
+          onDone={handleCampaignDone}
+          onClose={() => setLiveOpen(false)}
         />
       </main>
     </div>

@@ -13,17 +13,6 @@ type AuthResult =
  * so users can only ever touch their own rows.
  */
 export async function requireUser(): Promise<AuthResult> {
-  // Fail with a clear error instead of crashing when Supabase is unconfigured.
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
-    return {
-      ok: false,
-      response: NextResponse.json(
-        { error: 'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY.' },
-        { status: 503 }
-      ),
-    };
-  }
-
   const cookieStore = await cookies();
 
   const supabase = createServerClient(

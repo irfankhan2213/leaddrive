@@ -88,8 +88,19 @@ export function ActivityFeed({ leads }: ActivityFeedProps) {
     });
   }
 
-  // Derive activities from leads array
+  // Derive activities from leads array — engagement first, then grouped
+  // discovery lines so a 25-lead campaign doesn't produce 25 near-identical rows.
   for (const lead of leads) {
+    if (lead.replies > 0) {
+      activities.push({
+        id: `reply_${lead.id}`,
+        type: 'qualified',
+        text: `Prospect replied — hot lead`,
+        target: lead.company_name,
+        timestamp: lead.created_at
+      });
+    }
+
     if (lead.opens > 0) {
       activities.push({
         id: `open_${lead.id}`,
@@ -110,7 +121,7 @@ export function ActivityFeed({ leads }: ActivityFeedProps) {
       });
     }
 
-    if (['demo_ready', 'outreach_sent', 'replied', 'converted'].includes(lead.status)) {
+    if (lead.demo_url && lead.demo_url.startsWith('http')) {
       activities.push({
         id: `demo_${lead.id}`,
         type: 'demo',
@@ -120,33 +131,47 @@ export function ActivityFeed({ leads }: ActivityFeedProps) {
       });
     }
 
-    if (lead.fit_score >= 70) {
+    if (lead.status === 'outreach_sent') {
       activities.push({
-        id: `qual_${lead.id}`,
-        type: 'qualified',
-        text: `Qualified with score ${lead.fit_score}/100`,
-        target: lead.company_name,
-        timestamp: lead.created_at
-      });
-    }
-
-    if (lead.matched_keyword) {
-      activities.push({
-        id: `search_${lead.id}`,
-        type: 'search',
-        text: `Discovered via query "${lead.matched_keyword}"`,
+        id: `sent_${lead.id}`,
+        type: 'outreach',
+        text: 'Outreach dispatched with live demo',
         target: lead.company_name,
         timestamp: lead.created_at
       });
     }
   }
 
-  // Deduplicate by ID and limit to 10
+  // Group discovery by keyword: "8 leads found via <query>" instead of 8 rows.
+  const discoveryByKeyword = new Map<string, { count: number; ts: string }>();
+  for (const lead of leads) {
+    if (!lead.matched_keyword) continue;
+    const key = lead.matched_keyword;
+    const existing = discoveryByKeyword.get(key);
+    if (existing) {
+      existing.count += 1;
+      if (lead.created_at > existing.ts) existing.ts = lead.created_at;
+    } else {
+      discoveryByKeyword.set(key, { count: 1, ts: lead.created_at });
+    }
+  }
+  for (const [keyword, info] of discoveryByKeyword) {
+    activities.push({
+      id: `search_${keyword}`,
+      type: 'search',
+      text: `${info.count} lead${info.count > 1 ? 's' : ''} discovered via "${keyword}"`,
+      timestamp: info.ts
+    });
+  }
+
+  // Deduplicate, sort newest-first, limit
   const uniqueMap = new Map<string, ActivityItem>();
   for (const item of activities) {
     if (!uniqueMap.has(item.id)) uniqueMap.set(item.id, item);
   }
-  const displayActivities = Array.from(uniqueMap.values()).slice(0, 8);
+  const displayActivities = Array.from(uniqueMap.values())
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    .slice(0, 8);
 
   return (
     <div className="panel p-6 flex flex-col h-full">

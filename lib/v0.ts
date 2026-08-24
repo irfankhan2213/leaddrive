@@ -200,14 +200,24 @@ CRITICAL SYNTAX & COMPILER INSTRUCTIONS:
 - Export default single component.`;
   }
 
-  return `You are v0 by Vercel. Generate a clean, polished, responsive React + Next.js + Tailwind CSS landing page component.
+  return `You are v0 by Vercel. Generate a clean, polished, responsive React + Next.js + Tailwind CSS landing page component for a real business.
 
-CRITICAL SYNTAX & COMPILER INSTRUCTIONS:
-- Generate 100% syntactically valid TypeScript/React JSX.
-- NEVER output dangling or stray semicolons inside JSX tags, element attributes, or style objects (e.g. NEVER write style={{ color: 'red'; }} or <Component prop={val;} />).
-- Include hero section, clear value proposition, service cards with pricing, 1-click booking scheduler form, and mobile footer.
-- Import icons from 'lucide-react'.
-- Export default single component.`;
+REALISM RULES (critical):
+- Write specific, realistic copy for this exact business type — real service names, believable prices, local touches. ZERO lorem ipsum, zero "Your text here", zero generic "We are the best" filler.
+- No placeholder images. Use tasteful gradient blocks, initials avatars, and Lucide icons instead.
+- The page must look like a real small-business site a owner would recognize as their own upgraded.
+
+STRUCTURE:
+1. Sticky nav: business name, 3-4 anchor links, phone number button, high-contrast "Book Now" CTA.
+2. Hero: benefit headline mentioning their city, one-line value prop, primary booking CTA, trust chip (rating/reviews).
+3. Services: 3 cards with realistic service names and market-appropriate prices.
+4. Booking section: working multi-step quote/booking form (service -> date/time -> confirm) with React state.
+5. Social proof: 2 short review cards with names, star ratings, and local flavor.
+6. Footer: contact, hours, quick-call button.
+
+CODE RULES:
+- 100% valid TypeScript/React JSX. No stray semicolons in JSX or style objects.
+- Import icons from 'lucide-react'. Export default single component.`;
 }
 
 function getV0ModelCandidates(quality: DemoQuality, configured?: string) {
@@ -223,22 +233,24 @@ function getV0ModelCandidates(quality: DemoQuality, configured?: string) {
 }
 
 function compactV0Prompt(lead: Lead, quality: DemoQuality): string {
-  const maxChars = quality === 'high' ? 4500 : Number(process.env.V0_MAX_PROMPT_CHARS || 3000);
+  const maxChars = quality === 'high' ? 4500 : Number(process.env.V0_MAX_PROMPT_CHARS || 3400);
   const fullPrompt = buildDemoPrompt(lead, quality);
 
   const cleanWeakness = (lead.weakness || '').replace(/['";]/g, ' ').trim();
   const cleanCompany = (lead.company_name || '').replace(/['";]/g, ' ').trim();
+  const cleanNiche = (lead.niche || 'local services').replace(/['";]/g, ' ').trim();
 
   const compact = `${fullPrompt}
 
 v0 Directive (${quality === 'high' ? 'Ultra High-End Mode' : 'Standard Fast Mode'}):
-- Brand: "${cleanCompany}".
-- Target conversion gap to solve: "${cleanWeakness}".
-- Modern Tailwind CSS styling with zero placeholder text.
+- Business: "${cleanCompany}" — a ${cleanNiche} business in ${lead.city || 'their city'}.
+- Conversion gap being fixed: "${cleanWeakness}".
+- Services + prices must be realistic for a ${cleanNiche} business in ${lead.city || 'that market'} (research-typical ranges, no $1 or $99,999 nonsense).
+- Modern Tailwind CSS styling, zero placeholder text, zero placeholder images.
 - Full interactive self-contained component with Lucide icons.
 - Strict TSX syntax: No stray semicolons in JSX tags or style objects.`;
 
-  return compact.length > maxChars ? `${compact.slice(0, maxChars)}\n\nBuild full v0 site.` : compact;
+  return compact.length > maxChars ? `${compact.slice(0, maxChars)}\n\nBuild the full site now.` : compact;
 }
 
 function getSyntaxSafePrompt(lead: Lead): string {
