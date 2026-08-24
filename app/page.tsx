@@ -28,7 +28,9 @@ import {
   Bot,
   Clock,
   Send,
-  Users
+  Users,
+  Activity,
+  Flame
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -71,7 +73,6 @@ export default function LandingPage() {
     },
   ];
 
-  // FAQPage Schema for Search Engines (CRO / SEO best practice)
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -93,8 +94,8 @@ export default function LandingPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
 
-      {/* 1. Header Navigation Bar (Focused & High-Converting) */}
-      <header className="fixed top-0 z-50 w-full px-4 sm:px-6 py-3.5 bg-white/85 backdrop-blur-md border-b border-gray-100/80 transition-all duration-300">
+      {/* 1. Header Navigation Bar */}
+      <header className="fixed top-0 z-50 w-full px-4 sm:px-6 py-3.5 bg-white/90 backdrop-blur-md border-b border-gray-100/90 transition-all duration-300">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 no-underline group">
@@ -106,8 +107,8 @@ export default function LandingPage() {
             </span>
           </Link>
 
-          {/* Centered Floating Pill Navigation */}
-          <nav className="hidden md:flex items-center bg-gray-50 px-1.5 py-1.5 rounded-full border border-gray-200/80 text-[13px] font-semibold text-gray-600">
+          {/* Floating Pill Navigation */}
+          <nav className="hidden md:flex items-center bg-gray-50/90 px-1.5 py-1.5 rounded-full border border-gray-200/80 text-[13px] font-semibold text-gray-600">
             <a href="#why" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
               Why LeadDrive
             </a>
@@ -125,7 +126,7 @@ export default function LandingPage() {
             </a>
           </nav>
 
-          {/* Right Focused Action */}
+          {/* Right Action Cluster */}
           <div className="hidden md:flex items-center gap-3">
             <Link
               href="/login"
@@ -141,7 +142,7 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Mobile hamburger button */}
+          {/* Mobile menu hamburger */}
           <button
             className="md:hidden p-2 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -151,7 +152,7 @@ export default function LandingPage() {
           </button>
         </div>
 
-        {/* Mobile Dropdown Menu */}
+        {/* Mobile menu dropdown */}
         {isMobileMenuOpen && (
           <div className="absolute top-full left-0 w-full bg-white border-b border-gray-200 p-6 flex flex-col gap-4 shadow-2xl md:hidden animate-in slide-in-from-top-2">
             <a href="#why" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Why LeadDrive</a>
@@ -166,154 +167,152 @@ export default function LandingPage() {
         )}
       </header>
 
-      {/* 2. Hero Section (Strictly Outcome-Focused Headline <10 words, Subtitle <20 words) */}
-      <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 px-4 sm:px-6 relink-sky-gradient overflow-hidden">
-        {/* Soft atmospheric cloud overlay matching reference */}
+      {/* 2. Redesigned 2-Column Hero Section: Left Text + Right Interactive Dashboard Cards */}
+      <section className="relative pt-28 pb-16 md:pt-36 md:pb-24 px-4 sm:px-6 relink-sky-gradient overflow-hidden border-b border-gray-100/60">
+        {/* Soft atmospheric sky glow */}
         <div className="absolute inset-0 pointer-events-none opacity-60">
-          <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-sky-200/50 via-blue-100/30 to-transparent blur-3xl rounded-full" />
-          <div className="absolute top-20 -left-20 w-80 h-80 bg-white/80 blur-2xl rounded-full" />
-          <div className="absolute top-24 -right-20 w-96 h-96 bg-white/70 blur-3xl rounded-full" />
+          <div className="absolute -top-12 left-1/4 w-[800px] h-[500px] bg-gradient-to-b from-sky-200/50 via-blue-100/30 to-transparent blur-3xl rounded-full" />
+          <div className="absolute top-20 -right-20 w-96 h-96 bg-white/80 blur-3xl rounded-full" />
         </div>
 
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          {/* Trust Pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-blue-200/60 shadow-xs text-xs font-bold text-blue-700 mb-6">
-            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-            Autonomous Outbound Intelligence for Agencies
-          </div>
-
-          {/* Outcome-Led Headline: 8 words (Under 10 words rule) */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-extrabold tracking-tight text-[#0f172a] leading-[1.06] mb-6">
-            Book 4x More Client Meetings<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">
-              on Total Autopilot
-            </span>
-          </h1>
-
-          {/* Sub-headline: 16 words (Under 20 words rule) */}
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8 font-normal">
-            Synthesize interactive website redesigns and launch hyper-personalized cold outreach in minutes with zero manual prospecting.
-          </p>
-
-          {/* Outcome-Focused CTA Cluster */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-4">
-            <Link
-              href="/signup"
-              className="relink-pill-btn relink-btn-blue px-8 py-3.5 text-sm sm:text-base font-bold shadow-lg min-h-[48px] w-full sm:w-auto"
-            >
-              Start Your Free 14-Day Trial <ArrowRight className="w-4 h-4 ml-1" />
-            </Link>
-            <Link
-              href="/login"
-              className="relink-pill-btn relink-btn-dark px-7 py-3.5 text-sm font-bold flex items-center gap-2 min-h-[48px] w-full sm:w-auto"
-            >
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              See It in Action
-            </Link>
-          </div>
-
-          {/* Trust Micro-Copy Directly Under CTA */}
-          <p className="text-xs font-semibold text-gray-500 mb-12 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-            <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> No credit card required</span>
-            <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> 2-minute setup</span>
-            <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> Cancel anytime</span>
-          </p>
-
-          {/* 3. Hero Real UI Dashboard Visual (Interactive Multi-Card Stack matching reference) */}
-          <div className="relative mx-auto max-w-5xl">
-            {/* Background angled card */}
-            <div className="hidden lg:block absolute -left-12 top-10 w-64 h-[420px] bg-white/90 backdrop-blur-md rounded-3xl border border-gray-200 shadow-xl transform -rotate-6 z-0 p-4 pointer-events-none opacity-80">
-              <div className="flex items-center gap-2 mb-6 pb-3 border-b border-gray-100">
-                <div className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center">
-                  <Zap className="w-3.5 h-3.5 fill-white" />
-                </div>
-                <span className="font-bold text-xs">LeadDrive</span>
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+            
+            {/* LEFT COLUMN: Redesigned Left-Aligned Copy, CTAs, and Social Badges */}
+            <div className="lg:col-span-6 xl:col-span-5 text-left">
+              {/* Pill Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-blue-200/70 shadow-xs text-xs font-bold text-blue-700 mb-6">
+                <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+                Autonomous Outbound Intelligence
               </div>
-              <div className="space-y-2 text-[11px] font-medium text-gray-500">
-                <div className="p-2 rounded-xl bg-blue-50 text-blue-600 font-bold flex items-center gap-2"><BarChart3 className="w-3.5 h-3.5" /> Dashboard</div>
-                <div className="p-2 rounded-xl hover:bg-gray-50 flex items-center gap-2"><TrendingUp className="w-3.5 h-3.5" /> Tracking</div>
-                <div className="p-2 rounded-xl hover:bg-gray-50 flex items-center gap-2"><Database className="w-3.5 h-3.5" /> Analytics</div>
-                <div className="p-2 rounded-xl hover:bg-gray-50 flex items-center gap-2"><Layers className="w-3.5 h-3.5" /> Inventory</div>
-                <div className="p-2 rounded-xl hover:bg-gray-50 flex items-center gap-2"><Bot className="w-3.5 h-3.5" /> AI Synthesis</div>
+
+              {/* Outcome-Led Headline */}
+              <h1 className="text-4xl sm:text-5xl xl:text-[3.6rem] font-extrabold tracking-tight text-[#0f172a] leading-[1.08] mb-6">
+                Book 4x More<br />
+                Client Meetings<br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">
+                  on Total Autopilot
+                </span>
+              </h1>
+
+              {/* Subtitle */}
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed mb-8 font-normal max-w-lg">
+                Synthesize interactive website redesigns and launch hyper-personalized cold outreach in minutes with zero manual prospecting.
+              </p>
+
+              {/* Action Button Cluster */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 mb-5">
+                <Link
+                  href="/signup"
+                  className="relink-pill-btn relink-btn-blue px-7 py-3.5 text-sm sm:text-base font-bold shadow-lg min-h-[48px] justify-center"
+                >
+                  Start Your Free 14-Day Trial <ArrowRight className="w-4 h-4 ml-1" />
+                </Link>
+                <Link
+                  href="/login"
+                  className="relink-pill-btn relink-btn-dark px-6 py-3.5 text-sm font-bold flex items-center justify-center gap-2 min-h-[48px]"
+                >
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                  See It in Action
+                </Link>
+              </div>
+
+              {/* Trust Checkmarks */}
+              <div className="text-xs font-semibold text-gray-500 mb-8 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> No credit card required</span>
+                <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> 2-minute setup</span>
+                <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> Cancel anytime</span>
+              </div>
+
+              {/* Social Proof Mini Bar */}
+              <div className="pt-6 border-t border-gray-200/80 flex items-center gap-4">
+                <div className="flex -space-x-2 overflow-hidden">
+                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-blue-600 text-white font-bold text-[10px] flex items-center justify-center">JD</div>
+                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-indigo-600 text-white font-bold text-[10px] flex items-center justify-center">SK</div>
+                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-emerald-600 text-white font-bold text-[10px] flex items-center justify-center">AL</div>
+                  <div className="inline-block h-8 w-8 rounded-full ring-2 ring-white bg-amber-600 text-white font-bold text-[10px] flex items-center justify-center">MV</div>
+                </div>
+                <div>
+                  <div className="flex text-amber-400">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <div className="text-xs text-gray-500 font-semibold mt-0.5">
+                    <span className="font-bold text-gray-900">4.9/5</span> from 450+ agency founders
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Main Primary Dashboard Container */}
-            <div className="relative z-10 bg-white rounded-3xl sm:rounded-[2.2rem] border border-gray-200/90 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.12)] p-4 sm:p-6 lg:p-7 text-left">
-              {/* Window Header Bar */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-gray-100 gap-4">
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">Good morning, Marcus!</h2>
-                  <div className="inline-flex items-center gap-2 mt-1 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-xs font-semibold text-blue-800">
-                    <Bell className="w-3 h-3 text-blue-600" />
-                    <span>14 high-intent prospects clicked your demo in the last hour</span>
-                  </div>
-                </div>
+            {/* RIGHT COLUMN: Layered Interactive Dashboard Cards & Live Telemetry Widgets */}
+            <div className="lg:col-span-6 xl:col-span-7 relative">
+              {/* Decorative background ambient glow */}
+              <div className="absolute -top-10 -right-10 w-80 h-80 bg-blue-300/30 rounded-full blur-3xl pointer-events-none" />
 
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      placeholder="Search qualified leads..."
-                      className="pl-9 pr-4 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 w-40 sm:w-52"
-                    />
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
-                    MV
-                  </div>
-                </div>
+              {/* Floating top tag */}
+              <div className="hidden sm:flex absolute -top-4 -left-4 z-20 items-center gap-2 bg-white/95 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-gray-200 shadow-xl text-xs font-bold text-gray-800 animate-bounce duration-1000">
+                <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
+                <span>Live Demo Clicked (3x by CEO)</span>
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-extrabold">Hot Lead</span>
               </div>
 
-              {/* Main Dashboard Content Layout */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-6 items-start">
-                {/* Left Chart & Metrics Section (8 cols) */}
-                <div className="lg:col-span-8 bg-[#fafcff] rounded-2xl border border-blue-50 p-5">
-                  <div className="flex items-center justify-between mb-4">
+              {/* Main Dashboard Preview Card */}
+              <div className="relative bg-white rounded-3xl border border-gray-200/90 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.12)] p-5 sm:p-6 text-left">
+                {/* Header bar inside preview card */}
+                <div className="flex items-center justify-between pb-5 border-b border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md">
+                      <Zap className="w-5 h-5 fill-white" />
+                    </div>
                     <div>
-                      <h3 className="font-bold text-sm text-gray-900">Outbound Lead Pipeline</h3>
-                      <p className="text-xs text-gray-400 font-medium">Real-time demo views & converted bookings</p>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs font-semibold text-gray-500 bg-white px-3 py-1 rounded-lg border border-gray-200 shadow-sm">
-                      <span>January 2026 - May 2026</span>
-                      <ChevronDown className="w-3 h-3" />
-                    </div>
-                  </div>
-
-                  {/* Summary Metric Stats */}
-                  <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
-                    <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                      <div className="text-[11px] font-medium text-gray-400 uppercase">Leads Scraped</div>
-                      <div className="text-lg sm:text-xl font-extrabold text-gray-900 mt-0.5">352,781</div>
-                      <div className="text-[11px] font-bold text-emerald-600 mt-0.5 flex items-center">
-                        ▲ 28.4%
-                      </div>
-                    </div>
-                    <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                      <div className="text-[11px] font-medium text-gray-400 uppercase">Demos Viewed</div>
-                      <div className="text-lg sm:text-xl font-extrabold text-gray-900 mt-0.5">2,751</div>
-                      <div className="text-[11px] font-bold text-emerald-600 mt-0.5 flex items-center">
-                        ▲ 41.8%
-                      </div>
-                    </div>
-                    <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                      <div className="text-[11px] font-medium text-gray-400 uppercase">Meetings Booked</div>
-                      <div className="text-lg sm:text-xl font-extrabold text-blue-600 mt-0.5">246</div>
-                      <div className="text-[11px] font-bold text-emerald-600 mt-0.5 flex items-center">
-                        ▲ 3.8x ROI
+                      <h3 className="font-extrabold text-sm text-gray-900">Outbound Intelligence Feed</h3>
+                      <div className="text-[11px] text-gray-400 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        14 high-intent prospects active now
                       </div>
                     </div>
                   </div>
 
-                  {/* High-Contrast Relink SVG Bar Chart */}
-                  <div className="relative h-44 sm:h-52 w-full flex items-end justify-between px-2 pt-4 border-b border-gray-100">
-                    <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-40">
-                      <div className="w-full border-b border-dashed border-gray-200" />
-                      <div className="w-full border-b border-dashed border-gray-200" />
-                      <div className="w-full border-b border-dashed border-gray-200" />
-                      <div className="w-full border-b border-dashed border-gray-200" />
+                  <div className="flex items-center gap-2">
+                    <div className="hidden sm:flex items-center bg-gray-50 border border-gray-200 px-3 py-1 rounded-full text-xs font-semibold text-gray-600">
+                      <span>May 2026</span>
                     </div>
+                    <div className="w-7 h-7 rounded-full bg-blue-100 border border-blue-200 text-blue-700 flex items-center justify-center font-bold text-xs">
+                      IK
+                    </div>
+                  </div>
+                </div>
 
+                {/* Metrics Stats Grid */}
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 my-5">
+                  <div className="bg-[#fafcff] p-3 rounded-2xl border border-blue-50">
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Leads Scraped</div>
+                    <div className="text-base sm:text-lg font-extrabold text-gray-900 mt-0.5">352,781</div>
+                    <div className="text-[10px] font-bold text-emerald-600">▲ 28.4%</div>
+                  </div>
+                  <div className="bg-[#fafcff] p-3 rounded-2xl border border-blue-50">
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Demos Viewed</div>
+                    <div className="text-base sm:text-lg font-extrabold text-gray-900 mt-0.5">2,751</div>
+                    <div className="text-[10px] font-bold text-emerald-600">▲ 41.8%</div>
+                  </div>
+                  <div className="bg-[#fafcff] p-3 rounded-2xl border border-blue-50">
+                    <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Meetings</div>
+                    <div className="text-base sm:text-lg font-extrabold text-blue-600 mt-0.5">246</div>
+                    <div className="text-[10px] font-bold text-emerald-600">▲ 3.8x ROI</div>
+                  </div>
+                </div>
+
+                {/* High-Contrast SVG Bar Chart */}
+                <div className="bg-[#fafcff] rounded-2xl border border-blue-50/80 p-4 mb-4">
+                  <div className="flex items-center justify-between mb-3 text-xs">
+                    <span className="font-bold text-gray-800">Demo Engagement Timeline</span>
+                    <span className="text-[11px] font-extrabold text-blue-600 bg-white px-2 py-0.5 rounded-full border border-blue-100 shadow-xs">
+                      Peak Conversion Rate: 48.64%
+                    </span>
+                  </div>
+
+                  <div className="relative h-28 sm:h-32 w-full flex items-end justify-between px-2 pt-2 border-b border-gray-100">
                     {[
                       { m: 'Jan', val: 40, active: false },
                       { m: 'Feb', val: 65, active: false },
@@ -324,18 +323,18 @@ export default function LandingPage() {
                       { m: 'Jul', val: 55, active: false },
                       { m: 'Aug', val: 80, active: false },
                     ].map((item, idx) => (
-                      <div key={idx} className="flex flex-col items-center gap-2 z-10 group cursor-pointer w-7 sm:w-10">
-                        <div className="w-full bg-gray-100 rounded-t-lg h-36 sm:h-40 flex items-end overflow-hidden p-0.5">
+                      <div key={idx} className="flex flex-col items-center gap-1.5 flex-1 max-w-[36px]">
+                        <div className="w-full bg-gray-100 rounded-t-md h-20 sm:h-24 flex items-end overflow-hidden p-0.5">
                           <div
                             style={{ height: `${item.val}%` }}
-                            className={`w-full rounded-t-md transition-all duration-500 ${
+                            className={`w-full rounded-t ${
                               item.active
-                                ? 'bg-blue-600 shadow-[0_0_15px_rgba(37,99,235,0.5)]'
-                                : 'bg-blue-200 group-hover:bg-blue-300'
+                                ? 'bg-blue-600 shadow-[0_0_12px_rgba(37,99,235,0.6)]'
+                                : 'bg-blue-200'
                             }`}
                           />
                         </div>
-                        <span className={`text-[10px] font-bold ${item.active ? 'text-blue-600' : 'text-gray-400'}`}>
+                        <span className={`text-[9px] font-bold ${item.active ? 'text-blue-600' : 'text-gray-400'}`}>
                           {item.m}
                         </span>
                       </div>
@@ -343,47 +342,31 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                {/* Right Speed & Conversion Metric */}
-                <div className="lg:col-span-4 bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-col justify-between h-full">
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-bold text-sm text-gray-900">Prospect Response Time</h3>
-                      <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Automated</span>
+                {/* Bottom Interactive Feed Row */}
+                <div className="bg-gray-50 rounded-2xl p-3 border border-gray-100 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                      ✓
                     </div>
-
-                    <div className="my-4 text-center">
-                      <div className="text-4xl font-extrabold text-gray-900 tracking-tight">48.64%</div>
-                      <div className="text-xs font-semibold text-emerald-600 mt-1">▲ Average cold reply rate</div>
-                    </div>
-
-                    <div className="space-y-3 pt-2 text-xs">
-                      <div className="flex items-center justify-between pb-2 border-b border-gray-50">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                          <span className="text-gray-600 font-medium">Maps & Apollo Discovery</span>
-                        </div>
-                        <span className="font-bold text-gray-900">45s / 100 leads</span>
-                      </div>
-                      <div className="flex items-center justify-between pb-2 border-b border-gray-50">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                          <span className="text-gray-600 font-medium">AI Demo Synthesis</span>
-                        </div>
-                        <span className="font-bold text-gray-900">12s per demo</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                          <span className="text-gray-600 font-medium">Auto-Followup Dispatch</span>
-                        </div>
-                        <span className="font-bold text-gray-900">Instant on view</span>
-                      </div>
+                    <div>
+                      <div className="font-bold text-gray-900 text-[11px]">Apex Digital Redesign Demo Synthesized</div>
+                      <div className="text-[10px] text-gray-400">PageSpeed Score 98/100 · Dispatched via SendGrid</div>
                     </div>
                   </div>
+                  <span className="text-[10px] font-extrabold text-blue-600 bg-white px-2 py-1 rounded-lg border border-gray-200 shadow-xs">
+                    12s ago
+                  </span>
+                </div>
+              </div>
 
-                  <Link href="/signup" className="mt-6 w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 min-h-[44px]">
-                    Launch Your First Campaign <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+              {/* Floating Bottom Card Tag */}
+              <div className="hidden sm:flex absolute -bottom-5 -right-4 z-20 items-center gap-3 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-gray-200 shadow-xl text-xs font-bold text-gray-800">
+                <div className="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Activity className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="font-extrabold text-gray-900">12 Parallel Scrapers</div>
+                  <div className="text-[10px] text-emerald-600 font-bold">99.4% Delivery Rate</div>
                 </div>
               </div>
             </div>
@@ -391,10 +374,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. Social Proof Section (Directly below hero - Skill Rule) */}
+      {/* 3. Social Proof Section (Directly under Hero) */}
       <section id="proof" className="py-16 px-4 sm:px-6 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto">
-          {/* G2 Rating Badge & Logo Header */}
           <div className="flex flex-col items-center justify-center text-center mb-10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold mb-4">
               <div className="flex text-amber-500">
@@ -409,7 +391,6 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Agency Customer Logo Bar */}
           <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-14 opacity-75 grayscale hover:grayscale-0 transition-all duration-300 mb-16">
             <div className="flex items-center gap-2 font-extrabold text-base text-gray-800 tracking-tight">
               <div className="w-6 h-6 rounded bg-black text-white flex items-center justify-center text-xs">A</div> ApexGrowth
@@ -428,7 +409,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* 3 Measurable Testimonials (Rule: Specific measurable results) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between">
               <div>
@@ -499,7 +479,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4. Value Proposition Banner (Why LeadDrive over every alternative) */}
+      {/* 4. Value Proposition Banner */}
       <section className="py-12 px-4 sm:px-6 bg-[#fafcff] border-b border-gray-100 text-center">
         <div className="max-w-4xl mx-auto">
           <span className="text-xs font-bold text-blue-600 uppercase tracking-widest block mb-2">
@@ -511,7 +491,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. Section: "The Outreach Challenge Every Business Faces" (3-Column Problem/Solution Cards matching reference) */}
+      {/* 5. Section: "The Outreach Challenge Every Business Faces" (3-Column Problem Cards) */}
       <section id="why" className="py-24 px-4 sm:px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
@@ -536,7 +516,6 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {/* Card 1: Market Research (White) */}
             <div className="relink-card-white p-7 sm:p-8 flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-6 shadow-sm">
@@ -563,7 +542,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Card 2: Time-Consuming Manual Work (Vibrant Blue Card matching reference) */}
             <div className="relink-card-blue p-7 sm:p-8 flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-full bg-white text-blue-600 flex items-center justify-center mb-6 shadow-md">
@@ -592,7 +570,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Card 3: Missed Business Insights (White) */}
             <div className="relink-card-white p-7 sm:p-8 flex flex-col justify-between">
               <div>
                 <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-6 shadow-sm">
@@ -622,7 +599,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 6. Section: Feature Highlights (Benefit-Led Headings + Real Product UI) */}
+      {/* 6. Feature Highlights */}
       <section id="features" className="py-24 px-4 sm:px-6 bg-[#fafcff] border-t border-gray-100">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
@@ -635,7 +612,6 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {/* Feature 1: AI-Powered Insights */}
             <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between bg-white">
               <div>
                 <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6 h-48 sm:h-52 flex flex-col justify-between">
@@ -682,7 +658,6 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Feature 2: Real-Time Data Visualization */}
             <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between bg-white">
               <div>
                 <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6 h-48 sm:h-52 flex flex-col justify-between">
@@ -719,7 +694,6 @@ export default function LandingPage() {
               </Link>
             </div>
 
-            {/* Feature 3: Easy Integration (Node Connection Network Graph) */}
             <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between bg-white">
               <div>
                 <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6 h-48 sm:h-52 flex items-center justify-center relative overflow-hidden">
@@ -765,7 +739,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 7. Mid-Page Conversion CTA (Rule: Primary CTA repeated 3+ positions) */}
+      {/* 7. Mid-Page Conversion CTA */}
       <section className="py-16 px-4 sm:px-6 bg-blue-600 text-white text-center">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-4">
@@ -788,7 +762,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 8. Pricing Section (Highlighting recommended tier, No credit card micro-copy) */}
+      {/* 8. Pricing Section */}
       <section id="pricing" className="py-24 px-4 sm:px-6 bg-white border-t border-gray-100">
         <div className="max-w-5xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-14">
@@ -799,7 +773,6 @@ export default function LandingPage() {
               Transparent, high-value plans tailored for solo consultants, fast-growing agencies, and enterprise sales teams.
             </p>
 
-            {/* Monthly / Annual Toggle Switch */}
             <div className="inline-flex items-center bg-gray-100 p-1 rounded-full border border-gray-200 shadow-inner">
               <button
                 onClick={() => setBillingCycle('monthly')}
@@ -829,7 +802,6 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
-            {/* Basic Plan */}
             <div className="relink-card-white p-8 sm:p-9 flex flex-col justify-between bg-white">
               <div>
                 <div className="w-8 h-8 rounded-lg bg-gray-100 text-gray-800 flex items-center justify-center mb-4">
@@ -880,7 +852,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Pro Plan (Highlighted as Most Popular per CRO best practices) */}
             <div className="relink-card-white p-8 sm:p-9 flex flex-col justify-between bg-white border-2 border-blue-600 shadow-[0_12px_40px_rgba(37,99,235,0.15)] relative">
               <div className="absolute -top-3.5 right-8 bg-blue-600 text-white text-[10px] font-extrabold uppercase px-3.5 py-1 rounded-full tracking-wider shadow-sm">
                 Most Popular
@@ -1010,11 +981,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 10. FAQ Section (Split 2-Column with Left Contact Info Card matching reference) */}
+      {/* 10. FAQ Section */}
       <section id="faq" className="py-24 px-4 sm:px-6 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            {/* Left Column: Title & Contact Card */}
             <div className="lg:col-span-5 space-y-6">
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight">
                 Frequently Asked<br />Questions
@@ -1027,7 +997,6 @@ export default function LandingPage() {
                 Contact us
               </Link>
 
-              {/* Contact Information Card matching reference */}
               <div className="bg-[#f8fafc] border border-gray-200/80 rounded-3xl p-6 sm:p-7 space-y-5 text-xs text-gray-600 mt-6 shadow-sm">
                 <div>
                   <div className="font-bold text-gray-400 uppercase tracking-wider text-[10px] mb-1">Location</div>
@@ -1044,7 +1013,6 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Right Column: Clean Question Accordion List */}
             <div className="lg:col-span-7 divide-y divide-gray-100">
               {faqs.map((faq, idx) => {
                 const isOpen = openFaq === idx;
@@ -1076,19 +1044,34 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 11. Closing CTA Banner (Outcome-Focused, Repeating CTA in 3+ spots) */}
+      {/* 11. Redesigned Newsletter / Closing CTA Banner (High-Contrast Sky Gradient with Visible Crisp Typography) */}
       <section className="py-20 px-4 sm:px-6 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="relink-sky-banner relink-cloud-overlay rounded-[2.2rem] sm:rounded-[3rem] p-8 sm:p-12 lg:p-16 text-white shadow-2xl relative overflow-hidden">
+          {/* Explicit rich blue sky container with visible high contrast content */}
+          <div className="relative rounded-[2.2rem] sm:rounded-[3rem] p-8 sm:p-12 lg:p-16 bg-gradient-to-br from-[#0284c7] via-[#0369a1] to-[#0f172a] text-white shadow-2xl overflow-hidden border border-sky-400/20">
+            {/* Background glowing clouds/particles */}
+            <div className="absolute inset-0 pointer-events-none opacity-40">
+              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-sky-300/30 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-blue-400/20 rounded-full blur-3xl" />
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
+              {/* Left Column: Clear, High-Contrast Heading & Playbook Form */}
               <div className="lg:col-span-7">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-400/20 border border-sky-300/30 text-sky-200 text-xs font-bold mb-4">
+                  <Sparkles className="w-3.5 h-3.5 text-sky-300" />
+                  <span>Weekly Outbound Playbooks</span>
+                </div>
+
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight mb-4 drop-shadow-sm">
                   Join Our Newsletter & Get Free Outreach Playbooks
                 </h2>
-                <p className="text-sky-100 text-sm sm:text-base max-w-xl font-normal leading-relaxed mb-8">
+                
+                <p className="text-sky-100 text-sm sm:text-base max-w-xl font-medium leading-relaxed mb-8">
                   Get weekly high-converting cold email teardowns, niche discovery prompts, and AI demo scripts delivered straight to your inbox.
                 </p>
 
+                {/* Email Form */}
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -1102,60 +1085,62 @@ export default function LandingPage() {
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     required
-                    className="px-5 py-3.5 rounded-full bg-white/90 text-gray-900 placeholder-gray-400 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white flex-grow shadow-inner min-h-[44px]"
+                    className="px-5 py-3.5 rounded-full bg-white text-gray-900 placeholder:text-gray-400 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-sky-300 flex-grow shadow-lg min-h-[46px]"
                   />
                   <button
                     type="submit"
-                    className="relink-pill-btn relink-btn-blue text-xs font-bold px-7 py-3.5 shadow-lg whitespace-nowrap min-h-[44px]"
+                    className="relink-pill-btn bg-blue-500 hover:bg-blue-400 text-white text-xs sm:text-sm font-bold px-7 py-3.5 shadow-xl whitespace-nowrap min-h-[46px] transition-all"
                   >
                     {subscribed ? 'Subscribed!' : 'Get Free Playbooks'}
                   </button>
                 </form>
 
+                {/* Visible Info Badges */}
                 <div className="space-y-2.5 text-xs font-semibold text-sky-100">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-sky-300" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-sky-300" />
                     <span>Market Research — 75 9A Queenswood Blvd, San Francisco, CA</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-sky-300" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
                     <span>Investment Analytics — 99.4% Automated Outreach Delivery</span>
                   </div>
                 </div>
               </div>
 
+              {/* Right Column: High-Contrast Floating Glass Card */}
               <div className="lg:col-span-5 flex justify-center lg:justify-end">
-                <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-6 text-gray-900 border border-white/40 shadow-2xl w-full max-w-sm">
+                <div className="bg-white rounded-3xl p-6 sm:p-7 text-gray-900 border border-gray-100 shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-sm">
                   <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md">
                         <Zap className="w-4 h-4 fill-white" />
                       </div>
-                      <span className="font-bold text-xs">Live System Status</span>
+                      <span className="font-extrabold text-sm text-gray-900">Live System Status</span>
                     </div>
-                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-full">
                       99.9% Uptime
                     </span>
                   </div>
 
-                  <div className="py-4 space-y-3 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500">Active Crawlers</span>
-                      <span className="font-bold text-gray-900">12 Parallel Agents</span>
+                  <div className="py-5 space-y-3.5 text-xs">
+                    <div className="flex justify-between items-center pb-2 border-b border-gray-50">
+                      <span className="text-gray-500 font-medium">Active Parallel Agents</span>
+                      <span className="font-extrabold text-gray-900">12 Crawlers</span>
+                    </div>
+                    <div className="flex justify-between items-center pb-2 border-b border-gray-50">
+                      <span className="text-gray-500 font-medium">Demos Generated Today</span>
+                      <span className="font-extrabold text-gray-900">4,892</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-500">Demos Generated</span>
-                      <span className="font-bold text-gray-900">4,892 Today</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500">Email Delivery Rate</span>
-                      <span className="font-bold text-emerald-600 font-extrabold">99.4%</span>
+                      <span className="text-gray-500 font-medium">Outreach Delivery Rate</span>
+                      <span className="font-extrabold text-emerald-600 text-sm">99.4%</span>
                     </div>
                   </div>
 
                   <Link
                     href="/signup"
-                    className="block w-full text-center py-3 rounded-full bg-gray-900 text-white text-xs font-bold hover:bg-black transition-colors min-h-[44px] flex items-center justify-center"
+                    className="block w-full text-center py-3.5 rounded-full bg-gray-900 hover:bg-black text-white text-xs font-bold shadow-lg transition-all min-h-[44px] flex items-center justify-center mt-2"
                   >
                     Start Free 14-Day Trial
                   </Link>
