@@ -15,7 +15,7 @@ import {
   Star,
   Zap
 } from 'lucide-react';
-import AntimetalArchitecture3D from '@/components/AntimetalArchitecture3D';
+import { CampaignSimulation } from '@/components/landing/campaign-simulation';
 
 /* Working brand name — single constant, rename here when decided. */
 const BRAND = 'LeadDrive';
@@ -286,9 +286,9 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* ============================ 04 · THE SYSTEM (Three.js) ============================ */}
+        {/* ============================ 04 · THE SYSTEM (live simulation) ============================ */}
         <div id="system" className="scroll-mt-20">
-          <AntimetalArchitecture3D />
+          <CampaignSimulation />
         </div>
 
         {/* ============================ 05 · AGENTS ============================ */}
