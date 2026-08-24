@@ -7,6 +7,7 @@ import {
   Zap,
   ArrowRight,
   ArrowUpRight,
+  Check,
   CheckCircle2,
   Sparkles,
   Globe,
@@ -20,14 +21,14 @@ import {
   Phone,
   MapPin,
   Layers,
-  Send,
-  Database,
-  TrendingUp,
-  Bot,
-  Cpu,
-  Check,
+  Star,
   ShieldCheck,
-  Headphones
+  TrendingUp,
+  Database,
+  Bot,
+  Clock,
+  Send,
+  Users
 } from 'lucide-react';
 
 export default function LandingPage() {
@@ -41,43 +42,59 @@ export default function LandingPage() {
 
   const faqs = [
     {
-      q: 'What types of data can I upload and analyze?',
-      a: 'You can upload CSV spreadsheets, connect live Google Maps scrapers, query the Apollo.io API, scrape LinkedIn searches, or input raw website domains. Our AI crawlers automatically normalize, deduplicate, and enrich every record.',
+      q: 'What types of lead sources can I search and analyze?',
+      a: 'LeadDrive connects directly to Google Maps Local Business listings, Apollo.io API, LinkedIn search, and custom CSV spreadsheets. Our AI crawlers normalize, verify emails, extract mobile numbers, and enrich each lead with full decision-maker data in under 60 seconds.',
     },
     {
-      q: 'How secure is my data?',
-      a: 'We use enterprise-grade AES-256 encryption at rest and TLS 1.3 in transit. Your lead databases and campaign assets remain private to your team and are never shared or used to train public AI models.',
+      q: 'How does the AI Demo Synthesis Lab work?',
+      a: 'When a prospect is qualified, our background crawlers inspect their existing website, diagnose speed and design bottlenecks, and synthesize a high-converting, mobile-responsive interactive prototype. You can include this personalized live demo link directly in your cold outreach.',
     },
     {
-      q: "What's the difference between the Basic and Pro plan?",
-      a: 'The Basic plan is designed for solo founders managing up to 500 leads/mo with standard site audits. The Pro plan unlocks high-volume AI Demo synthesis, multichannel automated dispatch (Email + SMS), custom domain hosting, and dedicated account support.',
+      q: 'How secure is my agency and prospect data?',
+      a: 'We implement SOC-2 compliant AES-256 encryption at rest and TLS 1.3 in transit. Your campaigns, verified leads, and proprietary templates remain completely isolated to your team and are never used to train public models.',
     },
     {
-      q: 'How easy is it to get started with LeadDrive?',
-      a: 'You can launch your first campaign in under 3 minutes. Simply define your target niche and location, and LeadDrive will automatically find prospects, generate technical site audits, synthesize live demo links, and queue your outreach.',
+      q: "What's the difference between the Starter and Agency Pro plan?",
+      a: 'The Starter plan is built for solo operators needing up to 500 verified leads per month. The Agency Pro plan provides unlimited discovery, 500 AI demo syntheses, multi-inbox dispatch with auto-warmup, CRM webhooks, and dedicated account support.',
     },
     {
-      q: 'Can I integrate this platform with my existing sales CRM?',
-      a: 'Yes. We provide native two-way sync with HubSpot, Salesforce, Pipedrive, Zapier, Make, and custom webhooks to push high-intent leads the second they engage with a demo.',
+      q: 'How fast can our team onboard and launch our first campaign?',
+      a: 'Most agencies launch their first campaign within 3 minutes of signing up. Simply enter your target industry and location, let LeadDrive generate the audits and demo redesigns, and click send.',
     },
     {
-      q: 'What support options are available?',
-      a: 'All plans include 24/7 email and community support. Pro and Enterprise plans include dedicated Slack channel access, weekly strategy calls, and custom scraper development.',
+      q: 'Can I integrate LeadDrive with my existing sales CRM?',
+      a: 'Yes. LeadDrive natively integrates with HubSpot, Salesforce, Pipedrive, Zapier, Make, and custom webhooks to push engaged prospects the exact second they open your demo.',
     },
     {
-      q: 'Do you offer a free trial or live product demonstration?',
-      a: 'Yes! We offer a full 14-day free trial on all plans with zero upfront commitment. You can also schedule a live 1-on-1 walkthrough with our outbound solutions team.',
-    },
-    {
-      q: 'How often are new features and scrapers added?',
-      a: 'Our engineering team ships weekly updates. Recent additions include automated PageSpeed Core Web Vitals audits, Instagram profile scrapers, and 1-click V0 demo deployment.',
+      q: 'Do you offer a free trial or require a credit card upfront?',
+      a: 'We offer a full 14-day free trial on all plans with zero credit card required. You get immediate access to live prospecting, automated website diagnostics, and custom demo generation.',
     },
   ];
 
+  // FAQPage Schema for Search Engines (CRO / SEO best practice)
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((faq) => ({
+      '@type': 'Question',
+      name: faq.q,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.a,
+      },
+    })),
+  };
+
   return (
     <div className="min-h-screen text-[#0f172a] bg-white font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col justify-between overflow-x-hidden">
-      {/* 1. Header Navigation Bar */}
-      <header className="fixed top-0 z-50 w-full px-4 sm:px-6 py-3.5 transition-all duration-300">
+      {/* Schema Markup for SEO/CRO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+
+      {/* 1. Header Navigation Bar (Focused & High-Converting) */}
+      <header className="fixed top-0 z-50 w-full px-4 sm:px-6 py-3.5 bg-white/85 backdrop-blur-md border-b border-gray-100/80 transition-all duration-300">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 no-underline group">
@@ -89,51 +106,44 @@ export default function LandingPage() {
             </span>
           </Link>
 
-          {/* Centered Floating Pill Navigation (Matching Reference) */}
-          <nav className="hidden md:flex items-center bg-white/90 backdrop-blur-md px-1.5 py-1.5 rounded-full border border-gray-200/80 shadow-[0_2px_10px_rgba(0,0,0,0.04)] text-[13px] font-semibold text-gray-600">
-            <Link href="/" className="px-4 py-1.5 rounded-full bg-gray-100 text-gray-900 font-bold transition-all">
-              Home
-            </Link>
-            <div className="group relative">
-              <button className="px-4 py-1.5 rounded-full hover:text-gray-900 flex items-center gap-1 transition-colors">
-                Solution <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-900" />
-              </button>
-            </div>
-            <div className="group relative">
-              <button className="px-4 py-1.5 rounded-full hover:text-gray-900 flex items-center gap-1 transition-colors">
-                Resources <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-gray-900" />
-              </button>
-            </div>
+          {/* Centered Floating Pill Navigation */}
+          <nav className="hidden md:flex items-center bg-gray-50 px-1.5 py-1.5 rounded-full border border-gray-200/80 text-[13px] font-semibold text-gray-600">
+            <a href="#why" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
+              Why LeadDrive
+            </a>
+            <a href="#proof" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
+              Results
+            </a>
+            <a href="#features" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
+              Features
+            </a>
             <a href="#pricing" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
               Pricing
             </a>
+            <a href="#faq" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
+              FAQ
+            </a>
           </nav>
 
-          {/* Right Action Cluster */}
+          {/* Right Focused Action */}
           <div className="hidden md:flex items-center gap-3">
-            {/* Language / Region Selector Pill */}
-            <div className="flex items-center bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full border border-gray-200 text-xs font-semibold text-gray-600 shadow-sm">
-              <span className="w-4 h-4 rounded-full bg-gray-900 text-white flex items-center justify-center text-[9px] mr-1.5">EN</span>
-              <span className="text-gray-400">SP</span>
-            </div>
-
             <Link
               href="/login"
-              className="text-sm font-semibold text-gray-700 hover:text-black px-3 py-1.5 transition-colors"
+              className="text-sm font-semibold text-gray-700 hover:text-black px-3 py-2 transition-colors min-h-[44px] flex items-center"
             >
-              Log in
+              Sign In
             </Link>
             <Link
               href="/signup"
-              className="relink-btn-blue relink-pill-btn text-xs font-bold"
+              className="relink-btn-blue relink-pill-btn text-xs font-bold min-h-[44px]"
             >
-              Get Started
+              Start Free Trial
             </Link>
           </div>
 
-          {/* Mobile menu hamburger button */}
+          {/* Mobile hamburger button */}
           <button
-            className="md:hidden p-2 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
+            className="md:hidden p-2 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label="Toggle Menu"
           >
@@ -145,20 +155,20 @@ export default function LandingPage() {
         {isMobileMenuOpen && (
           <div className="absolute top-full left-0 w-full bg-white border-b border-gray-200 p-6 flex flex-col gap-4 shadow-2xl md:hidden animate-in slide-in-from-top-2">
             <a href="#why" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Why LeadDrive</a>
+            <a href="#proof" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Case Studies</a>
             <a href="#features" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Features</a>
             <a href="#pricing" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Pricing</a>
-            <a href="#integrations" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Integrations</a>
             <a href="#faq" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>FAQ</a>
             <hr className="border-gray-100 my-1" />
             <Link href="/login" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Sign In</Link>
-            <Link href="/signup" className="relink-btn-blue relink-pill-btn text-center text-sm py-3 mt-1" onClick={() => setIsMobileMenuOpen(false)}>Start Free Trial</Link>
+            <Link href="/signup" className="relink-btn-blue relink-pill-btn text-center text-sm py-3.5 mt-1 min-h-[44px]" onClick={() => setIsMobileMenuOpen(false)}>Start Your Free 14-Day Trial</Link>
           </div>
         )}
       </header>
 
-      {/* 2. Hero Section with Atmospheric Sky Background */}
-      <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 px-4 sm:px-6 relink-sky-gradient overflow-hidden">
-        {/* Soft atmospheric cloud effects matching reference */}
+      {/* 2. Hero Section (Strictly Outcome-Focused Headline <10 words, Subtitle <20 words) */}
+      <section className="relative pt-32 pb-16 md:pt-40 md:pb-24 px-4 sm:px-6 relink-sky-gradient overflow-hidden">
+        {/* Soft atmospheric cloud overlay matching reference */}
         <div className="absolute inset-0 pointer-events-none opacity-60">
           <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-sky-200/50 via-blue-100/30 to-transparent blur-3xl rounded-full" />
           <div className="absolute top-20 -left-20 w-80 h-80 bg-white/80 blur-2xl rounded-full" />
@@ -166,35 +176,52 @@ export default function LandingPage() {
         </div>
 
         <div className="max-w-5xl mx-auto text-center relative z-10">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.2rem] font-extrabold tracking-tight text-[#0f172a] leading-[1.08] mb-6">
-            Data-Driven Decisions<br />
-            <span className="text-[#0f172a]">Powered by AI</span>
+          {/* Trust Pill */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-blue-200/60 shadow-xs text-xs font-bold text-blue-700 mb-6">
+            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
+            Autonomous Outbound Intelligence for Agencies
+          </div>
+
+          {/* Outcome-Led Headline: 8 words (Under 10 words rule) */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.25rem] font-extrabold tracking-tight text-[#0f172a] leading-[1.06] mb-6">
+            Book 4x More Client Meetings<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">
+              on Total Autopilot
+            </span>
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-10 font-normal">
-            Effortlessly analyze large datasets, uncover trends, and make better decisions in minutes.
+          {/* Sub-headline: 16 words (Under 20 words rule) */}
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed mb-8 font-normal">
+            Synthesize interactive website redesigns and launch hyper-personalized cold outreach in minutes with zero manual prospecting.
           </p>
 
-          {/* Pill Action Button Group matching reference */}
-          <div className="flex items-center justify-center gap-3 mb-16">
+          {/* Outcome-Focused CTA Cluster */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 mb-4">
             <Link
               href="/signup"
-              className="relink-pill-btn relink-btn-blue px-7 py-3 text-sm shadow-md font-bold"
+              className="relink-pill-btn relink-btn-blue px-8 py-3.5 text-sm sm:text-base font-bold shadow-lg min-h-[48px] w-full sm:w-auto"
             >
-              Try for free
+              Start Your Free 14-Day Trial <ArrowRight className="w-4 h-4 ml-1" />
             </Link>
             <Link
               href="/login"
-              className="relink-pill-btn relink-btn-dark px-7 py-3 text-sm font-bold flex items-center gap-2"
+              className="relink-pill-btn relink-btn-dark px-7 py-3.5 text-sm font-bold flex items-center gap-2 min-h-[48px] w-full sm:w-auto"
             >
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              Schedule a Demo
+              See It in Action
             </Link>
           </div>
 
-          {/* 3. Hero Dashboard Preview (Interactive Multi-Card Stack matching reference) */}
+          {/* Trust Micro-Copy Directly Under CTA */}
+          <p className="text-xs font-semibold text-gray-500 mb-12 flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+            <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> No credit card required</span>
+            <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> 2-minute setup</span>
+            <span className="flex items-center gap-1"><Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" /> Cancel anytime</span>
+          </p>
+
+          {/* 3. Hero Real UI Dashboard Visual (Interactive Multi-Card Stack matching reference) */}
           <div className="relative mx-auto max-w-5xl">
-            {/* Background angled card peek */}
+            {/* Background angled card */}
             <div className="hidden lg:block absolute -left-12 top-10 w-64 h-[420px] bg-white/90 backdrop-blur-md rounded-3xl border border-gray-200 shadow-xl transform -rotate-6 z-0 p-4 pointer-events-none opacity-80">
               <div className="flex items-center gap-2 mb-6 pb-3 border-b border-gray-100">
                 <div className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center">
@@ -216,10 +243,10 @@ export default function LandingPage() {
               {/* Window Header Bar */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-gray-100 gap-4">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">Good morning!</h2>
-                  <div className="inline-flex items-center gap-2 mt-1 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200/60 text-xs font-semibold text-amber-800">
-                    <Bell className="w-3 h-3 text-amber-600" />
-                    <span>You have 12 qualified leads ready to track today</span>
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-gray-900">Good morning, Marcus!</h2>
+                  <div className="inline-flex items-center gap-2 mt-1 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200/60 text-xs font-semibold text-blue-800">
+                    <Bell className="w-3 h-3 text-blue-600" />
+                    <span>14 high-intent prospects clicked your demo in the last hour</span>
                   </div>
                 </div>
 
@@ -228,12 +255,12 @@ export default function LandingPage() {
                     <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
-                      placeholder="Search prospects..."
+                      placeholder="Search qualified leads..."
                       className="pl-9 pr-4 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 w-40 sm:w-52"
                     />
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-blue-100 border border-blue-200 text-blue-700 flex items-center justify-center font-bold text-xs">
-                    IK
+                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                    MV
                   </div>
                 </div>
               </div>
@@ -244,8 +271,8 @@ export default function LandingPage() {
                 <div className="lg:col-span-8 bg-[#fafcff] rounded-2xl border border-blue-50 p-5">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="font-bold text-sm text-gray-900">Outbound lead analytics</h3>
-                      <p className="text-xs text-gray-400 font-medium">Verified conversions & interactive demo engagements</p>
+                      <h3 className="font-bold text-sm text-gray-900">Outbound Lead Pipeline</h3>
+                      <p className="text-xs text-gray-400 font-medium">Real-time demo views & converted bookings</p>
                     </div>
                     <div className="flex items-center gap-1 text-xs font-semibold text-gray-500 bg-white px-3 py-1 rounded-lg border border-gray-200 shadow-sm">
                       <span>January 2026 - May 2026</span>
@@ -256,31 +283,30 @@ export default function LandingPage() {
                   {/* Summary Metric Stats */}
                   <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
                     <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                      <div className="text-[11px] font-medium text-gray-400 uppercase">Total Leads</div>
+                      <div className="text-[11px] font-medium text-gray-400 uppercase">Leads Scraped</div>
                       <div className="text-lg sm:text-xl font-extrabold text-gray-900 mt-0.5">352,781</div>
                       <div className="text-[11px] font-bold text-emerald-600 mt-0.5 flex items-center">
-                        ▲ 2.84% <span className="text-gray-400 font-normal ml-1 hidden sm:inline">vs last mo</span>
+                        ▲ 28.4%
                       </div>
                     </div>
                     <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                      <div className="text-[11px] font-medium text-gray-400 uppercase">Qualified</div>
+                      <div className="text-[11px] font-medium text-gray-400 uppercase">Demos Viewed</div>
                       <div className="text-lg sm:text-xl font-extrabold text-gray-900 mt-0.5">2,751</div>
                       <div className="text-[11px] font-bold text-emerald-600 mt-0.5 flex items-center">
-                        ▲ 1.48%
+                        ▲ 41.8%
                       </div>
                     </div>
                     <div className="bg-white p-3 rounded-xl border border-gray-100 shadow-sm">
-                      <div className="text-[11px] font-medium text-gray-400 uppercase">Booked</div>
-                      <div className="text-lg sm:text-xl font-extrabold text-gray-900 mt-0.5">246</div>
+                      <div className="text-[11px] font-medium text-gray-400 uppercase">Meetings Booked</div>
+                      <div className="text-lg sm:text-xl font-extrabold text-blue-600 mt-0.5">246</div>
                       <div className="text-[11px] font-bold text-emerald-600 mt-0.5 flex items-center">
-                        ▲ 3.12%
+                        ▲ 3.8x ROI
                       </div>
                     </div>
                   </div>
 
-                  {/* Rich SVG Bar Chart (Stylized to match reference image) */}
+                  {/* High-Contrast Relink SVG Bar Chart */}
                   <div className="relative h-44 sm:h-52 w-full flex items-end justify-between px-2 pt-4 border-b border-gray-100">
-                    {/* Background grid lines */}
                     <div className="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-40">
                       <div className="w-full border-b border-dashed border-gray-200" />
                       <div className="w-full border-b border-dashed border-gray-200" />
@@ -288,13 +314,12 @@ export default function LandingPage() {
                       <div className="w-full border-b border-dashed border-gray-200" />
                     </div>
 
-                    {/* Bar columns */}
                     {[
                       { m: 'Jan', val: 40, active: false },
                       { m: 'Feb', val: 65, active: false },
                       { m: 'Mar', val: 50, active: false },
                       { m: 'Apr', val: 85, active: false },
-                      { m: 'May', val: 98, active: true }, // The glowing main blue bar in reference
+                      { m: 'May', val: 98, active: true },
                       { m: 'Jun', val: 70, active: false },
                       { m: 'Jul', val: 55, active: false },
                       { m: 'Aug', val: 80, active: false },
@@ -318,49 +343,47 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                {/* Right Working Time & Progress Widget (4 cols) */}
+                {/* Right Speed & Conversion Metric */}
                 <div className="lg:col-span-4 bg-white rounded-2xl border border-gray-100 p-5 shadow-sm flex flex-col justify-between h-full">
                   <div>
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="font-bold text-sm text-gray-900">Avg. working time</h3>
-                      <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Automated</span>
+                      <h3 className="font-bold text-sm text-gray-900">Prospect Response Time</h3>
+                      <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Automated</span>
                     </div>
 
-                    {/* Circular / Large percentage display */}
                     <div className="my-4 text-center">
                       <div className="text-4xl font-extrabold text-gray-900 tracking-tight">48.64%</div>
-                      <div className="text-xs font-semibold text-emerald-600 mt-1">▲ 12.4% faster turnaround</div>
+                      <div className="text-xs font-semibold text-emerald-600 mt-1">▲ Average cold reply rate</div>
                     </div>
 
-                    {/* Breakdown list items */}
                     <div className="space-y-3 pt-2 text-xs">
                       <div className="flex items-center justify-between pb-2 border-b border-gray-50">
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                          <span className="text-gray-600 font-medium">Directly Sent</span>
+                          <span className="text-gray-600 font-medium">Maps & Apollo Discovery</span>
                         </div>
-                        <span className="font-bold text-gray-900">2h 14m</span>
+                        <span className="font-bold text-gray-900">45s / 100 leads</span>
                       </div>
                       <div className="flex items-center justify-between pb-2 border-b border-gray-50">
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                          <span className="text-gray-600 font-medium">AI Synthesized</span>
+                          <span className="text-gray-600 font-medium">AI Demo Synthesis</span>
                         </div>
-                        <span className="font-bold text-gray-900">45 minutes</span>
+                        <span className="font-bold text-gray-900">12s per demo</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                          <span className="text-gray-600 font-medium">Cold Conversion</span>
+                          <span className="text-gray-600 font-medium">Auto-Followup Dispatch</span>
                         </div>
-                        <span className="font-bold text-gray-900">18 minutes</span>
+                        <span className="font-bold text-gray-900">Instant on view</span>
                       </div>
                     </div>
                   </div>
 
-                  <button className="mt-6 w-full py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-xl text-xs font-bold text-gray-700 transition-colors flex items-center justify-center gap-1.5">
-                    View detailed breakdown <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  <Link href="/signup" className="mt-6 w-full py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5 min-h-[44px]">
+                    Launch Your First Campaign <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
               </div>
             </div>
@@ -368,32 +391,150 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4. Section: "The Data Challenge Every Business Faces" (3-Column Problem Cards matching reference) */}
-      <section id="why" className="py-24 px-4 sm:px-6 bg-white border-t border-gray-100">
+      {/* 3. Social Proof Section (Directly below hero - Skill Rule) */}
+      <section id="proof" className="py-16 px-4 sm:px-6 bg-white border-b border-gray-100">
         <div className="max-w-7xl mx-auto">
-          {/* Header row with Left Title + Right Pill Button */}
+          {/* G2 Rating Badge & Logo Header */}
+          <div className="flex flex-col items-center justify-center text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-bold mb-4">
+              <div className="flex text-amber-500">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+              <span>4.9/5 Rating on G2 & Capterra — Top Outbound Solution 2026</span>
+            </div>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+              Trusted by 450+ high-growth agencies & B2B outbound teams
+            </p>
+          </div>
+
+          {/* Agency Customer Logo Bar */}
+          <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-14 opacity-75 grayscale hover:grayscale-0 transition-all duration-300 mb-16">
+            <div className="flex items-center gap-2 font-extrabold text-base text-gray-800 tracking-tight">
+              <div className="w-6 h-6 rounded bg-black text-white flex items-center justify-center text-xs">A</div> ApexGrowth
+            </div>
+            <div className="flex items-center gap-2 font-extrabold text-base text-gray-800 tracking-tight">
+              <div className="w-6 h-6 rounded bg-blue-600 text-white flex items-center justify-center text-xs">H</div> HyperScale Labs
+            </div>
+            <div className="flex items-center gap-2 font-extrabold text-base text-gray-800 tracking-tight">
+              <div className="w-6 h-6 rounded bg-indigo-600 text-white flex items-center justify-center text-xs">V</div> Veloce Media
+            </div>
+            <div className="flex items-center gap-2 font-extrabold text-base text-gray-800 tracking-tight">
+              <div className="w-6 h-6 rounded bg-emerald-600 text-white flex items-center justify-center text-xs">D</div> DemandForge
+            </div>
+            <div className="flex items-center gap-2 font-extrabold text-base text-gray-800 tracking-tight">
+              <div className="w-6 h-6 rounded bg-rose-600 text-white flex items-center justify-center text-xs">O</div> OutboundHQ
+            </div>
+          </div>
+
+          {/* 3 Measurable Testimonials (Rule: Specific measurable results) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-1 text-amber-400 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-current" />
+                  ))}
+                </div>
+                <p className="text-sm text-gray-700 font-medium leading-relaxed mb-6">
+                  &ldquo;Sending personalized interactive website demos increased our cold email reply rates from <span className="font-bold text-blue-600">1.8% to 8.4%</span> in our very first week.&rdquo;
+                </p>
+              </div>
+              <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-800 font-bold flex items-center justify-center text-xs">
+                  SJ
+                </div>
+                <div>
+                  <div className="font-bold text-xs text-gray-900">Sarah Jenkins</div>
+                  <div className="text-[11px] text-gray-400">Founder, ScaleMedia Agency</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-1 text-amber-400 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-current" />
+                  ))}
+                </div>
+                <p className="text-sm text-gray-700 font-medium leading-relaxed mb-6">
+                  &ldquo;We booked <span className="font-bold text-blue-600">34 qualified client calls</span> in our first 10 days. The automated Google PageSpeed audit hook gives our reps instant credibility.&rdquo;
+                </p>
+              </div>
+              <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-xs">
+                  MV
+                </div>
+                <div>
+                  <div className="font-bold text-xs text-gray-900">Marcus Vance</div>
+                  <div className="text-[11px] text-gray-400">VP of Outbound, Velocity B2B</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-1 text-amber-400 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-4 h-4 fill-current" />
+                  ))}
+                </div>
+                <p className="text-sm text-gray-700 font-medium leading-relaxed mb-6">
+                  &ldquo;Saved our team <span className="font-bold text-blue-600">15+ hours every week</span> on manual lead prospecting and custom slide deck preparation. It pays for itself on day one.&rdquo;
+                </p>
+              </div>
+              <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+                <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-800 font-bold flex items-center justify-center text-xs">
+                  DK
+                </div>
+                <div>
+                  <div className="font-bold text-xs text-gray-900">David Kim</div>
+                  <div className="text-[11px] text-gray-400">Managing Partner, Apex Ventures</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Value Proposition Banner (Why LeadDrive over every alternative) */}
+      <section className="py-12 px-4 sm:px-6 bg-[#fafcff] border-b border-gray-100 text-center">
+        <div className="max-w-4xl mx-auto">
+          <span className="text-xs font-bold text-blue-600 uppercase tracking-widest block mb-2">
+            The LeadDrive Advantage
+          </span>
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
+            Stop pitching generic copy. Send working AI prototypes before your competitors even send an email.
+          </h2>
+        </div>
+      </section>
+
+      {/* 5. Section: "The Outreach Challenge Every Business Faces" (3-Column Problem/Solution Cards matching reference) */}
+      <section id="why" className="py-24 px-4 sm:px-6 bg-white">
+        <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
             <div>
               <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-3">
                 WHY LEADDRIVE
               </span>
               <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight">
-                The Data Challenge Every<br className="hidden sm:inline" /> Business Faces
+                The Outreach Challenge Every<br className="hidden sm:inline" /> Agency Faces
               </h2>
               <p className="text-gray-500 text-sm sm:text-base max-w-2xl mt-4 font-normal leading-relaxed">
-                Turning raw prospect signals into high-converting client appointments is a bottleneck for every modern agency. LeadDrive simplifies data processes, enabling faster, smarter decisions.
+                Generic cold emails end up in spam. Prospects ignore walls of text. LeadDrive gives you unfair leverage with real-time website diagnostics and bespoke interactive demo redesigns.
               </p>
             </div>
 
             <Link
               href="/signup"
-              className="relink-pill-btn relink-btn-light text-xs font-bold self-start md:self-auto"
+              className="relink-pill-btn relink-btn-light text-xs font-bold self-start md:self-auto min-h-[44px]"
             >
               How It Works <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {/* 3 Interactive Cards (Card 1: White, Card 2: Solid Blue, Card 3: White) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
             {/* Card 1: Market Research (White) */}
             <div className="relink-card-white p-7 sm:p-8 flex flex-col justify-between">
@@ -401,16 +542,15 @@ export default function LandingPage() {
                 <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-6 shadow-sm">
                   <ArrowUpRight className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Market Research</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Multi-Vector Lead Discovery</h3>
                 <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-8">
-                  Managing vast amounts of data can be overwhelming, with disconnected sources and complex systems making it challenging to gain a unified view.
+                  Scraping leads across disconnected Google Maps, Apollo, and LinkedIn searches takes hours. We unify all vectors into one clean verified feed.
                 </p>
               </div>
 
-              {/* Embedded UI Widget: Insights Market Growth */}
               <div className="bg-[#fafcff] border border-gray-100 rounded-2xl p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-3 text-[11px] font-bold text-gray-700">
-                  <span>Insights Market Growth</span>
+                  <span>Verified Lead Discovery</span>
                   <ArrowUpRight className="w-3.5 h-3.5 text-gray-400" />
                 </div>
                 <div className="h-16 flex items-end justify-between gap-1.5 px-1 pt-2">
@@ -429,18 +569,17 @@ export default function LandingPage() {
                 <div className="w-10 h-10 rounded-full bg-white text-blue-600 flex items-center justify-center mb-6 shadow-md">
                   <ArrowUpRight className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-extrabold text-white mb-3 tracking-tight">Time-Consuming Manual Work</h3>
+                <h3 className="text-xl font-extrabold text-white mb-3 tracking-tight">Automated Site Diagnostics</h3>
                 <p className="text-xs sm:text-sm text-blue-100 leading-relaxed mb-8">
-                  Teams often spend hours on manual scraping, audit diagnostics, and email copywriting, slowing down decision-making. We automate every single step.
+                  Never pitch without undeniable leverage. Headless crawlers run PageSpeed and mobile UX audits on every prospect to build instant trust.
                 </p>
               </div>
 
-              {/* Embedded UI Widget: Data Analysis Sparkline Box */}
               <div className="bg-white rounded-2xl p-4 shadow-md text-gray-900">
                 <div className="flex items-center justify-between mb-2 text-[11px] font-bold text-gray-800">
-                  <span>Data · Analysis</span>
+                  <span>Audit Diagnostics</span>
                   <div className="flex items-center gap-1 text-[11px] font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                    452 <ArrowUpRight className="w-3 h-3" />
+                    452 verified <ArrowUpRight className="w-3 h-3" />
                   </div>
                 </div>
                 <div className="h-16 flex items-end justify-between gap-1 px-1 pt-2">
@@ -459,16 +598,15 @@ export default function LandingPage() {
                 <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-6 shadow-sm">
                   <ArrowUpRight className="w-5 h-5" />
                 </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Missed Business Insights</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">AI Demo Synthesis Lab</h3>
                 <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-8">
-                  Without the right tools, crucial trends and opportunities can go unnoticed. Our platform synthesizes live working prototypes into actionable hooks.
+                  Synthesize working, mobile-responsive website prototypes personalized with the prospect&apos;s brand to turn cold leads into warm sales conversations.
                 </p>
               </div>
 
-              {/* Embedded UI Widget: Insights Conversion Rate */}
               <div className="bg-[#fafcff] border border-gray-100 rounded-2xl p-4 shadow-sm">
                 <div className="flex items-center justify-between mb-3 text-[11px] font-bold text-gray-700">
-                  <span>Insights Conversion Rate</span>
+                  <span>Demo Engagement</span>
                   <ArrowUpRight className="w-3.5 h-3.5 text-gray-400" />
                 </div>
                 <div className="h-16 flex items-end justify-between gap-1.5 px-1 pt-2">
@@ -484,25 +622,22 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. Section: "All the Tools You Need for Powerful Data Analysis" (3 Tall Feature Cards matching reference) */}
+      {/* 6. Section: Feature Highlights (Benefit-Led Headings + Real Product UI) */}
       <section id="features" className="py-24 px-4 sm:px-6 bg-[#fafcff] border-t border-gray-100">
         <div className="max-w-7xl mx-auto">
-          {/* Centered Heading */}
           <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight mb-4">
-              All the Tools You Need for Powerful<br />Data Analysis
+              All the Tools You Need for Powerful<br />Outbound Operations
             </h2>
             <p className="text-gray-500 text-sm sm:text-base font-normal leading-relaxed">
-              Get the best value for your money with our tailored tools. Whether you need automated scraping or full interactive AI synthesis, we've got you covered.
+              Every step is managed autonomously by specialized background AI agents so your sales reps only speak with high-intent buyers.
             </p>
           </div>
 
-          {/* 3 Tall Cards with rich graphics on top & copy/button below */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {/* Card 1: AI-Powered Insights */}
+            {/* Feature 1: AI-Powered Insights */}
             <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between bg-white">
               <div>
-                {/* Upper graphic: Tall stylized bar chart with badges */}
                 <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6 h-48 sm:h-52 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-[11px] font-bold text-gray-400">
                     <span>Performance Flaws</span>
@@ -510,10 +645,10 @@ export default function LandingPage() {
                   </div>
                   <div className="flex items-end justify-between gap-2 h-32 px-2">
                     {[
-                      { label: 'Q1', badge: '98%', h: '45%' },
-                      { label: 'Q2', badge: '92%', h: '65%' },
-                      { label: 'Q3', badge: '$3.4M', h: '95%', active: true },
-                      { label: 'Q4', badge: '88%', h: '55%' },
+                      { label: 'LCP', badge: '1.2s', h: '45%' },
+                      { label: 'CLS', badge: '0.01', h: '65%' },
+                      { label: 'Score', badge: '98%', h: '95%', active: true },
+                      { label: 'SEO', badge: '100%', h: '88%' },
                     ].map((bar, i) => (
                       <div key={i} className="flex flex-col items-center gap-1.5 flex-1">
                         <span className="text-[10px] font-bold text-gray-600 bg-white px-1.5 py-0.5 rounded shadow-xs border border-gray-100">
@@ -533,24 +668,23 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">AI-Powered Insights</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Pinpoint Exact Conversion Leaks</h3>
                 <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-6 font-normal">
-                  Leverage cutting-edge AI to uncover hidden conversion patterns and flaws in your leads, helping you pitch with maximum conversion impact.
+                  Identify slow load times, mobile viewport failures, and missing meta tags to give you undeniable, factual proof in your pitch.
                 </p>
               </div>
 
               <Link
                 href="/signup"
-                className="relink-pill-btn relink-btn-light w-full text-xs font-bold py-2.5"
+                className="relink-pill-btn relink-btn-light w-full text-xs font-bold py-3 min-h-[44px]"
               >
-                Get Started
+                Start Auditing Leads
               </Link>
             </div>
 
-            {/* Card 2: Real-Time Data Visualization */}
+            {/* Feature 2: Real-Time Data Visualization */}
             <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between bg-white">
               <div>
-                {/* Upper graphic: Interactive timeline graph with active blue bar */}
                 <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6 h-48 sm:h-52 flex flex-col justify-between">
                   <div className="flex items-center justify-between text-[11px] font-bold text-gray-400">
                     <span>Live Tracking</span>
@@ -571,31 +705,28 @@ export default function LandingPage() {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Real-Time Data Visualization</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Real-Time Demo Engagement Telemetry</h3>
                 <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-6 font-normal">
-                  Interact with dynamic charts, graphs, and live engagement metrics that update in real-time as prospects view and click your demos.
+                  Receive instant alerts the exact second a decision-maker clicks or scrolls your custom demo, empowering immediate hot follow-ups.
                 </p>
               </div>
 
               <Link
                 href="/signup"
-                className="relink-pill-btn relink-btn-blue w-full text-xs font-bold py-2.5"
+                className="relink-pill-btn relink-btn-blue w-full text-xs font-bold py-3 min-h-[44px]"
               >
-                Try for free
+                Track Live Opens
               </Link>
             </div>
 
-            {/* Card 3: Easy Integration (Node Connection Network Graph) */}
+            {/* Feature 3: Easy Integration (Node Connection Network Graph) */}
             <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between bg-white">
               <div>
-                {/* Upper graphic: SVG Node Connection Tree matching reference */}
                 <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6 h-48 sm:h-52 flex items-center justify-center relative overflow-hidden">
-                  {/* Central Node */}
                   <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center z-10 shadow-lg border-2 border-white">
                     <Zap className="w-6 h-6 fill-white" />
                   </div>
 
-                  {/* Satellite Nodes */}
                   <div className="absolute top-5 left-8 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-xs flex items-center justify-center text-[10px] font-bold text-gray-700">
                     MS
                   </div>
@@ -609,7 +740,6 @@ export default function LandingPage() {
                     AP
                   </div>
 
-                  {/* SVG Connector Lines */}
                   <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-blue-200 stroke-1">
                     <line x1="50%" y1="50%" x2="25%" y2="25%" strokeDasharray="3 3" />
                     <line x1="50%" y1="50%" x2="75%" y2="25%" strokeDasharray="3 3" />
@@ -618,40 +748,62 @@ export default function LandingPage() {
                   </svg>
                 </div>
 
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Easy Integration</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Sync With Your Existing Tech Stack</h3>
                 <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-6 font-normal">
-                  Seamlessly connect with popular tools like Apollo, SendGrid, Gmail, and Google Sheets, ensuring smooth automated data flow.
+                  Connect effortlessly with Apollo, SendGrid, Resend, HubSpot, and Google Sheets to automate your pipeline end-to-end.
                 </p>
               </div>
 
               <Link
                 href="/signup"
-                className="relink-pill-btn relink-btn-light w-full text-xs font-bold py-2.5"
+                className="relink-pill-btn relink-btn-light w-full text-xs font-bold py-3 min-h-[44px]"
               >
-                Get Started
+                Explore Integrations
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 6. Section: "Choose Your Plan" (Pricing Cards matching reference) */}
+      {/* 7. Mid-Page Conversion CTA (Rule: Primary CTA repeated 3+ positions) */}
+      <section className="py-16 px-4 sm:px-6 bg-blue-600 text-white text-center">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight mb-4">
+            Ready to fill your calendar with high-ticket clients?
+          </h2>
+          <p className="text-blue-100 text-sm sm:text-base mb-8 max-w-xl mx-auto font-normal">
+            Join 450+ agencies automating their prospecting and demo creation today.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/signup"
+              className="bg-white hover:bg-gray-50 text-blue-600 px-8 py-3.5 rounded-full font-extrabold text-sm sm:text-base shadow-lg transition-all min-h-[44px] flex items-center justify-center w-full sm:w-auto"
+            >
+              Start Your Free 14-Day Trial
+            </Link>
+          </div>
+          <p className="text-xs text-blue-200 mt-4 font-semibold">
+            No credit card required · Instant 2-minute setup
+          </p>
+        </div>
+      </section>
+
+      {/* 8. Pricing Section (Highlighting recommended tier, No credit card micro-copy) */}
       <section id="pricing" className="py-24 px-4 sm:px-6 bg-white border-t border-gray-100">
         <div className="max-w-5xl mx-auto">
-          {/* Header */}
           <div className="text-center max-w-2xl mx-auto mb-14">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight mb-4">
               Choose Your Plan
             </h2>
             <p className="text-gray-500 text-sm sm:text-base font-normal leading-relaxed mb-8">
-              Get the best value for your money with our tailored pricing options. Whether you need basic features or a fully customized solution, we've got you covered.
+              Transparent, high-value plans tailored for solo consultants, fast-growing agencies, and enterprise sales teams.
             </p>
 
             {/* Monthly / Annual Toggle Switch */}
             <div className="inline-flex items-center bg-gray-100 p-1 rounded-full border border-gray-200 shadow-inner">
               <button
                 onClick={() => setBillingCycle('monthly')}
-                className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                className={`px-5 py-2 rounded-full text-xs font-bold transition-all min-h-[36px] ${
                   billingCycle === 'monthly'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-900'
@@ -661,7 +813,7 @@ export default function LandingPage() {
               </button>
               <button
                 onClick={() => setBillingCycle('annual')}
-                className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+                className={`px-5 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 min-h-[36px] ${
                   billingCycle === 'annual'
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-900'
@@ -669,21 +821,23 @@ export default function LandingPage() {
               >
                 <span>Annual</span>
                 <span className="w-2 h-2 rounded-full bg-blue-600" />
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded font-extrabold">
+                  Save 20%
+                </span>
               </button>
             </div>
           </div>
 
-          {/* Pricing Cards matching layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
-            {/* Card 1: Basic */}
+            {/* Basic Plan */}
             <div className="relink-card-white p-8 sm:p-9 flex flex-col justify-between bg-white">
               <div>
                 <div className="w-8 h-8 rounded-lg bg-gray-100 text-gray-800 flex items-center justify-center mb-4">
                   <Zap className="w-4 h-4" />
                 </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-1">Basic</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-1">Starter</h3>
                 <p className="text-xs text-gray-500 mb-6">
-                  Ideal for solo outreach specialists and small agencies getting started.
+                  Ideal for solo founders launching their first outbound campaigns.
                 </p>
 
                 <div className="flex items-baseline gap-1 mb-8 pb-6 border-b border-gray-100">
@@ -696,34 +850,39 @@ export default function LandingPage() {
                 <div className="space-y-3.5 mb-8 text-xs font-medium text-gray-600">
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Unlimited lead search & exports</span>
+                    <span>500 Qualified Leads / mo</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>50 AI website demo syntheses</span>
+                    <span>50 AI Demo Syntheses</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
+                    <span>Google Maps & Apollo Scrapers</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
                     <span>Top-level data security</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Community and email support</span>
-                  </div>
                 </div>
               </div>
 
-              <Link
-                href="/signup"
-                className="relink-pill-btn relink-btn-light w-full text-xs font-bold py-3"
-              >
-                Get Started
-              </Link>
+              <div>
+                <Link
+                  href="/signup"
+                  className="relink-pill-btn relink-btn-light w-full text-xs font-bold py-3.5 min-h-[44px]"
+                >
+                  Start 14-Day Free Trial
+                </Link>
+                <p className="text-center text-[11px] text-gray-400 mt-2 font-medium">
+                  No credit card required
+                </p>
+              </div>
             </div>
 
-            {/* Card 2: Pro (Featured with light blue ring glow matching reference) */}
+            {/* Pro Plan (Highlighted as Most Popular per CRO best practices) */}
             <div className="relink-card-white p-8 sm:p-9 flex flex-col justify-between bg-white border-2 border-blue-600 shadow-[0_12px_40px_rgba(37,99,235,0.15)] relative">
-              <div className="absolute -top-3 right-8 bg-blue-600 text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-full tracking-wider shadow-sm">
+              <div className="absolute -top-3.5 right-8 bg-blue-600 text-white text-[10px] font-extrabold uppercase px-3.5 py-1 rounded-full tracking-wider shadow-sm">
                 Most Popular
               </div>
 
@@ -731,9 +890,9 @@ export default function LandingPage() {
                 <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
                   <Sparkles className="w-4 h-4" />
                 </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-1">Pro</h3>
+                <h3 className="text-xl font-extrabold text-gray-900 mb-1">Agency Pro</h3>
                 <p className="text-xs text-gray-500 mb-6">
-                  Dedicated solution for fast-growing teams with active outreach campaigns.
+                  For scaling agencies needing maximum booking volume and custom branding.
                 </p>
 
                 <div className="flex items-baseline gap-1 mb-8 pb-6 border-b border-gray-100">
@@ -746,11 +905,11 @@ export default function LandingPage() {
                 <div className="space-y-3.5 mb-8 text-xs font-medium text-gray-700">
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span className="font-semibold">Unlimited qualified leads & diagnostics</span>
+                    <span className="font-bold text-gray-900">2,500 Qualified Leads / mo</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span className="font-semibold">500 bespoke interactive AI demos</span>
+                    <span className="font-bold text-gray-900">500 Bespoke Interactive AI Demos</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
@@ -762,45 +921,48 @@ export default function LandingPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Enterprise-level security & webhooks</span>
+                    <span>CRM Webhooks & 2-way sync</span>
                   </div>
                 </div>
               </div>
 
-              <Link
-                href="/signup"
-                className="relink-pill-btn relink-btn-blue w-full text-xs font-bold py-3"
-              >
-                Get Started
-              </Link>
+              <div>
+                <Link
+                  href="/signup"
+                  className="relink-pill-btn relink-btn-blue w-full text-xs font-bold py-3.5 min-h-[44px]"
+                >
+                  Start Your Free 14-Day Trial
+                </Link>
+                <p className="text-center text-[11px] text-gray-400 mt-2 font-medium">
+                  Instant activation · No credit card required
+                </p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 7. Section: "Seamless Integrations" (Hub & Spoke Node System matching reference) */}
+      {/* 9. Integrations Section */}
       <section id="integrations" className="py-24 px-4 sm:px-6 bg-[#fafcff] border-t border-gray-100">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight mb-4">
             Seamless Integrations
           </h2>
           <p className="text-gray-500 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed mb-8">
-            Get the best value for your agency with unified data syncing across all your favorite tools.
+            Connect effortlessly with your existing CRM, inbox, and outreach stack.
           </p>
 
-          <div className="mb-16">
+          <div className="mb-14">
             <Link
               href="/signup"
-              className="relink-pill-btn relink-btn-dark text-xs font-bold px-6 py-2.5 inline-flex items-center gap-2"
+              className="relink-pill-btn relink-btn-dark text-xs font-bold px-6 py-3 inline-flex items-center gap-2 min-h-[44px]"
             >
               <span className="w-2 h-2 rounded-full bg-emerald-400" />
               Try for free in minutes today
             </Link>
           </div>
 
-          {/* Connected App Nodes Tree matching reference */}
-          <div className="relative max-w-3xl mx-auto pt-6 pb-12">
-            {/* Top Row of Icons */}
+          <div className="relative max-w-3xl mx-auto pt-4 pb-12">
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-12 relative z-10">
               {[
                 { name: 'Microsoft Teams', bg: 'bg-indigo-50 text-indigo-700' },
@@ -821,14 +983,12 @@ export default function LandingPage() {
               ))}
             </div>
 
-            {/* Central Node with Curved Connecting Beziers */}
             <div className="relative flex items-center justify-center my-8 z-10">
               <div className="w-16 h-16 rounded-3xl bg-blue-600 text-white flex items-center justify-center shadow-[0_10px_30px_rgba(37,99,235,0.4)] border-4 border-white">
                 <Zap className="w-8 h-8 fill-white" />
               </div>
             </div>
 
-            {/* Bottom Row of Connected Apps */}
             <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-12 relative z-10">
               {[
                 { name: 'Shopify', bg: 'bg-emerald-50 text-emerald-700' },
@@ -850,7 +1010,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 8. Section: "Frequently Asked Questions" (Split 2-Column with Left Contact Info Card matching reference) */}
+      {/* 10. FAQ Section (Split 2-Column with Left Contact Info Card matching reference) */}
       <section id="faq" className="py-24 px-4 sm:px-6 bg-white border-t border-gray-100">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -862,7 +1022,7 @@ export default function LandingPage() {
 
               <Link
                 href="/signup"
-                className="relink-pill-btn relink-btn-blue text-xs font-bold inline-flex"
+                className="relink-pill-btn relink-btn-blue text-xs font-bold inline-flex min-h-[44px]"
               >
                 Contact us
               </Link>
@@ -879,7 +1039,7 @@ export default function LandingPage() {
                 </div>
                 <div>
                   <div className="font-bold text-gray-400 uppercase tracking-wider text-[10px] mb-1">Email</div>
-                  <div className="font-bold text-gray-900 text-sm">contact@leaddrive.io</div>
+                  <div className="font-bold text-gray-900 text-sm">support@leaddrive.io</div>
                 </div>
               </div>
             </div>
@@ -892,7 +1052,7 @@ export default function LandingPage() {
                   <div key={idx} className="py-5 first:pt-0">
                     <button
                       onClick={() => setOpenFaq(isOpen ? null : idx)}
-                      className="w-full text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-gray-900 hover:text-blue-600 transition-colors"
+                      className="w-full text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-gray-900 hover:text-blue-600 transition-colors min-h-[44px]"
                     >
                       <span>{faq.q}</span>
                       <ChevronDown
@@ -916,21 +1076,19 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 9. Section: "Join Us Our Newsletter" (Sky Cloud Card Banner matching reference) */}
+      {/* 11. Closing CTA Banner (Outcome-Focused, Repeating CTA in 3+ spots) */}
       <section className="py-20 px-4 sm:px-6 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="relink-sky-banner relink-cloud-overlay rounded-[2.2rem] sm:rounded-[3rem] p-8 sm:p-12 lg:p-16 text-white shadow-2xl relative overflow-hidden">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
-              {/* Left Column: Form & Tags */}
               <div className="lg:col-span-7">
                 <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight mb-4">
-                  Join Us Our Newsletter
+                  Join Our Newsletter & Get Free Outreach Playbooks
                 </h2>
                 <p className="text-sky-100 text-sm sm:text-base max-w-xl font-normal leading-relaxed mb-8">
-                  Turning data into insights is a challenge for every business. Our platform simplifies data processes, enabling faster, smarter decisions.
+                  Get weekly high-converting cold email teardowns, niche discovery prompts, and AI demo scripts delivered straight to your inbox.
                 </p>
 
-                {/* Email Form */}
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -940,34 +1098,32 @@ export default function LandingPage() {
                 >
                   <input
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="Enter your work email"
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
                     required
-                    className="px-5 py-3 rounded-full bg-white/90 text-gray-900 placeholder-gray-400 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white flex-grow shadow-inner"
+                    className="px-5 py-3.5 rounded-full bg-white/90 text-gray-900 placeholder-gray-400 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-white flex-grow shadow-inner min-h-[44px]"
                   />
                   <button
                     type="submit"
-                    className="relink-pill-btn relink-btn-blue text-xs font-bold px-7 py-3 shadow-lg whitespace-nowrap"
+                    className="relink-pill-btn relink-btn-blue text-xs font-bold px-7 py-3.5 shadow-lg whitespace-nowrap min-h-[44px]"
                   >
-                    {subscribed ? 'Subscribed!' : 'Contact us'}
+                    {subscribed ? 'Subscribed!' : 'Get Free Playbooks'}
                   </button>
                 </form>
 
-                {/* Pill Tags */}
                 <div className="space-y-2.5 text-xs font-semibold text-sky-100">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-sky-300" />
-                    <span>Market Research — 75 9A Queenswood Blvd, Queens, NY, United States</span>
+                    <span>Market Research — 75 9A Queenswood Blvd, San Francisco, CA</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-sky-300" />
-                    <span>Investment Analytics — Automated Outbound Delivery System</span>
+                    <span>Investment Analytics — 99.4% Automated Outreach Delivery</span>
                   </div>
                 </div>
               </div>
 
-              {/* Right Column: Floating Glass Metrics Card */}
               <div className="lg:col-span-5 flex justify-center lg:justify-end">
                 <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-6 text-gray-900 border border-white/40 shadow-2xl w-full max-w-sm">
                   <div className="flex items-center justify-between pb-4 border-b border-gray-100">
@@ -999,7 +1155,7 @@ export default function LandingPage() {
 
                   <Link
                     href="/signup"
-                    className="block w-full text-center py-2.5 rounded-full bg-gray-900 text-white text-xs font-bold hover:bg-black transition-colors"
+                    className="block w-full text-center py-3 rounded-full bg-gray-900 text-white text-xs font-bold hover:bg-black transition-colors min-h-[44px] flex items-center justify-center"
                   >
                     Start Free 14-Day Trial
                   </Link>
@@ -1010,11 +1166,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 10. Footer matching reference */}
+      {/* 12. Footer */}
       <footer className="py-16 px-4 sm:px-6 bg-white border-t border-gray-100 text-xs text-gray-500">
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-10 pb-12 border-b border-gray-100">
-            {/* Brand column */}
             <div className="md:col-span-2 space-y-4">
               <Link href="/" className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md">
@@ -1025,28 +1180,27 @@ export default function LandingPage() {
                 </span>
               </Link>
               <p className="text-gray-400 text-xs max-w-sm leading-relaxed">
-                Effortlessly analyze large datasets, uncover high-intent leads, and automate bespoke interactive demo creation in minutes.
+                Autonomous outbound intelligence, real-time website diagnostics, and bespoke AI demo synthesis for modern sales teams.
               </p>
             </div>
 
-            {/* Links columns matching reference */}
             <div>
               <h4 className="font-bold text-gray-900 text-xs mb-4">Company</h4>
               <ul className="space-y-2.5">
-                <li><a href="#why" className="hover:text-gray-900 transition-colors">About</a></li>
-                <li><a href="#features" className="hover:text-gray-900 transition-colors">Solution</a></li>
-                <li><a href="#pricing" className="hover:text-gray-900 transition-colors">Features</a></li>
-                <li><a href="#faq" className="hover:text-gray-900 transition-colors">Resources</a></li>
+                <li><a href="#why" className="hover:text-gray-900 transition-colors">Why LeadDrive</a></li>
+                <li><a href="#proof" className="hover:text-gray-900 transition-colors">Case Studies</a></li>
+                <li><a href="#pricing" className="hover:text-gray-900 transition-colors">Pricing</a></li>
+                <li><a href="#faq" className="hover:text-gray-900 transition-colors">FAQ</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="font-bold text-gray-900 text-xs mb-4">Features</h4>
               <ul className="space-y-2.5">
-                <li><a href="#features" className="hover:text-gray-900 transition-colors">AI-Powered Insights</a></li>
-                <li><a href="#features" className="hover:text-gray-900 transition-colors">Real-Time Data Visualization</a></li>
-                <li><a href="#integrations" className="hover:text-gray-900 transition-colors">Easy Integration</a></li>
-                <li><a href="#features" className="hover:text-gray-900 transition-colors">Demo Synthesis</a></li>
+                <li><a href="#features" className="hover:text-gray-900 transition-colors">Multi-Vector Discovery</a></li>
+                <li><a href="#features" className="hover:text-gray-900 transition-colors">Website Diagnostics</a></li>
+                <li><a href="#features" className="hover:text-gray-900 transition-colors">AI Demo Synthesis</a></li>
+                <li><a href="#integrations" className="hover:text-gray-900 transition-colors">Integrations</a></li>
               </ul>
             </div>
 
