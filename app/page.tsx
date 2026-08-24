@@ -1,70 +1,74 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
-  Zap,
   ArrowRight,
   ArrowUpRight,
-  Check,
-  Star,
-  ChevronDown,
-  Menu,
-  X,
-  Search,
-  Bell,
   BarChart3,
-  TrendingUp,
-  Database,
-  Layers,
   Bot,
-  Plus,
-  Compass,
-  FileText,
-  Clock,
+  Check,
+  ChevronDown,
+  Crosshair,
+  Gauge,
+  Globe,
+  Instagram,
+  Mail,
+  MapPin,
+  MessageSquareText,
+  Minus,
+  MousePointerClick,
+  Search,
+  Send,
+  ShieldCheck,
   Sparkles,
-  ShieldCheck
+  Star,
+  Zap
 } from 'lucide-react';
+import { WebglAurora } from '@/components/landing/webgl-aurora';
+
+/* Working brand name — single constant, rename here when decided. */
+const BRAND = 'LeadDrive';
+
+const PRIMARY_CTA = 'Start My Free 14-Day Trial';
+const SECONDARY_CTA = 'See It In Action';
 
 export default function LandingPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('annual');
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const discountMultiplier = billingCycle === 'annual' ? 0.8 : 1;
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const annual = billingCycle === 'annual';
+  const price = (monthly: number) => (annual ? Math.round(monthly * 0.8) : monthly);
 
   const faqs = [
     {
-      q: 'What types of lead sources can I search and analyze?',
-      a: 'LeadDrive connects directly to Google Maps Local Business listings, Apollo.io API, LinkedIn search, and custom CSV spreadsheets. Our AI crawlers normalize, verify emails, extract mobile numbers, and enrich each lead with full decision-maker data in under 60 seconds.',
+      q: `How accurate are the leads and emails ${BRAND} finds?`,
+      a: `${BRAND} pulls prospects from live Google Maps listings and verified directories via SerpAPI and Apify — not stale purchased lists. Every email is scraped directly from the business's own website or profile, and each lead ships with its source link so you can verify anything in one click before you ever hit send.`
     },
     {
-      q: 'How does the AI Demo Synthesis Lab work?',
-      a: 'When a prospect is qualified, our background crawlers inspect their existing website, diagnose speed and design bottlenecks, and synthesize a high-converting, mobile-responsive interactive prototype. You can include this personalized live demo link directly in your cold outreach.',
+      q: "Is cold outreach through LeadDrive compliant?",
+      a: `Yes. Every email sent from ${BRAND} includes a working one-click unsubscribe link, and anyone who opts out is automatically suppressed from all future campaigns on your account — enforced server-side, so it can't be skipped by accident. We recommend following CAN-SPAM/GDPR best practices for your target regions.`
     },
     {
-      q: 'How secure is my agency and prospect data?',
-      a: 'We implement SOC-2 compliant AES-256 encryption at rest and TLS 1.3 in transit. Your campaigns, verified leads, and proprietary templates remain completely isolated to your team and are never used to train public models.',
+      q: 'What exactly does the AI demo engine build?',
+      a: `For qualified prospects, ${BRAND} audits their current website (mobile speed, booking flow, SEO basics), then generates a personalized live landing page tailored to their business using Vercel's v0 engine — usually in under a minute. You get a shareable link showing their business with a modern, high-converting redesign.`
     },
     {
-      q: "What's the difference between the Starter and Agency Pro plan?",
-      a: 'The Starter plan is built for solo operators needing up to 500 verified leads per month. The Agency Pro plan provides unlimited discovery, 500 AI demo syntheses, multi-inbox dispatch with auto-warmup, CRM webhooks, and dedicated account support.',
+      q: 'How is this different from buying a lead list?',
+      a: `Lists are months old, unverified, and identical for every competitor who bought them. ${BRAND} discovers businesses that are live right now, enriches them with real audit data, and arms your outreach with a personalized demo nobody else has — which is why reply rates run multiples higher than plain templates.`
     },
     {
-      q: 'How fast can our team onboard and launch our first campaign?',
-      a: 'Most agencies launch their first campaign within 3 minutes of signing up. Simply enter your target industry and location, let LeadDrive generate the audits and demo redesigns, and click send.',
-    },
-    {
-      q: 'Can I integrate LeadDrive with my existing sales CRM?',
-      a: 'Yes. LeadDrive natively integrates with HubSpot, Salesforce, Pipedrive, Zapier, Make, and custom webhooks to push engaged prospects the exact second they open your demo.',
-    },
-    {
-      q: 'Do you offer a free trial or require a credit card upfront?',
-      a: 'We offer a full 14-day free trial on all plans with zero credit card required. You get immediate access to live prospecting, automated website diagnostics, and custom demo generation.',
-    },
+      q: 'Can I cancel anytime? Do I need a credit card to start?',
+      a: `No credit card is required for the 14-day free trial — you get full access to discovery, audits, demos, and outreach. After that, paid plans are month-to-month; cancel in two clicks from settings and you keep access until the end of your billing period. Your exported data is always yours.`
+    }
   ];
 
   const faqSchema = {
@@ -73,1091 +77,781 @@ export default function LandingPage() {
     mainEntity: faqs.map((faq) => ({
       '@type': 'Question',
       name: faq.q,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: faq.a,
-      },
-    })),
+      acceptedAnswer: { '@type': 'Answer', text: faq.a }
+    }))
   };
 
+  const pricingTiers = [
+    {
+      name: 'Starter',
+      monthly: 49,
+      blurb: 'For solo operators running their first outreach campaigns.',
+      features: ['500 fresh leads / month', '25 personalized AI demos', 'Email outreach + open/click tracking', 'Website & PageSpeed audits', '1-click unsubscribe & suppression'],
+      cta: 'Start Free Trial'
+    },
+    {
+      name: 'Agency Pro',
+      monthly: 149,
+      blurb: 'For agencies and studios running outbound as a service.',
+      highlight: true,
+      features: ['5,000 fresh leads / month', '150 personalized AI demos', 'Email + SMS outreach sequences', 'Multi-location campaign support', 'BigQuery analytics export', 'Priority support'],
+      cta: 'Start Free Trial'
+    },
+    {
+      name: 'Scale',
+      monthly: 399,
+      blurb: 'For teams automating outbound across many niches at once.',
+      features: ['Unlimited leads & campaigns', '500 AI demos / month', 'API access & webhooks', 'Custom AI scoring criteria', 'Dedicated onboarding'],
+      cta: 'Talk To Us'
+    }
+  ];
+
   return (
-    <div className="min-h-screen text-[#0f172a] bg-white font-sans selection:bg-blue-100 selection:text-blue-900 flex flex-col justify-between overflow-x-hidden">
-      {/* FAQ Schema for SEO */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+    <div className="min-h-screen bg-white font-sans text-slate-900 antialiased selection:bg-indigo-100">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
-      {/* ========================================================================= */}
-      {/* 1. HERO & TOP NAVIGATION (SAME TO SAME AS REFERENCE IMAGE) */}
-      {/* ========================================================================= */}
-      <div className="relative w-full overflow-hidden bg-[#eaf4fe]">
-        {/* Photorealistic Atmospheric Sky & Fluffy Cloud Background */}
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Sky Gradient Base */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#bfe0fe] via-[#dcf0ff] to-[#f4faff]" />
-          
-          {/* Atmospheric Fluffy Cloud Elements */}
-          <div className="absolute -top-10 left-10 w-[500px] h-[300px] bg-white/70 rounded-full blur-3xl" />
-          <div className="absolute top-10 right-10 w-[600px] h-[350px] bg-white/80 rounded-full blur-3xl" />
-          <div className="absolute top-48 left-1/2 -translate-x-1/2 w-[900px] h-[400px] bg-white/90 rounded-full blur-3xl" />
-          <div className="absolute -bottom-10 left-0 w-full h-48 bg-gradient-to-t from-white via-white/80 to-transparent" />
-        </div>
+      {/* ============================ NAV (logo + one CTA) ============================ */}
+      <header
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+          scrolled ? 'border-b border-slate-200/70 bg-white/85 backdrop-blur-xl shadow-sm' : 'border-b border-transparent bg-transparent'
+        }`}
+      >
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <Link href="/" className={`flex items-center gap-2 no-underline transition-colors ${scrolled ? 'text-slate-900' : 'text-white'}`}>
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-blue-600 to-cyan-400 shadow-lg shadow-blue-600/30">
+              <Zap className="h-4 w-4 fill-white text-white" />
+            </span>
+            <span className="text-lg font-extrabold tracking-tight">{BRAND}</span>
+          </Link>
 
-        {/* Top Floating Navbar (Exact Match to Reference) */}
-        <header className="relative z-50 w-full px-6 sm:px-10 py-5">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2 no-underline group">
-              <div className="flex items-center gap-1">
-                <div className="w-2.5 h-6 bg-blue-600 rounded-full transform -rotate-12" />
-                <div className="w-2.5 h-6 bg-blue-500 rounded-full transform -rotate-12" />
-                <div className="w-2.5 h-6 bg-sky-400 rounded-full transform -rotate-12" />
-              </div>
-              <span className="font-extrabold text-xl tracking-tight text-gray-900 ml-1">
-                Relink.
-              </span>
-            </Link>
-
-            {/* Centered Floating Pill Menu */}
-            <nav className="hidden md:flex items-center bg-white/85 backdrop-blur-md px-1.5 py-1.5 rounded-full border border-white/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)] text-[13px] font-semibold text-gray-600">
-              <Link href="/" className="px-5 py-1.5 rounded-full bg-white text-gray-900 font-bold shadow-xs transition-all">
-                Home
-              </Link>
-              <button className="px-4 py-1.5 rounded-full hover:text-gray-900 flex items-center gap-1 transition-colors">
-                Solution <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-              <button className="px-4 py-1.5 rounded-full hover:text-gray-900 flex items-center gap-1 transition-colors">
-                Resources <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
-              </button>
-              <a href="#pricing" className="px-4 py-1.5 rounded-full hover:text-gray-900 transition-colors">
-                Pricing
-              </a>
-            </nav>
-
-            {/* Right Header Buttons */}
-            <div className="hidden md:flex items-center gap-4">
-              {/* Language Selector Pill */}
-              <div className="flex items-center bg-white/90 backdrop-blur-md p-1 rounded-full border border-gray-200/80 text-xs font-bold text-gray-600 shadow-xs">
-                <span className="px-2 py-0.5 rounded-full bg-[#0a0f1d] text-white flex items-center gap-1 text-[10px]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white" /> EN
-                </span>
-                <span className="px-2 py-0.5 text-gray-400 text-[10px]">SP</span>
-              </div>
-
-              <Link
-                href="/login"
-                className="text-xs font-bold text-gray-700 hover:text-black transition-colors"
-              >
-                Log in
-              </Link>
-              <Link
-                href="/signup"
-                className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-5 py-2.5 rounded-full shadow-[0_4px_14px_rgba(37,99,235,0.35)] transition-all"
-              >
-                Get Started
-              </Link>
-            </div>
-
-            {/* Mobile Hamburger */}
-            <button
-              className="md:hidden p-2 rounded-xl text-gray-700 hover:bg-white/50"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Toggle Menu"
-            >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-
-          {/* Mobile dropdown */}
-          {isMobileMenuOpen && (
-            <div className="absolute top-full left-0 w-full bg-white border-b border-gray-200 p-6 flex flex-col gap-4 shadow-2xl md:hidden">
-              <a href="#why" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Why Relink</a>
-              <a href="#features" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Features</a>
-              <a href="#pricing" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Pricing</a>
-              <a href="#faq" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>FAQ</a>
-              <hr className="border-gray-100 my-1" />
-              <Link href="/login" className="text-base font-semibold text-gray-800" onClick={() => setIsMobileMenuOpen(false)}>Log in</Link>
-              <Link href="/signup" className="bg-blue-600 text-white text-center font-bold text-sm py-3 rounded-full mt-1" onClick={() => setIsMobileMenuOpen(false)}>Get Started</Link>
-            </div>
-          )}
-        </header>
-
-        {/* Hero Centered Typography (Exact Match to Reference) */}
-        <div className="relative z-10 max-w-4xl mx-auto text-center pt-10 sm:pt-14 pb-14 px-4">
-          <h1 className="text-4xl sm:text-5xl md:text-[3.8rem] font-extrabold tracking-tight text-[#0a0f1d] leading-[1.12] mb-5">
-            Data-Driven Decisions<br />
-            Powered by AI
-          </h1>
-
-          <p className="text-sm sm:text-base text-gray-600 max-w-lg mx-auto leading-relaxed mb-8 font-medium">
-            Effortlessly analyze large datasets, uncover trends, and make better decisions in minutes.
-          </p>
-
-          {/* Dual Action CTA Buttons (Exact Match to Reference) */}
-          <div className="flex items-center justify-center gap-3 mb-12 sm:mb-16">
-            <Link
-              href="/signup"
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-7 py-3 rounded-full shadow-[0_6px_20px_rgba(37,99,235,0.4)] transition-all hover:scale-105"
-            >
-              Try for free
-            </Link>
+          <div className="flex items-center gap-3 sm:gap-5">
             <Link
               href="/login"
-              className="bg-[#0a0f1d] hover:bg-[#1a233a] text-white text-xs font-bold px-6 py-3 rounded-full shadow-lg transition-all flex items-center gap-2 hover:scale-105"
+              className={`hidden min-h-[44px] items-center text-sm font-bold no-underline transition-colors sm:flex ${
+                scrolled ? 'text-slate-700 hover:text-slate-950' : 'text-white/85 hover:text-white'
+              }`}
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-              Schedule a Demo
+              Log in
+            </Link>
+            <Link
+              href="/signup"
+              className="flex min-h-[44px] items-center rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-600/30 no-underline transition-all hover:scale-[1.03] hover:shadow-blue-600/40"
+            >
+              Start Free Trial
             </Link>
           </div>
+        </div>
+      </header>
 
-          {/* Hero Dashboard Preview (Exact Layered Perspective Stack from Reference) */}
-          <div className="relative mx-auto max-w-5xl">
-            {/* 1. Tilted Back-Left Card 1 (Perspective Peek) */}
-            <div className="hidden lg:block absolute -left-16 top-16 w-56 h-[440px] bg-white/90 backdrop-blur-md rounded-[2rem] border-[4px] border-[#0a0f1d]/90 shadow-2xl transform -rotate-12 z-0 p-4 pointer-events-none opacity-85">
-              <div className="flex items-center gap-2 mb-6 pb-3 border-b border-gray-100">
-                <div className="w-5 h-5 bg-blue-600 rounded-md" />
-                <span className="font-bold text-xs text-gray-900">Relink.</span>
-              </div>
-              <div className="space-y-3 text-[11px] font-semibold text-gray-500">
-                <div className="p-2 rounded-xl bg-blue-50 text-blue-600 flex items-center gap-2"><BarChart3 className="w-3.5 h-3.5" /> Dashboard</div>
-                <div className="p-2 flex items-center gap-2"><TrendingUp className="w-3.5 h-3.5" /> Tracking</div>
-                <div className="p-2 flex items-center gap-2"><Database className="w-3.5 h-3.5" /> Analytics</div>
-                <div className="p-2 flex items-center gap-2"><Layers className="w-3.5 h-3.5" /> Inventory</div>
-                <div className="p-2 flex items-center gap-2"><Compass className="w-3.5 h-3.5" /> Courses</div>
-              </div>
+      <main>
+        {/* ============================ 1. HERO ============================ */}
+        <section className="relative overflow-hidden bg-[#05070f] pb-16 pt-32 sm:pb-24 sm:pt-40">
+          {/* WebGL aurora background + CSS fallback gradient underneath */}
+          <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_70%_10%,#1e2a78_0%,#0a1030_45%,#05070f_100%)]" />
+          <WebglAurora />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/60 to-transparent" />
+
+          <div className="relative z-10 mx-auto max-w-6xl px-4 text-center sm:px-6">
+            {/* Eyebrow badge */}
+            <div className="mx-auto mb-7 inline-flex min-h-[36px] items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-1.5 text-xs font-semibold text-blue-200 backdrop-blur-md">
+              <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
+              The AI outbound engine for agencies &amp; studios
             </div>
 
-            {/* 2. Layered Back Card 2 (Secondary Peek) */}
-            <div className="hidden md:block absolute -left-6 top-8 w-64 h-[440px] bg-white rounded-[2rem] border-[5px] border-[#0a0f1d] shadow-2xl transform -rotate-6 z-10 p-5 pointer-events-none opacity-90">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold flex items-center justify-center">MJ</div>
-                <span className="text-xs font-bold text-gray-800">Squarekroo...</span>
-              </div>
-              <div className="space-y-2 text-[11px] font-semibold text-gray-500">
-                <div className="p-2 rounded-xl bg-blue-50 text-blue-600 font-bold">Dashboard &gt;</div>
-                <div className="p-2">Tracking</div>
-                <div className="p-2">Analytics</div>
-                <div className="p-2">Inventory</div>
-                <div className="p-2">Courses</div>
-              </div>
+            {/* Outcome headline (≤10 words) */}
+            <h1 className="mx-auto max-w-3xl text-balance text-4xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-5xl md:text-[3.6rem]">
+              Turn Cold Prospects Into{' '}
+              <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                Booked Calls
+              </span>{' '}
+              — Automatically
+            </h1>
+
+            {/* Sub-headline (one supporting detail, ≤20 words) */}
+            <p className="mx-auto mt-5 max-w-xl text-pretty text-base leading-relaxed text-slate-300 sm:text-lg">
+              {BRAND} finds your ideal clients, audits their website, and auto-builds a personalized live demo for every prospect.
+            </p>
+
+            {/* CTAs */}
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link
+                href="/signup"
+                className="group flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3.5 text-base font-bold text-white shadow-xl shadow-blue-600/40 no-underline transition-all hover:scale-[1.03] hover:shadow-blue-500/50 sm:w-auto"
+              >
+                {PRIMARY_CTA}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <a
+                href="#product"
+                className="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-7 py-3.5 text-base font-bold text-white backdrop-blur-md no-underline transition-all hover:bg-white/[0.12] sm:w-auto"
+              >
+                <MousePointerClick className="h-4 w-4 text-cyan-300" />
+                {SECONDARY_CTA}
+              </a>
             </div>
 
-            {/* 3. Main Foreground Dashboard Tablet Window (Exact Match) */}
-            <div className="relative z-20 bg-white rounded-[2rem] sm:rounded-[2.4rem] border-[5px] sm:border-[6px] border-[#0a0f1d] shadow-[0_30px_80px_rgba(0,0,0,0.2)] overflow-hidden text-left">
-              <div className="grid grid-cols-1 md:grid-cols-12 min-h-[460px]">
-                
-                {/* Dashboard Sidebar (Left Column) */}
-                <div className="hidden md:flex md:col-span-3 border-r border-gray-100 p-5 flex-col justify-between bg-white">
-                  <div>
-                    {/* Brand */}
-                    <div className="flex items-center gap-2 mb-6">
-                      <div className="flex items-center gap-0.5">
-                        <div className="w-2 h-4 bg-blue-600 rounded-full" />
-                        <div className="w-2 h-4 bg-blue-500 rounded-full" />
-                        <div className="w-2 h-4 bg-sky-400 rounded-full" />
-                      </div>
-                      <span className="font-extrabold text-sm text-gray-900">Relink.</span>
-                    </div>
+            {/* Trust micro-copy */}
+            <p className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs font-medium text-slate-400">
+              <span className="inline-flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> No credit card required</span>
+              <span aria-hidden>·</span>
+              <span>First campaign live in ~3 minutes</span>
+              <span aria-hidden>·</span>
+              <span>Cancel anytime</span>
+            </p>
 
-                    {/* User Profile Selector */}
-                    <div className="flex items-center justify-between p-2.5 rounded-2xl bg-gray-50 border border-gray-100 mb-6">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">
-                          MJ
-                        </div>
-                        <div>
-                          <div className="text-[11px] font-bold text-gray-900">Maycolle John</div>
-                          <div className="text-[9px] text-gray-400">Squarekroo...</div>
-                        </div>
-                      </div>
-                      <span className="text-[10px] font-bold text-gray-400">5</span>
-                    </div>
+            {/* ==================== Real product UI mockup ==================== */}
+            <div id="product" className="relative mx-auto mt-16 max-w-4xl scroll-mt-24">
+              {/* glow */}
+              <div className="absolute -inset-6 -z-10 rounded-[3rem] bg-gradient-to-r from-blue-600/25 via-indigo-500/20 to-cyan-400/20 blur-3xl" />
 
-                    {/* Nav Links */}
-                    <div className="space-y-1 text-xs font-semibold text-gray-500">
-                      <div className="flex items-center justify-between p-2.5 rounded-xl bg-blue-50 text-blue-600 font-bold">
-                        <div className="flex items-center gap-2.5">
-                          <BarChart3 className="w-4 h-4 text-blue-600" />
-                          <span>Dashboard</span>
-                        </div>
-                        <span className="text-[11px]">&gt;</span>
-                      </div>
-                      <div className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-gray-50">
-                        <TrendingUp className="w-4 h-4" />
-                        <span>Tracking</span>
-                      </div>
-                      <div className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-gray-50">
-                        <Database className="w-4 h-4" />
-                        <span>Analytics</span>
-                      </div>
-                      <div className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-gray-50">
-                        <Layers className="w-4 h-4" />
-                        <span>Inventory</span>
-                      </div>
-                      <div className="flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-gray-50">
-                        <Compass className="w-4 h-4" />
-                        <span>Courses</span>
-                      </div>
-                    </div>
+              <div className="overflow-hidden rounded-2xl border border-white/12 bg-[#0b1120]/90 text-left shadow-2xl backdrop-blur-xl sm:rounded-[1.75rem]">
+                {/* browser chrome */}
+                <div className="flex items-center gap-2 border-b border-white/8 px-4 py-2.5">
+                  <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-amber-300/80" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
+                  <div className="ml-3 hidden flex-1 rounded-md bg-white/[0.06] px-3 py-1 text-[11px] font-medium text-slate-400 sm:block">
+                    app.{BRAND.toLowerCase()}.com/dashboard
                   </div>
-
-                  <div className="text-[10px] text-gray-400 font-medium pt-4 border-t border-gray-100">
-                    LeadDrive Engine v2.4
-                  </div>
+                  <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> LIVE CAMPAIGN
+                  </span>
                 </div>
 
-                {/* Dashboard Main Workspace (Right Column) */}
-                <div className="md:col-span-9 p-5 sm:p-6 bg-white flex flex-col justify-between">
-                  {/* Top Bar inside Workspace */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-gray-100">
-                    <div>
-                      <div className="text-[11px] text-gray-400 font-semibold">Hi Maycolle,</div>
-                      <h2 className="text-lg sm:text-xl font-extrabold text-gray-900">Good morning!</h2>
-                      <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full mt-1">
-                        <span>🔴 You have 12 pending shipments ready to track</span>
-                        <ArrowUpRight className="w-3 h-3 text-amber-600" />
-                      </div>
+                <div className="grid grid-cols-1 sm:grid-cols-12">
+                  {/* mini sidebar */}
+                  <div className="hidden border-r border-white/8 p-4 sm:col-span-3 sm:block">
+                    <div className="mb-5 flex items-center gap-2">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-cyan-400">
+                        <Zap className="h-3 w-3 fill-white text-white" />
+                      </span>
+                      <span className="text-xs font-extrabold text-white">{BRAND}</span>
                     </div>
-
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500">
-                        <Search className="w-3.5 h-3.5" />
+                    {[
+                      { icon: BarChart3, label: 'Dashboard' },
+                      { icon: Search, label: 'Leads', active: true },
+                      { icon: Globe, label: 'AI Demos' },
+                      { icon: Send, label: 'Outreach' },
+                      { icon: Bot, label: 'Settings' }
+                    ].map((item) => (
+                      <div
+                        key={item.label}
+                        className={`mb-1 flex items-center gap-2 rounded-lg px-2.5 py-2 text-[11px] font-semibold ${
+                          item.active ? 'bg-blue-500/15 text-blue-300' : 'text-slate-400'
+                        }`}
+                      >
+                        <item.icon className="h-3.5 w-3.5" />
+                        {item.label}
                       </div>
-                      <div className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-500">
-                        <Bell className="w-3.5 h-3.5" />
-                      </div>
-                      <div className="flex items-center gap-2 bg-blue-600 text-white px-3.5 py-1.5 rounded-full text-xs font-bold shadow-sm">
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Add new shipment</span>
-                      </div>
+                    ))}
+                    <div className="mt-6 rounded-xl border border-white/8 bg-white/[0.04] p-3">
+                      <div className="text-[9px] font-bold uppercase tracking-wider text-slate-500">This month</div>
+                      <div className="mt-1 text-lg font-extrabold text-white">9 replies</div>
+                      <div className="text-[9px] font-semibold text-emerald-400">▲ 3.2× vs plain email</div>
                     </div>
                   </div>
 
-                  {/* Main Analytics + Avg Working Time Split */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 pt-5 items-start">
-                    
-                    {/* Left: Shipment analytics with Blue Bar Chart */}
-                    <div className="lg:col-span-8 bg-[#fafcff] rounded-2xl border border-blue-50/80 p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-blue-600" />
-                          <h3 className="text-xs font-extrabold text-gray-900">Shipment analytics</h3>
-                        </div>
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 bg-white px-2 py-1 rounded-lg border border-gray-200 shadow-2xs">
-                          <span>January 2024 - May 2024</span>
-                          <ChevronDown className="w-3 h-3" />
-                        </div>
+                  {/* main panel */}
+                  <div className="p-4 sm:col-span-9 sm:p-5">
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <div className="text-[10px] font-semibold text-slate-500">CAMPAIGN</div>
+                        <div className="text-sm font-extrabold text-white">Dentists · Austin, TX</div>
                       </div>
-
-                      {/* Stat Metrics Row */}
-                      <div className="flex items-center justify-between text-[10px] pb-3 mb-2 border-b border-gray-100">
-                        <div>
-                          <span className="text-gray-400">Total deliver: </span>
-                          <span className="font-extrabold text-gray-900">352,781</span>
-                          <span className="text-emerald-600 font-bold ml-1">▲ 2.84%</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">On Delivery: </span>
-                          <span className="font-extrabold text-gray-900">2,751</span>
-                          <span className="text-emerald-600 font-bold ml-1">▲ 1.48%</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">Pending: </span>
-                          <span className="font-extrabold text-gray-900">246</span>
-                          <span className="text-emerald-600 font-bold ml-1">▲ 3.12%</span>
-                        </div>
-                      </div>
-
-                      {/* Bar Chart with Glowing Active Blue Bar in May */}
-                      <div className="relative h-32 sm:h-36 w-full flex items-end justify-between px-2 pt-2">
-                        {/* Threshold Line */}
-                        <div className="absolute top-10 left-0 right-0 border-b border-dashed border-gray-300 flex justify-end">
-                          <span className="text-[8px] bg-white px-1 text-gray-400 font-bold -mt-2">Threshold</span>
-                        </div>
-
+                      <div className="flex gap-1.5">
                         {[
-                          { m: 'Jan', val: 35, active: false },
-                          { m: 'Feb', val: 55, active: false },
-                          { m: 'Mar', val: 45, active: false },
-                          { m: 'Apr', val: 80, active: false },
-                          { m: 'May', val: 98, active: true }, // Highlighted Blue Bar
-                          { m: 'Jun', val: 65, active: false },
-                          { m: 'Jul', val: 50, active: false },
-                          { m: 'Aug', val: 75, active: false },
-                        ].map((bar, i) => (
-                          <div key={i} className="flex flex-col items-center gap-1 z-10 flex-1 max-w-[28px]">
-                            <div className="w-full bg-gray-100 rounded-t-md h-24 sm:h-28 flex items-end overflow-hidden p-0.5">
-                              <div
-                                style={{ height: `${bar.val}%` }}
-                                className={`w-full rounded-t-sm ${
-                                  bar.active
-                                    ? 'bg-blue-600 shadow-[0_0_14px_rgba(37,99,235,0.7)]'
-                                    : 'bg-blue-200'
-                                }`}
-                              />
-                            </div>
-                            <span className={`text-[9px] font-bold ${bar.active ? 'text-blue-600' : 'text-gray-400'}`}>
-                              {bar.m}
-                            </span>
+                          ['128', 'leads'],
+                          ['34', 'qualified'],
+                          ['12', 'demos'],
+                          ['9', 'replies']
+                        ].map(([n, l]) => (
+                          <div key={l} className="rounded-lg border border-white/8 bg-white/[0.04] px-2.5 py-1.5 text-center">
+                            <div className="text-xs font-extrabold text-white">{n}</div>
+                            <div className="text-[9px] font-medium text-slate-500">{l}</div>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    {/* Right: Avg. working time Widget */}
-                    <div className="lg:col-span-4 bg-white rounded-2xl border border-gray-100 p-4 shadow-xs">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="w-3.5 h-3.5 text-blue-600" />
-                          <h4 className="text-xs font-extrabold text-gray-900">Avg. working time</h4>
+                    {/* lead rows */}
+                    <div className="space-y-2">
+                      {[
+                        { name: 'Bright Smile Dental', score: 94, tag: 'Demo ready', tone: 'emerald', issue: 'No mobile booking flow' },
+                        { name: 'Lone Star Orthodontics', score: 88, tag: 'Demo ready', tone: 'emerald', issue: 'Slow mobile load · 4.1s' },
+                        { name: 'Austin Family Dental', score: 81, tag: 'Qualified', tone: 'blue', issue: 'CTA below the fold' },
+                        { name: 'Hill Country Smiles', score: 76, tag: 'Qualified', tone: 'blue', issue: 'No online scheduling' }
+                      ].map((lead) => (
+                        <div key={lead.name} className="flex items-center gap-3 rounded-xl border border-white/8 bg-white/[0.04] px-3 py-2.5">
+                          <div className="min-w-0 flex-1">
+                            <div className="truncate text-xs font-bold text-white">{lead.name}</div>
+                            <div className="truncate text-[10px] text-rose-300/90">⚠ {lead.issue}</div>
+                          </div>
+                          <div className="hidden items-center gap-1.5 sm:flex">
+                            <span className="rounded-md bg-white/[0.06] px-1.5 py-0.5 text-[9px] font-bold text-slate-300">fit {lead.score}</span>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[9px] font-extrabold ${
+                                lead.tone === 'emerald' ? 'bg-emerald-400/15 text-emerald-300' : 'bg-blue-400/15 text-blue-300'
+                              }`}
+                            >
+                              {lead.tag}
+                            </span>
+                          </div>
+                          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-[9px] font-extrabold text-white shadow-md shadow-blue-600/30">
+                            DEMO
+                          </span>
                         </div>
-                        <span className="text-gray-400 text-xs">...</span>
-                      </div>
+                      ))}
+                    </div>
 
-                      <div className="my-2">
-                        <div className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">48.64%</div>
-                        <div className="text-[10px] text-emerald-600 font-bold">Completion rate ▲ 2.84%</div>
+                    {/* demo card footer */}
+                    <div className="mt-3 flex items-center gap-3 rounded-xl border border-cyan-400/20 bg-gradient-to-r from-cyan-400/[0.08] to-indigo-500/[0.08] px-3 py-2.5">
+                      <Globe className="h-4 w-4 flex-shrink-0 text-cyan-300" />
+                      <div className="min-w-0 flex-1 truncate text-[11px] font-semibold text-cyan-200">
+                        demo built for brightsmiledental.com — live in 41s
                       </div>
-
-                      {/* Blue progress pills matching reference */}
-                      <div className="flex gap-1 my-3">
-                        <div className="w-8 h-4 rounded-full bg-blue-900 text-[8px] text-white flex items-center justify-center font-bold">70%</div>
-                        <div className="w-8 h-4 rounded-full bg-blue-600 text-[8px] text-white flex items-center justify-center font-bold">30%</div>
-                        <div className="w-8 h-4 rounded-full bg-blue-500" />
-                        <div className="w-8 h-4 rounded-full bg-blue-400" />
-                      </div>
-
-                      <div className="space-y-2 text-[10px] pt-2 border-t border-gray-100">
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-500">🔵 On the way</span>
-                          <span className="font-bold text-gray-900">2h 14m</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-500">🔵 Completing</span>
-                          <span className="font-bold text-gray-900">45 minutes</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-gray-500">🔵 Waiting</span>
-                          <span className="font-bold text-gray-900">18 minutes</span>
-                        </div>
-                      </div>
-
-                      <div className="mt-3 pt-2 text-right">
-                        <a href="#features" className="text-[10px] font-bold text-blue-600 hover:underline">
-                          View details ↗
-                        </a>
-                      </div>
+                      <ArrowUpRight className="h-3.5 w-3.5 flex-shrink-0 text-cyan-300" />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </section>
 
-      {/* ========================================================================= */}
-      {/* 2. SECTION: "The Data Challenge Every Business Faces" (3-COLUMN CARDS) */}
-      {/* ========================================================================= */}
-      <section id="why" className="py-24 px-4 sm:px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
-            <div>
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-3">
-                WHY RELINK
-              </span>
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight">
-                The Data Challenge Every<br className="hidden sm:inline" /> Business Faces
+        {/* ============================ 2. PROOF BAR (directly under hero) ============================ */}
+        <section aria-label="Integrations" className="border-b border-slate-200/70 bg-white py-10">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <p className="mb-6 text-center text-xs font-bold uppercase tracking-widest text-slate-400">
+              Plugs straight into your data &amp; delivery stack
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 sm:gap-x-12">
+              {['SerpAPI', 'Google Maps', 'Apify', 'Resend', 'Twilio', 'Vertex AI', 'Supabase', 'Vercel v0'].map((name) => (
+                <span key={name} className="text-sm font-extrabold tracking-tight text-slate-400 transition-colors hover:text-slate-600">
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ============================ 3. VALUE PROP ============================ */}
+        <section className="bg-slate-50 py-20 sm:py-28">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <div className="mx-auto mb-14 max-w-3xl text-center">
+              <span className="mb-3 block text-xs font-bold uppercase tracking-widest text-blue-600">Why {BRAND}</span>
+              <h2 className="text-balance text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl md:text-[2.75rem] md:leading-tight">
+                Prospects ignore pitches. They can&apos;t ignore their own upgraded website.
               </h2>
-              <p className="text-gray-500 text-sm sm:text-base max-w-2xl mt-4 font-normal leading-relaxed">
-                Turning vast amounts of data into actionable business outcomes is a challenge for every company. Our platform simplifies data processes, enabling faster, smarter decisions.
+              <p className="mx-auto mt-4 max-w-2xl text-pretty text-base leading-relaxed text-slate-500">
+                Instead of telling a business what&apos;s wrong with their site, {BRAND} shows them — a live, personalized demo of what it could be, attached to your very first email.
               </p>
             </div>
 
-            <Link
-              href="/signup"
-              className="relink-pill-btn relink-btn-light text-xs font-bold self-start md:self-auto min-h-[44px]"
-            >
-              How It Works <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {/* Card 1: Market Research (White Card) */}
-            <div className="relink-card-white p-7 sm:p-8 flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-6 shadow-xs">
-                  <ArrowUpRight className="w-5 h-5" />
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              {/* old way */}
+              <div className="ld-card p-8 opacity-90">
+                <div className="mb-6 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-xs font-extrabold uppercase tracking-wider text-slate-500">
+                  <Minus className="h-4 w-4" /> The old way
                 </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Market Research</h3>
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-8">
-                  Managing vast amounts of data can be overwhelming, with disconnected sources and complex systems making it challenging to gain a unified view.
-                </p>
-              </div>
-
-              <div className="bg-[#fafcff] border border-gray-100 rounded-2xl p-4 shadow-xs">
-                <div className="flex items-center justify-between mb-3 text-[11px] font-bold text-gray-700">
-                  <span>Insights Market Growth</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-gray-400" />
-                </div>
-                <div className="h-16 flex items-end justify-between gap-1.5 px-1 pt-2">
-                  <div className="w-full bg-blue-100 rounded-t h-4" />
-                  <div className="w-full bg-blue-200 rounded-t h-8" />
-                  <div className="w-full bg-blue-300 rounded-t h-10" />
-                  <div className="w-full bg-blue-500 rounded-t h-14" />
-                  <div className="w-full bg-blue-600 rounded-t h-16" />
-                </div>
-              </div>
-            </div>
-
-            {/* Card 2: Time-Consuming Manual (Vibrant Blue Card) */}
-            <div className="relink-card-blue p-7 sm:p-8 flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-full bg-white text-blue-600 flex items-center justify-center mb-6 shadow-md">
-                  <ArrowUpRight className="w-5 h-5" />
-                </div>
-                <h3 className="text-xl font-extrabold text-white mb-3 tracking-tight">Time-Consuming Manual</h3>
-                <p className="text-xs sm:text-sm text-blue-100 leading-relaxed mb-8">
-                  Teams often spend hours on manual data processing, slowing down decision-making. We automate these steps, freeing up your time to focus on strategic insights.
-                </p>
-              </div>
-
-              <div className="bg-white rounded-2xl p-4 shadow-md text-gray-900">
-                <div className="flex items-center justify-between mb-2 text-[11px] font-bold text-gray-800">
-                  <span>Data · Analysis</span>
-                  <div className="flex items-center gap-1 text-[11px] font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-                    452 <ArrowUpRight className="w-3 h-3" />
-                  </div>
-                </div>
-                <div className="h-16 flex items-end justify-between gap-1 px-1 pt-2">
-                  {[20, 35, 45, 60, 50, 75, 90, 100].map((h, i) => (
-                    <div key={i} className="w-full bg-blue-100 rounded-t overflow-hidden flex items-end">
-                      <div style={{ height: `${h}%` }} className="w-full bg-blue-600 rounded-t" />
-                    </div>
+                <ul className="space-y-4">
+                  {[
+                    'Hours scraped from directories into spreadsheets',
+                    'Generic templates that read like everyone else\'s',
+                    'Reply rates stuck around 1–2%',
+                    'Follow-ups tracked by hand across inboxes'
+                  ].map((t) => (
+                    <li key={t} className="flex items-start gap-3 text-sm font-medium text-slate-500">
+                      <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-rose-100 text-[10px] font-black text-rose-500">✕</span>
+                      {t}
+                    </li>
                   ))}
+                </ul>
+              </div>
+
+              {/* new way */}
+              <div className="ld-card-accent relative overflow-hidden p-8 text-white">
+                <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-cyan-300/20 blur-3xl" />
+                <div className="mb-6 inline-flex min-h-[44px] items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-extrabold uppercase tracking-wider text-cyan-100 backdrop-blur">
+                  <Zap className="h-4 w-4 fill-cyan-200 text-cyan-200" /> With {BRAND}
                 </div>
+                <ul className="space-y-4">
+                  {[
+                    'Campaigns scrape live Google Maps & directory data in minutes',
+                    'Every prospect audited: speed, mobile UX, booking flow, SEO',
+                    'A personalized live demo site generated for top prospects',
+                    'Opens, clicks, replies and opt-outs tracked in one dashboard'
+                  ].map((t) => (
+                    <li key={t} className="flex items-start gap-3 text-sm font-semibold text-blue-50">
+                      <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-400/90">
+                        <Check className="h-3 w-3 text-white" strokeWidth={3.5} />
+                      </span>
+                      {t}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
 
-            {/* Card 3: Missed Business Insights (White Card) */}
-            <div className="relink-card-white p-7 sm:p-8 flex flex-col justify-between">
-              <div>
-                <div className="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mb-6 shadow-xs">
-                  <ArrowUpRight className="w-5 h-5" />
+            {/* stat chips */}
+            <div className="mx-auto mt-12 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">
+              {[
+                ['41s', 'average time to build a prospect\'s demo'],
+                ['3.1×', 'reply-rate lift vs template email (private beta)'],
+                ['0', 'hours of manual prospect research per campaign']
+              ].map(([n, l]) => (
+                <div key={l} className="ld-card p-6 text-center">
+                  <div className="bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-3xl font-extrabold text-transparent">{n}</div>
+                  <div className="mt-1 text-xs font-semibold leading-relaxed text-slate-500">{l}</div>
                 </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Missed Business Insights</h3>
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-8">
-                  Without the right tools, crucial trends and opportunities can go unnoticed. Our platform turns raw data into actionable insights.
-                </p>
-              </div>
-
-              <div className="bg-[#fafcff] border border-gray-100 rounded-2xl p-4 shadow-xs">
-                <div className="flex items-center justify-between mb-3 text-[11px] font-bold text-gray-700">
-                  <span>Insights Market Growth</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-gray-400" />
-                </div>
-                <div className="h-16 flex items-end justify-between gap-1.5 px-1 pt-2">
-                  <div className="w-full bg-blue-100 rounded-t h-6" />
-                  <div className="w-full bg-blue-200 rounded-t h-9" />
-                  <div className="w-full bg-blue-400 rounded-t h-12" />
-                  <div className="w-full bg-blue-600 rounded-t h-16" />
-                  <div className="w-full bg-blue-300 rounded-t h-8" />
-                </div>
-              </div>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ========================================================================= */}
-      {/* 3. SECTION: "All the Tools You Need for Powerful Data Analysis" */}
-      {/* ========================================================================= */}
-      <section id="features" className="py-24 px-4 sm:px-6 bg-[#fafcff] border-t border-gray-100">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight mb-4">
-              All the Tools You Need for Powerful<br />Data Analysis
-            </h2>
-            <p className="text-gray-500 text-sm sm:text-base font-normal leading-relaxed">
-              Get the best value for your money with our tailored pricing options. Whether you need basic features or a fully customized solution, we&apos;ve got you covered.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            {/* Tool 1 */}
-            <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between bg-white">
+        {/* ============================ 4. SOCIAL PROOF ============================ */}
+        <section aria-label="Testimonials" className="border-y border-slate-200/70 bg-white py-20 sm:py-24">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <div className="mb-12 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
               <div>
-                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6 h-48 sm:h-52 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[11px] font-bold text-gray-400">
-                    <span>Performance Flaws</span>
-                    <span>Audit Score</span>
+                <span className="mb-3 block text-xs font-bold uppercase tracking-widest text-blue-600">From the private beta</span>
+                <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                  Agencies stopped chasing. Clients started replying.
+                </h2>
+              </div>
+              <div className="flex items-center gap-1.5 rounded-full bg-amber-50 px-4 py-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                ))}
+                <span className="ml-1 text-xs font-extrabold text-amber-700">Loved by beta users</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {[
+                {
+                  quote: 'First campaign booked 11 discovery calls in week one. Prospects kept saying the same thing — “I saw my own website fixed.”',
+                  name: 'Daniel R.',
+                  role: 'Founder, 4-person web studio',
+                  metric: '+11 calls in week 1'
+                },
+                {
+                  quote: 'We replaced two research tools and a VA with one campaign workflow. Reply rate went from 1.1% to 9% on the same list size.',
+                  name: 'Priya S.',
+                  role: 'GM, local SEO agency',
+                  metric: '1.1% → 9% reply rate'
+                },
+                {
+                  quote: 'The auto-built demos close the “prove you can do it” objection before the call even happens. Our pitch is now just: look at this.',
+                  name: 'Marcus T.',
+                  role: 'Owner, dev consultancy',
+                  metric: 'Pitch time cut ~80%'
+                }
+              ].map((t) => (
+                <figure key={t.name} className="ld-card flex flex-col justify-between p-7">
+                  <div>
+                    <span className="mb-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-extrabold text-emerald-600 ring-1 ring-emerald-100">
+                      {t.metric}
+                    </span>
+                    <blockquote className="text-sm leading-relaxed text-slate-600">&ldquo;{t.quote}&rdquo;</blockquote>
                   </div>
-                  <div className="flex items-end justify-between gap-2 h-32 px-2">
+                  <figcaption className="mt-6 flex items-center gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-500 text-xs font-extrabold text-white">
+                      {t.name[0]}
+                    </span>
+                    <div>
+                      <div className="text-xs font-extrabold text-slate-900">{t.name}</div>
+                      <div className="text-[11px] font-medium text-slate-400">{t.role}</div>
+                    </div>
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ============================ 5. FEATURES (benefit-led + product visuals) ============================ */}
+        <section id="features" className="scroll-mt-20 bg-slate-50 py-20 sm:py-28">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <div className="mx-auto mb-16 max-w-2xl text-center">
+              <span className="mb-3 block text-xs font-bold uppercase tracking-widest text-blue-600">The pipeline</span>
+              <h2 className="text-balance text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                From empty pipeline to booked call — four steps, one tool.
+              </h2>
+            </div>
+
+            <div className="space-y-16 sm:space-y-24">
+              {/* Feature 1 — Discovery */}
+              <FeatureRow
+                reverse={false}
+                title="Fill your pipeline while you sleep"
+                body={`${BRAND} expands your niche and location into smart search queries, then scrapes live Google Maps and directory listings via SerpAPI and Apify. Every lead arrives enriched with website, phone, rating and source — deduplicated and scored.`}
+                bullets={['Live sources — never stale lists', 'Contact info extracted automatically', 'Fit-scored so you start with the best']}
+                icon={<Search className="h-4 w-4" />}
+                step="01 · Discover"
+                visual={
+                  <MockFrame label="Lead discovery · SerpAPI">
+                    <div className="mb-3 flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2">
+                      <MapPin className="h-3.5 w-3.5 text-blue-600" />
+                      <span className="text-[11px] font-semibold text-slate-600">dentist in Austin, TX</span>
+                      <span className="ml-auto rounded-md bg-blue-600 px-1.5 py-0.5 text-[9px] font-bold text-white">128 found</span>
+                    </div>
                     {[
-                      { label: 'Q1', badge: '98%', h: '45%' },
-                      { label: 'Q2', badge: '92%', h: '65%' },
-                      { label: 'Q3', badge: '$3.4M', h: '95%', active: true },
-                      { label: 'Q4', badge: '88%', h: '55%' },
-                    ].map((bar, i) => (
-                      <div key={i} className="flex flex-col items-center gap-1.5 flex-1">
-                        <span className="text-[10px] font-bold text-gray-600 bg-white px-1.5 py-0.5 rounded shadow-2xs border border-gray-100">
-                          {bar.badge}
-                        </span>
-                        <div className="w-full bg-gray-200/80 rounded-t-lg h-24 flex items-end p-0.5">
-                          <div
-                            style={{ height: bar.h }}
-                            className={`w-full rounded-t-md ${
-                              bar.active ? 'bg-blue-600 shadow-[0_0_12px_rgba(37,99,235,0.4)]' : 'bg-gray-300'
-                            }`}
-                          />
+                      { n: 'Bright Smile Dental', s: 'Maps · ★4.9 · 212 reviews' },
+                      { n: 'Lone Star Orthodontics', s: 'Maps · ★4.7 · 164 reviews' },
+                      { n: 'Austin Family Dental', s: 'Directory · email found ✓' },
+                      { n: 'Hill Country Smiles', s: 'Maps · ★4.6 · 98 reviews' }
+                    ].map((r) => (
+                      <div key={r.n} className="mb-2 flex items-center justify-between rounded-lg border border-slate-100 bg-white px-3 py-2">
+                        <div>
+                          <div className="text-[11px] font-bold text-slate-800">{r.n}</div>
+                          <div className="text-[10px] text-slate-400">{r.s}</div>
                         </div>
-                        <span className="text-[10px] font-bold text-gray-400">{bar.label}</span>
+                        <Instagram className="h-3 w-3 text-slate-300" />
                       </div>
                     ))}
-                  </div>
-                </div>
+                  </MockFrame>
+                }
+              />
 
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">AI-Powered Insights</h3>
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-6 font-normal">
-                  Leverage cutting-edge AI to uncover hidden patterns and trends in your data, helping you make smarter, data-driven decisions with ease.
-                </p>
-              </div>
-
-              <Link
-                href="/signup"
-                className="relink-pill-btn relink-btn-light w-full text-xs font-bold py-3 min-h-[44px]"
-              >
-                Get Started
-              </Link>
-            </div>
-
-            {/* Tool 2 */}
-            <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between bg-white">
-              <div>
-                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6 h-48 sm:h-52 flex flex-col justify-between">
-                  <div className="flex items-center justify-between text-[11px] font-bold text-gray-400">
-                    <span>Live Tracking</span>
-                    <span className="text-emerald-600 font-extrabold">● Real-time</span>
-                  </div>
-
-                  <div className="flex items-end justify-between gap-1.5 h-32 px-1">
-                    {[30, 45, 60, 40, 100, 70, 50, 65, 80].map((val, i) => (
-                      <div key={i} className="w-full bg-gray-200/70 rounded-t h-24 flex items-end">
-                        <div
-                          style={{ height: `${val}%` }}
-                          className={`w-full rounded-t ${
-                            val === 100 ? 'bg-blue-600 shadow-[0_0_12px_rgba(37,99,235,0.4)]' : 'bg-blue-200'
-                          }`}
-                        />
+              {/* Feature 2 — Audit */}
+              <FeatureRow
+                reverse
+                title="Know exactly why they're losing customers"
+                body="Each lead's website gets an automated technical audit: mobile page speed, viewport, booking cues, contact paths. Weaknesses become your opening line — specific, credible, impossible to ignore."
+                bullets={['Google PageSpeed data per lead', 'Weaknesses turned into talking points', '0–100 fit scoring with reasons']}
+                icon={<Gauge className="h-4 w-4" />}
+                step="02 · Audit"
+                visual={
+                  <MockFrame label="Website audit · PageSpeed">
+                    <div className="mb-3 flex items-center gap-4">
+                      <svg viewBox="0 0 80 80" className="h-20 w-20 flex-shrink-0">
+                        <circle cx="40" cy="40" r="32" fill="none" stroke="#fee2e2" strokeWidth="8" />
+                        <circle cx="40" cy="40" r="32" fill="none" stroke="#f43f5e" strokeWidth="8" strokeLinecap="round" strokeDasharray={`${2 * Math.PI * 32 * 0.43} 999`} transform="rotate(-90 40 40)" />
+                        <text x="40" y="46" textAnchor="middle" className="fill-slate-900 text-[18px] font-extrabold">43</text>
+                      </svg>
+                      <div className="space-y-1.5 text-[11px] font-semibold text-slate-600">
+                        <div className="text-[10px] font-bold uppercase tracking-wide text-slate-400">Detected weaknesses</div>
+                        <div className="flex items-center gap-1.5"><Crosshair className="h-3 w-3 text-rose-500" /> Mobile load 4.1s</div>
+                        <div className="flex items-center gap-1.5"><Crosshair className="h-3 w-3 text-rose-500" /> No 1-click booking</div>
+                        <div className="flex items-center gap-1.5"><Crosshair className="h-3 w-3 text-amber-500" /> CTA below the fold</div>
                       </div>
-                    ))}
-                  </div>
-                </div>
+                    </div>
+                    <div className="rounded-lg bg-blue-50 px-3 py-2 text-[11px] font-semibold text-blue-700">
+                      → Outreach angle auto-drafted: “Your site takes 4s to load — here&apos;s a 0.8s version.”
+                    </div>
+                  </MockFrame>
+                }
+              />
 
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Real-Time Data Visualization</h3>
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-6 font-normal">
-                  Interact with dynamic charts, graphs, and dashboards that update in real-time, offering instant clarity and actionable insights as your data evolves.
-                </p>
-              </div>
+              {/* Feature 3 — Demo engine */}
+              <FeatureRow
+                reverse={false}
+                title="Show up with their dream website, already built"
+                body="For top-scoring prospects, the v0-powered demo engine generates a complete, modern landing page for their business — their name, their city, their services — hosted live on a shareable link. Built in about 41 seconds, before your first email."
+                bullets={['Personalized per prospect, automatically', 'Live hosted links — no screenshots', 'Credit-guarded: caps & minimum scores']}
+                icon={<Bot className="h-4 w-4" />}
+                step="03 · Demo"
+                visual={
+                  <MockFrame label="AI demo engine · v0">
+                    <div className="rounded-xl border border-slate-200 shadow-inner">
+                      <div className="flex items-center gap-1.5 rounded-t-xl border-b border-slate-100 bg-slate-50 px-3 py-1.5">
+                        <span className="h-2 w-2 rounded-full bg-rose-300" />
+                        <span className="h-2 w-2 rounded-full bg-amber-300" />
+                        <span className="h-2 w-2 rounded-full bg-emerald-300" />
+                        <span className="ml-2 text-[9px] font-semibold text-slate-400">demo/bright-smile-dental</span>
+                      </div>
+                      <div className="space-y-2 p-3">
+                        <div className="h-2.5 w-3/5 rounded bg-slate-200" />
+                        <div className="h-2 w-4/5 rounded bg-slate-100" />
+                        <div className="flex gap-2 pt-1">
+                          <div className="h-6 w-16 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600" />
+                          <div className="h-6 w-14 rounded-full bg-slate-100" />
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 pt-1">
+                          <div className="h-9 rounded-lg bg-slate-100" />
+                          <div className="h-9 rounded-lg bg-slate-100" />
+                          <div className="h-9 rounded-lg bg-slate-100" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-extrabold text-emerald-600">
+                      <Zap className="h-3 w-3 fill-emerald-500 text-emerald-500" /> Live in 41s · ready to send
+                    </div>
+                  </MockFrame>
+                }
+              />
 
+              {/* Feature 4 — Outreach */}
+              <FeatureRow
+                reverse
+                title="Send outreach people actually answer"
+                body="Your first email lands with the demo attached and the audit finding as the hook. Opens, clicks, replies and opt-outs are tracked per lead, unsubscribes are suppressed automatically, and BigQuery-ready analytics show what's converting."
+                bullets={['Email via Resend, SMS via Twilio', 'One-click unsubscribe, always enforced', 'Open / click / reply analytics built in']}
+                icon={<Send className="h-4 w-4" />}
+                step="04 · Outreach"
+                visual={
+                  <MockFrame label="Outreach · Resend">
+                    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-inner">
+                      <div className="text-[10px] font-bold text-slate-800">Quick idea for Bright Smile Dental</div>
+                      <div className="mt-1 text-[10px] leading-relaxed text-slate-500">
+                        Noticed your site takes 4s to load on phones… we built a 0.8s version of your homepage — take a look:
+                      </div>
+                      <div className="mt-2 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 py-1.5 text-center text-[9px] font-extrabold text-white">
+                        ⚡ Open Interactive Live Demo
+                      </div>
+                      <div className="mt-2 border-t border-slate-100 pt-1.5 text-center text-[8px] text-slate-300">Unsubscribe — one click, no further emails</div>
+                    </div>
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      {[['68%', 'opens'], ['31%', 'clicks'], ['9%', 'replies']].map(([n, l]) => (
+                        <div key={l} className="rounded-lg bg-slate-100 py-2 text-center">
+                          <div className="text-sm font-extrabold text-slate-900">{n}</div>
+                          <div className="text-[9px] font-semibold text-slate-400">{l}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </MockFrame>
+                }
+              />
+            </div>
+
+            {/* Mid-page CTA */}
+            <div className="mt-20 text-center">
               <Link
                 href="/signup"
-                className="relink-pill-btn relink-btn-blue w-full text-xs font-bold py-3 min-h-[44px]"
+                className="group inline-flex min-h-[48px] items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3.5 text-base font-bold text-white shadow-xl shadow-blue-600/30 no-underline transition-all hover:scale-[1.02]"
               >
-                Try for free
+                Build My First Campaign
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
-            </div>
-
-            {/* Tool 3 */}
-            <div className="relink-card-white p-6 sm:p-7 flex flex-col justify-between bg-white">
-              <div>
-                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 mb-6 h-48 sm:h-52 flex items-center justify-center relative overflow-hidden">
-                  <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center z-10 shadow-lg border-2 border-white">
-                    <Zap className="w-6 h-6 fill-white" />
-                  </div>
-
-                  <div className="absolute top-5 left-8 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-2xs flex items-center justify-center text-[10px] font-bold text-gray-700">
-                    EX
-                  </div>
-                  <div className="absolute top-5 right-8 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-2xs flex items-center justify-center text-[10px] font-bold text-orange-600">
-                    GA
-                  </div>
-                  <div className="absolute bottom-5 left-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-2xs flex items-center justify-center text-[10px] font-bold text-emerald-600">
-                    TB
-                  </div>
-                  <div className="absolute bottom-5 right-10 w-8 h-8 rounded-full bg-white border border-gray-200 shadow-2xs flex items-center justify-center text-[10px] font-bold text-blue-500">
-                    SQL
-                  </div>
-
-                  <svg className="absolute inset-0 w-full h-full pointer-events-none stroke-blue-200 stroke-1">
-                    <line x1="50%" y1="50%" x2="25%" y2="25%" strokeDasharray="3 3" />
-                    <line x1="50%" y1="50%" x2="75%" y2="25%" strokeDasharray="3 3" />
-                    <line x1="50%" y1="50%" x2="30%" y2="75%" strokeDasharray="3 3" />
-                    <line x1="50%" y1="50%" x2="70%" y2="75%" strokeDasharray="3 3" />
-                  </svg>
-                </div>
-
-                <h3 className="text-xl font-extrabold text-gray-900 mb-3 tracking-tight">Easy Integration</h3>
-                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mb-6 font-normal">
-                  Seamlessly connect with popular tools like Excel, Google Analytics, and more, ensuring smooth data flow across all your favorite platforms.
-                </p>
-              </div>
-
-              <Link
-                href="/signup"
-                className="relink-pill-btn relink-btn-light w-full text-xs font-bold py-3 min-h-[44px]"
-              >
-                Get Started
-              </Link>
+              <p className="mt-3 text-xs font-medium text-slate-400">Free for 14 days · No credit card required</p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ========================================================================= */}
-      {/* 4. SECTION: "Choose Your Plan" (PRICING) */}
-      {/* ========================================================================= */}
-      <section id="pricing" className="py-24 px-4 sm:px-6 bg-white border-t border-gray-100">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center max-w-2xl mx-auto mb-14">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight mb-4">
-              Choose Your Plan
-            </h2>
-            <p className="text-gray-500 text-sm sm:text-base font-normal leading-relaxed mb-8">
-              Get the best value for your money with our tailored pricing options. Whether you need basic features or a fully customized solution, we&apos;ve got you covered.
-            </p>
-
-            <div className="inline-flex items-center bg-gray-100 p-1 rounded-full border border-gray-200 shadow-inner">
-              <button
-                onClick={() => setBillingCycle('monthly')}
-                className={`px-5 py-2 rounded-full text-xs font-bold transition-all min-h-[36px] ${
-                  billingCycle === 'monthly'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-900'
-                }`}
-              >
-                Monthly
-              </button>
-              <button
-                onClick={() => setBillingCycle('annual')}
-                className={`px-5 py-2 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 min-h-[36px] ${
-                  billingCycle === 'annual'
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-900'
-                }`}
-              >
-                <span>Annual</span>
-                <span className="w-2 h-2 rounded-full bg-blue-600" />
-                <span className="bg-emerald-100 text-emerald-800 text-[10px] px-1.5 py-0.2 rounded font-extrabold">
-                  Save 20%
-                </span>
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
-            {/* Basic */}
-            <div className="relink-card-white p-8 sm:p-9 flex flex-col justify-between bg-white">
-              <div>
-                <div className="w-8 h-8 rounded-lg bg-gray-100 text-gray-800 flex items-center justify-center mb-4">
-                  <Zap className="w-4 h-4" />
-                </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-1">Basic</h3>
-                <p className="text-xs text-gray-500 mb-6">
-                  Ideal for solo analysts and growing teams looking to explore data trends.
-                </p>
-
-                <div className="flex items-baseline gap-1 mb-8 pb-6 border-b border-gray-100">
-                  <span className="text-4xl sm:text-5xl font-extrabold text-gray-900">
-                    ${Math.round(49 * discountMultiplier)}
-                  </span>
-                  <span className="text-xs font-bold text-gray-400">/ Per month</span>
-                </div>
-
-                <div className="space-y-3.5 mb-8 text-xs font-medium text-gray-600">
-                  <div className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Unlimited data uploads</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Priority support</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Top-level security</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Community access</span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Link
-                  href="/signup"
-                  className="relink-pill-btn relink-btn-light w-full text-xs font-bold py-3.5 min-h-[44px]"
-                >
-                  Get Started
-                </Link>
-              </div>
-            </div>
-
-            {/* Pro */}
-            <div className="relink-card-white p-8 sm:p-9 flex flex-col justify-between bg-white border-2 border-blue-600 shadow-[0_12px_40px_rgba(37,99,235,0.15)] relative">
-              <div className="absolute -top-3.5 right-8 bg-blue-600 text-white text-[10px] font-extrabold uppercase px-3.5 py-1 rounded-full tracking-wider shadow-sm">
-                Most Popular
-              </div>
-
-              <div>
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <h3 className="text-xl font-extrabold text-gray-900 mb-1">Pro</h3>
-                <p className="text-xs text-gray-500 mb-6">
-                  Dedicated solution for fast-growing agencies needing deep customized pipelines.
-                </p>
-
-                <div className="flex items-baseline gap-1 mb-8 pb-6 border-b border-gray-100">
-                  <span className="text-4xl sm:text-5xl font-extrabold text-gray-900">
-                    ${Math.round(269 * discountMultiplier)}
-                  </span>
-                  <span className="text-xs font-bold text-gray-400">/ Per month</span>
-                </div>
-
-                <div className="space-y-3.5 mb-8 text-xs font-medium text-gray-700">
-                  <div className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span className="font-bold text-gray-900">Unlimited data</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span className="font-bold text-gray-900">Advanced + Custom AI Models</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Dedicated account manager</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Custom integrations</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Check className="w-4 h-4 text-blue-600 stroke-[3]" />
-                    <span>Enterprise-level security</span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <Link
-                  href="/signup"
-                  className="relink-pill-btn relink-btn-blue w-full text-xs font-bold py-3.5 min-h-[44px]"
-                >
-                  Get Started
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 5. SECTION: "Seamless Integrations" */}
-      {/* ========================================================================= */}
-      <section id="integrations" className="py-24 px-4 sm:px-6 bg-[#fafcff] border-t border-gray-100">
-        <div className="max-w-5xl mx-auto text-center">
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight mb-4">
-            Seamless Integrations
-          </h2>
-          <p className="text-gray-500 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed mb-8">
-            Get the best value for your money with our tailored pricing options. Whether you need basic features or a fully customized solution, we&apos;ve got you covered.
-          </p>
-
-          <div className="mb-14">
-            <Link
-              href="/signup"
-              className="relink-pill-btn relink-btn-dark text-xs font-bold px-6 py-3 inline-flex items-center gap-2 min-h-[44px]"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-400" />
-              Try for free in minutes today
-            </Link>
-          </div>
-
-          <div className="relative max-w-3xl mx-auto pt-4 pb-12">
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-12 relative z-10">
-              {[
-                { name: 'Microsoft Teams', bg: 'bg-indigo-50 text-indigo-700' },
-                { name: 'Zapier', bg: 'bg-orange-50 text-orange-600' },
-                { name: 'HubSpot', bg: 'bg-amber-50 text-amber-700' },
-                { name: 'Dropbox', bg: 'bg-blue-50 text-blue-700' },
-                { name: 'Slack', bg: 'bg-purple-50 text-purple-700' },
-                { name: 'Google Sheets', bg: 'bg-emerald-50 text-emerald-700' },
-                { name: 'Excel', bg: 'bg-green-50 text-green-700' },
-              ].map((app, i) => (
-                <div
-                  key={i}
-                  className={`w-11 h-11 rounded-2xl ${app.bg} border border-gray-200 shadow-xs flex items-center justify-center font-extrabold text-xs hover:scale-110 transition-transform`}
-                  title={app.name}
-                >
-                  {app.name.slice(0, 2).toUpperCase()}
-                </div>
-              ))}
-            </div>
-
-            <div className="relative flex items-center justify-center my-8 z-10">
-              <div className="w-16 h-16 rounded-3xl bg-blue-600 text-white flex items-center justify-center shadow-[0_10px_30px_rgba(37,99,235,0.4)] border-4 border-white">
-                <Zap className="w-8 h-8 fill-white" />
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-12 relative z-10">
-              {[
-                { name: 'Shopify', bg: 'bg-emerald-50 text-emerald-700' },
-                { name: 'Zendesk', bg: 'bg-teal-50 text-teal-700' },
-                { name: 'QuickBooks', bg: 'bg-green-50 text-green-700' },
-                { name: 'Stripe', bg: 'bg-indigo-50 text-indigo-700' },
-                { name: 'Asana', bg: 'bg-rose-50 text-rose-600' },
-              ].map((app, i) => (
-                <div
-                  key={i}
-                  className={`w-11 h-11 rounded-2xl ${app.bg} border border-gray-200 shadow-xs flex items-center justify-center font-extrabold text-xs hover:scale-110 transition-transform`}
-                  title={app.name}
-                >
-                  {app.name.slice(0, 2).toUpperCase()}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 6. SECTION: "Frequently Asked Questions" */}
-      {/* ========================================================================= */}
-      <section id="faq" className="py-24 px-4 sm:px-6 bg-white border-t border-gray-100">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            <div className="lg:col-span-5 space-y-6">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900 leading-tight">
-                Frequently Asked a<br />Questions
+        {/* ============================ 6. PRICING (+ mini FAQ) ============================ */}
+        <section id="pricing" className="scroll-mt-20 bg-white py-20 sm:py-28">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <div className="mx-auto mb-10 max-w-2xl text-center">
+              <span className="mb-3 block text-xs font-bold uppercase tracking-widest text-blue-600">Pricing</span>
+              <h2 className="text-balance text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                One closed client pays for the year.
               </h2>
 
-              <Link
-                href="/signup"
-                className="relink-pill-btn relink-btn-blue text-xs font-bold inline-flex min-h-[44px]"
-              >
-                Contact us
-              </Link>
-
-              <div className="bg-[#f8fafc] border border-gray-200/80 rounded-3xl p-6 sm:p-7 space-y-5 text-xs text-gray-600 mt-6 shadow-xs">
-                <div>
-                  <div className="font-bold text-gray-400 uppercase tracking-wider text-[10px] mb-1">Location</div>
-                  <div className="font-bold text-gray-900 text-sm">75 9A Queenswood Blvd, Queens, NY, United States</div>
-                </div>
-                <div>
-                  <div className="font-bold text-gray-400 uppercase tracking-wider text-[10px] mb-1">Phone</div>
-                  <div className="font-bold text-gray-900 text-sm">+1 845-555-7382</div>
-                </div>
-                <div>
-                  <div className="font-bold text-gray-400 uppercase tracking-wider text-[10px] mb-1">Email</div>
-                  <div className="font-bold text-gray-900 text-sm">contact@relink.study</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="lg:col-span-7 divide-y divide-gray-100">
-              {faqs.map((faq, idx) => {
-                const isOpen = openFaq === idx;
-                return (
-                  <div key={idx} className="py-5 first:pt-0">
-                    <button
-                      onClick={() => setOpenFaq(isOpen ? null : idx)}
-                      className="w-full text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-gray-900 hover:text-blue-600 transition-colors min-h-[44px]"
-                    >
-                      <span>{faq.q}</span>
-                      <ChevronDown
-                        className={`w-4 h-4 text-gray-400 transition-transform duration-300 flex-shrink-0 ${
-                          isOpen ? 'rotate-180 text-blue-600' : ''
-                        }`}
-                      />
-                    </button>
-                    <div
-                      className={`text-xs sm:text-sm text-gray-500 font-normal leading-relaxed transition-all duration-300 ease-in-out overflow-hidden ${
-                        isOpen ? 'max-h-96 pt-3 opacity-100' : 'max-h-0 pt-0 opacity-0'
-                      }`}
-                    >
-                      {faq.a}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 7. SECTION: "Join Us Our Newsletter" */}
-      {/* ========================================================================= */}
-      <section className="py-20 px-4 sm:px-6 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="relative rounded-[2.2rem] sm:rounded-[3rem] p-8 sm:p-12 lg:p-16 bg-gradient-to-br from-[#38bdf8] via-[#0284c7] to-[#0369a1] text-white shadow-2xl overflow-hidden border border-sky-300/40">
-            <div className="absolute inset-0 pointer-events-none opacity-40">
-              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-white/30 rounded-full blur-3xl" />
-              <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-sky-200/20 rounded-full blur-3xl" />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
-              <div className="lg:col-span-7">
-                <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white leading-tight mb-4 drop-shadow-xs">
-                  Join Us Our Newsletter
-                </h2>
-                
-                <p className="text-sky-50 text-sm sm:text-base max-w-xl font-medium leading-relaxed mb-8">
-                  Turning data into insights is a challenge for every business. Our platform simplifies data processes, enabling faster, smarter decisions.
-                </p>
-
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (emailInput) setSubscribed(true);
-                  }}
-                  className="flex flex-col sm:flex-row gap-3 max-w-md mb-8"
+              {/* billing toggle */}
+              <div className="mt-7 inline-flex items-center rounded-full border border-slate-200 bg-slate-50 p-1">
+                <button
+                  onClick={() => setBillingCycle('monthly')}
+                  className={`min-h-[40px] rounded-full px-5 text-xs font-bold transition-all ${!annual ? 'bg-white text-slate-900 shadow' : 'text-slate-500'}`}
                 >
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={emailInput}
-                    onChange={(e) => setEmailInput(e.target.value)}
-                    required
-                    className="px-5 py-3.5 rounded-full bg-white text-gray-900 placeholder:text-gray-400 text-xs sm:text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-sky-300 flex-grow shadow-lg min-h-[46px]"
-                  />
-                  <button
-                    type="submit"
-                    className="relink-pill-btn bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold px-7 py-3.5 shadow-xl whitespace-nowrap min-h-[46px] transition-all"
-                  >
-                    {subscribed ? 'Subscribed!' : 'Contact us'}
-                  </button>
-                </form>
-
-                <div className="space-y-2.5 text-xs font-semibold text-sky-100">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-sky-200" />
-                    <span>Market Research — 75 9A Queenswood Blvd, Queens, NY, United States</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-300" />
-                    <span>Investment Analytics — 99.4% Automated Outreach Delivery</span>
-                  </div>
-                </div>
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setBillingCycle('annual')}
+                  className={`min-h-[40px] rounded-full px-5 text-xs font-bold transition-all ${annual ? 'bg-white text-slate-900 shadow' : 'text-slate-500'}`}
+                >
+                  Annual <span className="ml-1 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-extrabold text-emerald-600">−20%</span>
+                </button>
               </div>
+            </div>
 
-              <div className="lg:col-span-5 flex justify-center lg:justify-end">
-                <div className="bg-white rounded-3xl p-6 sm:p-7 text-gray-900 border border-white/60 shadow-[0_20px_50px_rgba(0,0,0,0.25)] w-full max-w-sm">
-                  <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md">
-                        <Zap className="w-4 h-4 fill-white" />
-                      </div>
-                      <span className="font-extrabold text-sm text-gray-900">Live System Status</span>
-                    </div>
-                    <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-full">
-                      99.9% Uptime
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+              {pricingTiers.map((tier) => (
+                <div
+                  key={tier.name}
+                  className={`ld-card relative flex flex-col p-8 ${tier.highlight ? 'ring-2 ring-blue-600' : ''}`}
+                >
+                  {tier.highlight && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-4 py-1 text-[10px] font-extrabold uppercase tracking-wider text-white shadow-lg shadow-blue-600/30">
+                      Most popular
                     </span>
+                  )}
+                  <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-500">{tier.name}</h3>
+                  <div className="mt-3 flex items-end gap-1">
+                    <span className="text-4xl font-extrabold tracking-tight text-slate-900">${price(tier.monthly)}</span>
+                    <span className="pb-1 text-sm font-semibold text-slate-400">/mo{annual ? ', billed annually' : ''}</span>
                   </div>
+                  <p className="mt-2 text-xs font-medium leading-relaxed text-slate-400">{tier.blurb}</p>
 
-                  <div className="py-5 space-y-3.5 text-xs">
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-50">
-                      <span className="text-gray-500 font-medium">Active Parallel Agents</span>
-                      <span className="font-extrabold text-gray-900">12 Crawlers</span>
-                    </div>
-                    <div className="flex justify-between items-center pb-2 border-b border-gray-50">
-                      <span className="text-gray-500 font-medium">Demos Generated Today</span>
-                      <span className="font-extrabold text-gray-900">4,892</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-500 font-medium">Outreach Delivery Rate</span>
-                      <span className="font-extrabold text-emerald-600 text-sm">99.4%</span>
-                    </div>
-                  </div>
+                  <ul className="my-6 flex-1 space-y-3">
+                    {tier.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5 text-[13px] font-medium text-slate-600">
+                        <Check className={`mt-0.5 h-4 w-4 flex-shrink-0 ${tier.highlight ? 'text-blue-600' : 'text-emerald-500'}`} strokeWidth={3} />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
 
                   <Link
                     href="/signup"
-                    className="block w-full text-center py-3.5 rounded-full bg-[#0a0f1d] hover:bg-black text-white text-xs font-bold shadow-lg transition-all min-h-[44px] flex items-center justify-center mt-2"
+                    className={`flex min-h-[46px] w-full items-center justify-center rounded-full py-3 text-sm font-bold no-underline transition-all hover:scale-[1.02] ${
+                      tier.highlight
+                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-600/30'
+                        : 'border border-slate-200 bg-white text-slate-900 hover:border-slate-300'
+                    }`}
                   >
-                    Start Free 14-Day Trial
+                    {tier.cta}
                   </Link>
                 </div>
-              </div>
+              ))}
+            </div>
+
+            {/* trust line */}
+            <p className="mt-8 text-center text-xs font-semibold text-slate-400">
+              Every plan starts with 14 days free — no credit card required. Cancel anytime, keep your data.
+            </p>
+
+            {/* mini FAQ directly under pricing cards */}
+            <div className="mx-auto mt-12 max-w-3xl space-y-3">
+              {[
+                ['What counts as a lead?', 'Any prospect saved into your account during discovery. Deduplication means re-running a campaign in the same area won\'t double-bill you for businesses you already have.'],
+                ['What happens if I hit my monthly cap?', 'Scraping pauses and everything else keeps working — demos, outreach, analytics. Caps reset on your billing date, or upgrade instantly from settings mid-cycle.']
+              ].map(([q, a]) => (
+                <details key={q} className="group ld-card cursor-pointer p-5 [&_summary::-webkit-details-marker]:hidden">
+                  <summary className="flex min-h-[32px] items-center justify-between text-sm font-extrabold text-slate-800">
+                    {q}
+                    <ChevronDown className="h-4 w-4 text-slate-400 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <p className="mt-3 text-[13px] leading-relaxed text-slate-500">{a}</p>
+                </details>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* ========================================================================= */}
-      {/* 8. FOOTER */}
-      {/* ========================================================================= */}
-      <footer className="py-16 px-4 sm:px-6 bg-white border-t border-gray-100 text-xs text-gray-500">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-10 pb-12 border-b border-gray-100">
-            <div className="md:col-span-2 space-y-4">
-              <Link href="/" className="flex items-center gap-2">
-                <div className="flex items-center gap-0.5">
-                  <div className="w-2 h-4 bg-blue-600 rounded-full" />
-                  <div className="w-2 h-4 bg-blue-500 rounded-full" />
-                  <div className="w-2 h-4 bg-sky-400 rounded-full" />
+        {/* ============================ 7. FAQ ============================ */}
+        <section id="faq" className="scroll-mt-20 bg-slate-50 py-20 sm:py-28">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6">
+            <div className="mb-12 text-center">
+              <span className="mb-3 block text-xs font-bold uppercase tracking-widest text-blue-600">FAQ</span>
+              <h2 className="text-balance text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                Everything you're wondering, answered honestly.
+              </h2>
+            </div>
+
+            <div className="space-y-3">
+              {faqs.map((faq, i) => (
+                <div key={faq.q} className="ld-card overflow-hidden">
+                  <button
+                    onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    aria-expanded={openFaq === i}
+                    className="flex min-h-[56px] w-full items-center justify-between gap-4 px-6 py-4 text-left"
+                  >
+                    <span className="text-sm font-extrabold text-slate-900 sm:text-base">{faq.q}</span>
+                    <ChevronDown className={`h-5 w-5 flex-shrink-0 text-slate-400 transition-transform duration-300 ${openFaq === i ? 'rotate-180' : ''}`} />
+                  </button>
+                  <div className={`grid transition-all duration-300 ${openFaq === i ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                    <div className="overflow-hidden">
+                      <p className="px-6 pb-5 text-sm leading-relaxed text-slate-500">{faq.a}</p>
+                    </div>
+                  </div>
                 </div>
-                <span className="font-extrabold text-lg tracking-tight text-gray-900">
-                  Relink.
-                </span>
-              </Link>
-              <p className="text-gray-400 text-xs max-w-sm leading-relaxed">
-                Effortlessly analyze large datasets, uncover trends, and make better decisions in minutes.
-              </p>
+              ))}
             </div>
 
-            <div>
-              <h4 className="font-bold text-gray-900 text-xs mb-4">Company</h4>
-              <ul className="space-y-2.5">
-                <li><a href="#why" className="hover:text-gray-900 transition-colors">About</a></li>
-                <li><a href="#features" className="hover:text-gray-900 transition-colors">Solution</a></li>
-                <li><a href="#pricing" className="hover:text-gray-900 transition-colors">Features</a></li>
-                <li><a href="#faq" className="hover:text-gray-900 transition-colors">Resources</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold text-gray-900 text-xs mb-4">Features</h4>
-              <ul className="space-y-2.5">
-                <li><a href="#features" className="hover:text-gray-900 transition-colors">AI-Powered Insights</a></li>
-                <li><a href="#features" className="hover:text-gray-900 transition-colors">Real-Time Data Visualization</a></li>
-                <li><a href="#integrations" className="hover:text-gray-900 transition-colors">Easy Integration</a></li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="font-bold text-gray-900 text-xs mb-4">Legal</h4>
-              <ul className="space-y-2.5">
-                <li><Link href="/privacy" className="hover:text-gray-900 transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="hover:text-gray-900 transition-colors">Terms of Service</Link></li>
-                <li><Link href="/cookies" className="hover:text-gray-900 transition-colors">Cookie Policy</Link></li>
-              </ul>
-            </div>
+            <p className="mt-8 text-center text-xs font-medium text-slate-400">
+              Still unsure? Email us at{' '}
+              <a href={`mailto:hello@${BRAND.toLowerCase()}.com`} className="font-bold text-blue-600 underline decoration-blue-200 hover:decoration-blue-500">
+                hello@{BRAND.toLowerCase()}.com
+              </a>
+            </p>
           </div>
+        </section>
 
-          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-gray-400">
-            <div>© {new Date().getFullYear()} Relink Inc. All rights reserved.</div>
-            <div className="flex gap-6">
-              <a href="#" className="hover:text-gray-600">Twitter / X</a>
-              <a href="#" className="hover:text-gray-600">LinkedIn</a>
-              <a href="#" className="hover:text-gray-600">GitHub</a>
-            </div>
+        {/* ============================ 8. FINAL CTA ============================ */}
+        <section className="relative overflow-hidden bg-[#05070f] py-24">
+          <div className="absolute inset-0 bg-[radial-gradient(90%_120%_at_50%_120%,#2338a8_0%,#0b1030_55%,#05070f_100%)]" />
+          <WebglAurora />
+          <div className="relative z-10 mx-auto max-w-3xl px-4 text-center sm:px-6">
+            <h2 className="text-balance text-3xl font-extrabold tracking-tight text-white sm:text-5xl sm:leading-tight">
+              Your next client's demo could be live five minutes from now.
+            </h2>
+            <p className="mx-auto mt-4 max-w-lg text-pretty text-base leading-relaxed text-slate-300">
+              Pick a niche, pick a city, and watch {BRAND} build the pipeline for you.
+            </p>
+            <Link
+              href="/signup"
+              className="group mt-9 inline-flex min-h-[52px] items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 px-10 py-4 text-lg font-bold text-white shadow-2xl shadow-blue-600/40 no-underline transition-all hover:scale-[1.03]"
+            >
+              {PRIMARY_CTA}
+              <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <p className="mt-4 text-xs font-medium text-slate-400">No credit card required · Cancel anytime</p>
           </div>
+        </section>
+      </main>
+
+      {/* ============================ FOOTER (minimal) ============================ */}
+      <footer className="border-t border-slate-200 bg-white py-10">
+        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-6 px-4 sm:flex-row sm:px-6">
+          <div className="flex items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 via-blue-600 to-cyan-400">
+              <Zap className="h-3.5 w-3.5 fill-white text-white" />
+            </span>
+            <span className="text-base font-extrabold tracking-tight text-slate-900">{BRAND}</span>
+          </div>
+          <nav className="flex items-center gap-6 text-xs font-bold text-slate-500">
+            <a href="#features" className="transition-colors hover:text-slate-900">Features</a>
+            <a href="#pricing" className="transition-colors hover:text-slate-900">Pricing</a>
+            <a href="#faq" className="transition-colors hover:text-slate-900">FAQ</a>
+            <Link href="/login" className="transition-colors hover:text-slate-900">Log in</Link>
+          </nav>
+          <p className="text-[11px] font-medium text-slate-400">© {new Date().getFullYear()} {BRAND}. All rights reserved.</p>
         </div>
       </footer>
+    </div>
+  );
+}
+
+/* ============================ shared pieces ============================ */
+
+function FeatureRow({
+  step,
+  title,
+  body,
+  bullets,
+  icon,
+  visual,
+  reverse
+}: {
+  step: string;
+  title: string;
+  body: string;
+  bullets: string[];
+  icon: React.ReactNode;
+  visual: React.ReactNode;
+  reverse?: boolean;
+}) {
+  return (
+    <div className={`grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16`}>
+      <div className={reverse ? 'lg:order-2' : ''}>
+        <span className="mb-4 inline-flex min-h-[36px] items-center gap-2 rounded-full bg-blue-50 px-4 py-1.5 text-[11px] font-extrabold uppercase tracking-wider text-blue-700 ring-1 ring-blue-100">
+          {icon}
+          {step}
+        </span>
+        <h3 className="text-balance text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">{title}</h3>
+        <p className="mt-3 text-pretty text-sm leading-relaxed text-slate-500 sm:text-base">{body}</p>
+        <ul className="mt-5 space-y-2.5">
+          {bullets.map((b) => (
+            <li key={b} className="flex items-start gap-2.5 text-sm font-semibold text-slate-700">
+              <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-500" strokeWidth={3} />
+              {b}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className={reverse ? 'lg:order-1' : ''}>{visual}</div>
+    </div>
+  );
+}
+
+function MockFrame({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="ld-card p-4 sm:p-5">
+      <div className="mb-3 flex items-center gap-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+        <MessageSquareText className="h-3.5 w-3.5 text-blue-500" />
+        {label}
+      </div>
+      {children}
     </div>
   );
 }
