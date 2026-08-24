@@ -26,6 +26,7 @@ import {
   Zap
 } from 'lucide-react';
 import { WebglAurora } from '@/components/landing/webgl-aurora';
+import AntimetalArchitecture3D from '@/components/AntimetalArchitecture3D';
 
 /* Working brand name — single constant, rename here when decided. */
 const BRAND = 'LeadDrive';
@@ -627,6 +628,9 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* ============================ 5b. 3D ARCHITECTURE (Three.js) ============================ */}
+        <AntimetalArchitecture3D />
 
         {/* ============================ 6. PRICING (+ mini FAQ) ============================ */}
         <section id="pricing" className="scroll-mt-20 bg-white py-20 sm:py-28">
