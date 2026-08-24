@@ -1,4 +1,5 @@
 import type { AppSettings, DemoQuality, Lead, V0DemoResult } from '@/lib/types';
+import { fetchWithTimeout } from '@/lib/http';
 import { buildDemoPrompt } from '@/lib/pipeline';
 
 type V0ChatResponse = {
@@ -73,7 +74,7 @@ export async function createV0Demo(
 
     for (const modelId of modelIds) {
       try {
-        const chatRes = await fetch('https://api.v0.dev/v1/chats', {
+        const chatRes = await fetchWithTimeout('https://api.v0.dev/v1/chats', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${apiKey}`,
@@ -90,7 +91,7 @@ export async function createV0Demo(
               thinking: false
             }
           })
-        });
+        }, 150_000);
 
         if (chatRes.ok) {
           const resJson = (await chatRes.json()) as V0ChatResponse;
@@ -121,7 +122,7 @@ export async function createV0Demo(
     const fallbackPrompt = getSyntaxSafePrompt(lead);
     for (const apiKey of keyPool) {
       try {
-        const chatRes = await fetch('https://api.v0.dev/v1/chats', {
+        const chatRes = await fetchWithTimeout('https://api.v0.dev/v1/chats', {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${apiKey}`,
@@ -138,7 +139,7 @@ export async function createV0Demo(
               thinking: false
             }
           })
-        });
+        }, 150_000);
 
         if (chatRes.ok) {
           const resJson = (await chatRes.json()) as V0ChatResponse;

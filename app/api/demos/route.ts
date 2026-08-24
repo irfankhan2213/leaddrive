@@ -1,47 +1,69 @@
 import { NextResponse } from 'next/server';
+import { requireUser } from '@/lib/api-auth';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { createDemoForLead, resolveDemoProvider } from '@/lib/demo-engine';
-import { getSupabaseAdmin } from '@/lib/supabase';
-import type { AppSettings, DemoProvider, DemoQuality, Lead } from '@/lib/types';
+import { getUserSettings } from '@/lib/settings';
+import { logError } from '@/lib/http';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { DemoProvider, DemoQuality, Lead } from '@/lib/types';
+
+const MAX_BATCH_DEMOS = 25;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as
-    | Lead
-    | { lead?: Lead; leads?: Lead[]; settings?: AppSettings; demoQuality?: DemoQuality; demoMode?: DemoQuality; demoProvider?: DemoProvider; baseUrl?: string };
+  const auth = await requireUser();
+  if (!auth.ok) return auth.response;
 
-  const settings = 'settings' in body ? body.settings : undefined;
-  const demoQuality: DemoQuality =
-    ('demoQuality' in body && body.demoQuality) ||
-    ('demoMode' in body && body.demoMode) ||
-    settings?.defaultDemoQuality ||
-    'low';
-  const demoProvider = resolveDemoProvider('demoProvider' in body ? body.demoProvider : undefined, settings);
-  const baseUrl = ('baseUrl' in body && body.baseUrl) || getBaseUrl(req);
+  const rl = checkRateLimit(req, 'demos_post', 30, 60_000);
+  if (!rl.ok) return rateLimitResponse(rl.retryAfterSec);
 
-  // Batch generation mode
-  if ('leads' in body && Array.isArray(body.leads)) {
-    const leads = body.leads;
+  const settings = await getUserSettings(auth.user.id);
+  const demoQuality: DemoQuality = settings.defaultDemoQuality || 'low';
+  const demoProvider = resolveDemoProvider();
+  const baseUrl = getBaseUrl(req);
+
+  let body: { lead?: Lead; leadIds?: string[] };
+  try {
+    body = (await req.json()) as typeof body;
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
+  }
+
+  // Batch generation mode: ids only — leads are loaded server-side.
+  if ('leadIds' in body && Array.isArray(body.leadIds)) {
+    const leadIds = body.leadIds.filter((id) => typeof id === 'string' && UUID_RE.test(id));
+    if (leadIds.length === 0) {
+      return NextResponse.json({ error: 'At least one valid saved leadId is required.' }, { status: 400 });
+    }
+    if (leadIds.length > MAX_BATCH_DEMOS) {
+      return NextResponse.json(
+        { error: `Batch size is capped at ${MAX_BATCH_DEMOS} demos per request.` },
+        { status: 400 }
+      );
+    }
+
     const results: Array<{ leadId: string; demoUrl?: string; error?: string; status: 'ready' | 'failed' }> = [];
 
-    for (const lead of leads) {
-      if (!lead?.id || !lead?.company_name) continue;
+    for (const leadId of leadIds.slice(0, MAX_BATCH_DEMOS)) {
+      const ownedLead = await loadOwnedLead(auth.supabase, leadId);
+      if (!ownedLead) {
+        results.push({ leadId, error: 'Lead not found.', status: 'failed' });
+        continue;
+      }
+
       try {
-        const demo = await createDemoForLead(lead, {
-          settings,
-          quality: demoQuality,
-          provider: demoProvider,
-          baseUrl
-        });
+        const demo = await createDemoForLead(ownedLead, { settings, quality: demoQuality, provider: demoProvider, baseUrl });
         if (demo.status === 'ready' && demo.demoUrl) {
-          await updateLeadDemoStatus(lead.id, 'demo_ready', demo.demoUrl, demo.provider || demoProvider, demo.chatId, demo.versionId, demoQuality, demo.demoArtifact);
-          results.push({ leadId: lead.id, demoUrl: demo.demoUrl, status: 'ready' });
+          await updateLeadDemoStatus(auth.supabase, ownedLead.id, 'demo_ready', demo.demoUrl, demo.provider || demoProvider, demo.chatId, demo.versionId, demoQuality, demo.demoArtifact);
+          results.push({ leadId: ownedLead.id, demoUrl: demo.demoUrl, status: 'ready' });
         } else {
-          await updateLeadDemoStatus(lead.id, 'demo_failed');
-          results.push({ leadId: lead.id, error: demo.error || 'v0 generation failed', status: 'failed' });
+          await updateLeadDemoStatus(auth.supabase, ownedLead.id, 'demo_failed');
+          results.push({ leadId: ownedLead.id, error: demo.error || 'v0 generation failed', status: 'failed' });
         }
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Demo generation failed';
-        await updateLeadDemoStatus(lead.id, 'demo_failed');
-        results.push({ leadId: lead.id, error: msg, status: 'failed' });
+        logError('POST /api/demos:batch', err, { leadId: ownedLead.id });
+        await updateLeadDemoStatus(auth.supabase, ownedLead.id, 'demo_failed');
+        results.push({ leadId: ownedLead.id, error: err instanceof Error ? err.message : 'Demo generation failed', status: 'failed' });
       }
     }
 
@@ -49,22 +71,22 @@ export async function POST(req: Request) {
   }
 
   // Single lead generation mode
-  const lead = 'lead' in body && body.lead ? body.lead : (body as Lead);
+  const rawLead = body.lead;
+  if (!rawLead?.id) {
+    return NextResponse.json({ error: 'A valid leadId is required.' }, { status: 400 });
+  }
 
-  if (!lead?.id || !lead?.company_name) {
-    return NextResponse.json({ error: 'Lead id and company_name are required.' }, { status: 400 });
+  // Only DB-owned leads can trigger paid demo builds.
+  const lead = await loadOwnedLead(auth.supabase, rawLead.id);
+  if (!lead) {
+    return NextResponse.json({ error: 'Lead not found. Save the lead first before generating a demo.' }, { status: 404 });
   }
 
   try {
-    const demo = await createDemoForLead(lead, {
-      settings,
-      quality: demoQuality,
-      provider: demoProvider,
-      baseUrl
-    });
+    const demo = await createDemoForLead(lead, { settings, quality: demoQuality, provider: demoProvider, baseUrl });
 
     if (demo.status === 'failed' || !demo.demoUrl) {
-      await updateLeadDemoStatus(lead.id, 'demo_failed');
+      await updateLeadDemoStatus(auth.supabase, lead.id, 'demo_failed');
       return NextResponse.json(
         {
           provider: demo.provider || demoProvider,
@@ -75,7 +97,7 @@ export async function POST(req: Request) {
       );
     }
 
-    await updateLeadDemoStatus(lead.id, 'demo_ready', demo.demoUrl, demo.provider || demoProvider, demo.chatId, demo.versionId, demoQuality, demo.demoArtifact);
+    await updateLeadDemoStatus(auth.supabase, lead.id, 'demo_ready', demo.demoUrl, demo.provider || demoProvider, demo.chatId, demo.versionId, demoQuality, demo.demoArtifact);
 
     return NextResponse.json({
       ...demo,
@@ -83,21 +105,28 @@ export async function POST(req: Request) {
       status: 'ready'
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'v0 site building failed.';
-    await updateLeadDemoStatus(lead.id, 'demo_failed');
+    logError('POST /api/demos', err, { leadId: lead.id });
+    await updateLeadDemoStatus(auth.supabase, lead.id, 'demo_failed');
 
     return NextResponse.json(
       {
         provider: demoProvider,
         status: 'failed',
-        error: message
+        error: err instanceof Error ? err.message : 'v0 site building failed.'
       },
       { status: 502 }
     );
   }
 }
 
+async function loadOwnedLead(supabase: SupabaseClient, leadId: string): Promise<Lead | null> {
+  if (!UUID_RE.test(leadId)) return null;
+  const { data } = await supabase.from('leads').select('*').eq('id', leadId).maybeSingle();
+  return (data as Lead) || null;
+}
+
 async function updateLeadDemoStatus(
+  supabase: SupabaseClient,
   leadId: string,
   status: 'demo_ready' | 'demo_failed',
   demoUrl?: string,
@@ -107,20 +136,15 @@ async function updateLeadDemoStatus(
   demoQuality?: DemoQuality,
   demoArtifact?: string
 ) {
-  const supabase = getSupabaseAdmin();
-  const isSupabaseLead = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(leadId);
+  const updateData: Record<string, unknown> = { status };
+  if (demoUrl) updateData.demo_url = demoUrl;
+  if (demoProvider) updateData.demo_provider = demoProvider;
+  if (chatId) updateData.v0_chat_id = chatId;
+  if (versionId) updateData.v0_version_id = versionId;
+  if (demoQuality) updateData.demo_quality = demoQuality;
+  if (demoArtifact) updateData.demo_prompt = demoArtifact;
 
-  if (supabase && isSupabaseLead) {
-    const updateData: Record<string, unknown> = { status };
-    if (demoUrl) updateData.demo_url = demoUrl;
-    if (demoProvider) updateData.demo_provider = demoProvider;
-    if (chatId) updateData.v0_chat_id = chatId;
-    if (versionId) updateData.v0_version_id = versionId;
-    if (demoQuality) updateData.demo_quality = demoQuality;
-    if (demoArtifact) updateData.demo_prompt = demoArtifact;
-
-    await supabase.from('leads').update(updateData).eq('id', leadId);
-  }
+  await supabase.from('leads').update(updateData).eq('id', leadId);
 }
 
 function getBaseUrl(req: Request) {

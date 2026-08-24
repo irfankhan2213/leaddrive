@@ -1,4 +1,5 @@
 import type { AppSettings, Lead } from '@/lib/types';
+import { signLeadId } from '@/lib/unsubscribe-signing';
 
 export interface SendEmailParams {
   to: string;
@@ -73,16 +74,14 @@ export async function sendResendEmail(params: SendEmailParams): Promise<EmailSen
 export function renderProfessionalEmailHtml(text: string, lead: Lead, senderName: string): string {
   const baseUrl = process.env.APP_BASE_URL || 'http://localhost:3000';
   const demoUrl = lead.demo_url || `${baseUrl}/demo/${lead.id}`;
-  const companyName = lead.company_name || 'your business';
+  const companyName = escapeHtml(lead.company_name || 'your business');
+  const unsubscribeUrl = `${baseUrl}/api/unsubscribe?leadId=${encodeURIComponent(lead.id)}&sig=${signLeadId(lead.id)}`;
 
   // Format paragraphs
   const paragraphs = text
     .split('\n\n')
     .map((p) => {
-      const escaped = p
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
+      const escaped = escapeHtml(p)
         .replace(/\n/g, '<br />');
 
       // Check if paragraph is the demo link
@@ -143,7 +142,7 @@ export function renderProfessionalEmailHtml(text: string, lead: Lead, senderName
             </tr>
             <tr>
               <td style="font-size: 13px; color: #475569; line-height: 1.5;">
-                "${lead.weakness}"
+                "${escapeHtml(lead.weakness || '')}"
               </td>
             </tr>
           </table>
@@ -158,7 +157,7 @@ export function renderProfessionalEmailHtml(text: string, lead: Lead, senderName
           Sent by ${senderName}
         </p>
         <p style="margin: 0; font-size: 11px; color: #9ca3af;">
-          Not interested? Reply "unsubscribe" and you won't hear from us again.
+          <a href="${unsubscribeUrl}" style="color: #9ca3af; text-decoration: underline;">Unsubscribe</a> — one click, no further emails.
         </p>
       </td>
     </tr>
@@ -168,4 +167,13 @@ export function renderProfessionalEmailHtml(text: string, lead: Lead, senderName
   <img src="${baseUrl}/api/track/open?leadId=${encodeURIComponent(lead.id)}" width="1" height="1" style="display:none;" alt="" />
 </body>
 </html>`;
+}
+
+export function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }

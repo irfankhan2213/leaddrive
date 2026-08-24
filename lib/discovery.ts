@@ -1,5 +1,6 @@
 import type { CampaignInput, LeadSource } from '@/lib/types';
 import { parseLocations } from '@/lib/pipeline';
+import { fetchWithRetry, fetchWithTimeout } from '@/lib/http';
 
 export interface DiscoveredProspect {
   company_name: string;
@@ -60,7 +61,7 @@ export async function discoverInstagramProspects(input: CampaignInput, keywords:
         serpUrl.searchParams.set('api_key', serpKey);
         serpUrl.searchParams.set('num', String(Math.min(limit, 20)));
 
-        const res = await fetch(serpUrl);
+        const res = await fetchWithRetry(serpUrl, {}, { timeoutMs: 20_000, retries: 1 });
         if (res.ok) {
           const data = (await res.json()) as { organic_results?: Array<{ link?: string; title?: string; snippet?: string }> };
           const organic = Array.isArray(data.organic_results) ? data.organic_results : [];
@@ -118,11 +119,11 @@ export async function discoverInstagramProspects(input: CampaignInput, keywords:
         dataDetailLevel: 'basicData'
       };
 
-      const res = await fetch(`${endpoint}?token=${encodeURIComponent(token)}`, {
+      const res = await fetchWithTimeout(`${endpoint}?token=${encodeURIComponent(token)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(inputPayload)
-      });
+      }, 120_000);
 
       if (res.ok) {
         const apifyItems = (await res.json()) as Array<Record<string, unknown>>;
@@ -136,7 +137,6 @@ export async function discoverInstagramProspects(input: CampaignInput, keywords:
           const emails = extractEmails(caption);
           const phones = extractPhones(caption);
           const website = extractUrlFromText(caption) || (item.externalUrl ? asString(item.externalUrl) : undefined);
-          const likes = asNumber(item.likesCount || item.likes || item.commentsCount);
 
           results.push({
             company_name: companyName,
@@ -144,8 +144,9 @@ export async function discoverInstagramProspects(input: CampaignInput, keywords:
             email: emails[0],
             phone: phones[0],
             city: primaryLocation,
-            rating: 4.8,
-            reviews_count: likes || 15,
+            // NOTE: engagement metrics are not customer ratings. Fabricating
+            // one here would poison fit-scoring and outreach claims, so both
+            // are left unset and scored as "unknown".
             matched_keyword: keywords[0] || input.audience,
             source_url: `https://www.instagram.com/${username}`,
             source: 'instagram'
@@ -177,7 +178,7 @@ async function discoverGoogleMapsProspects(input: CampaignInput, keywords: strin
     url.searchParams.set('type', 'search');
     url.searchParams.set('api_key', apiKey);
 
-    const res = await fetch(url);
+    const res = await fetchWithRetry(url, {}, { timeoutMs: 20_000, retries: 1 });
     if (!res.ok) throw new Error(`SerpAPI Google Maps failed: ${res.status} ${await res.text()}`);
     const data = (await res.json()) as {
       local_results?: Array<Record<string, unknown>>;
@@ -216,11 +217,11 @@ async function discoverWithApify(input: CampaignInput, keywords: string[]) {
     ? `https://api.apify.com/v2/actor-tasks/${encodeURIComponent(taskId)}/run-sync-get-dataset-items`
     : `https://api.apify.com/v2/acts/${encodeURIComponent(actorId || '')}/run-sync-get-dataset-items`;
 
-  const res = await fetch(`${endpoint}?token=${encodeURIComponent(token)}`, {
+  const res = await fetchWithTimeout(`${endpoint}?token=${encodeURIComponent(token)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(inputPayload)
-  });
+  }, 120_000);
   if (!res.ok) throw new Error(`Apify discovery failed: ${res.status} ${await res.text()}`);
 
   const data = (await res.json()) as Array<Record<string, unknown>>;

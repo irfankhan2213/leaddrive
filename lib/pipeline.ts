@@ -122,6 +122,11 @@ export function parseProspects(
   }).filter((prospect) => prospect.company_name || prospect.website_url);
 }
 
+export function buildCampaignName(input: CampaignInput): string {
+  const primaryLocation = parseLocations(input.locations)[0];
+  return `${titleCase(input.audience || 'New audience')}${primaryLocation ? ` in ${primaryLocation}` : ''} from ${sourceLabels[input.source]}`;
+}
+
 export function buildPipeline(
   input: CampaignInput,
   overrideKeywords?: string[],
@@ -132,7 +137,7 @@ export function buildPipeline(
 
   const campaign: Campaign = {
     id: `campaign_${Date.now()}`,
-    name: `${titleCase(input.audience || 'New audience')}${primaryLocation ? ` in ${primaryLocation}` : ''} from ${sourceLabels[input.source]}`,
+    name: buildCampaignName(input),
     audience: input.audience,
     locations: input.locations,
     source: input.source,

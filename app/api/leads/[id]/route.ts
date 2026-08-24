@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
-import { getSupabaseAdmin } from '@/lib/supabase';
+import { requireUser } from '@/lib/api-auth';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { logError } from '@/lib/http';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import type { LeadStatus } from '@/lib/types';
 
 const statuses: LeadStatus[] = [
@@ -14,8 +17,20 @@ const statuses: LeadStatus[] = [
   'converted'
 ];
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireUser();
+  if (!auth.ok) return auth.response;
+
+  const rl = checkRateLimit(req, 'leads_patch', 60, 60_000);
+  if (!rl.ok) return rateLimitResponse(rl.retryAfterSec);
+
   const { id } = await params;
+  if (!UUID_RE.test(id)) {
+    return NextResponse.json({ error: 'Invalid lead id.' }, { status: 400 });
+  }
+
   const body = (await req.json()) as {
     status?: LeadStatus;
     reply_text?: string;
@@ -31,28 +46,29 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     updates.status = body.status;
     if (body.status === 'replied' || body.status === 'converted') updates.replies = 1;
   }
-  if (body.reply_text !== undefined) updates.reply_text = body.reply_text;
-  if (body.demo_url !== undefined) updates.demo_url = body.demo_url;
-  if (body.email !== undefined) updates.email = body.email;
+  if (body.reply_text !== undefined) updates.reply_text = String(body.reply_text).slice(0, 10_000);
+  if (body.demo_url !== undefined) updates.demo_url = String(body.demo_url).slice(0, 2000);
+  if (body.email !== undefined) updates.email = String(body.email).slice(0, 320).trim();
 
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'No updates provided.' }, { status: 400 });
   }
 
-  const supabase = getSupabaseAdmin();
-  if (!supabase) return NextResponse.json({ error: 'Supabase is not configured.' }, { status: 503 });
-
-  let { data, error } = await supabase.from('leads').update(updates).eq('id', id).select().single();
+  // RLS restricts this update to the caller's own lead.
+  let { data, error } = await auth.supabase.from('leads').update(updates).eq('id', id).select().single();
   if (error && body.reply_text !== undefined && error.message.includes('reply_text')) {
     delete updates.reply_text;
-    const retry = await supabase.from('leads').update(updates).eq('id', id).select().single();
+    const retry = await auth.supabase.from('leads').update(updates).eq('id', id).select().single();
     data = retry.data;
     error = retry.error;
   }
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    logError('PATCH /api/leads/[id]', error, { leadId: id });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   if (body.status === 'replied' || body.status === 'converted') {
-    await supabase.from('outreach_events').insert({
+    await auth.supabase.from('outreach_events').insert({
       lead_id: id,
       event_type: body.status === 'replied' ? 'replied' : 'converted',
       event_data: { reply_text: body.reply_text || null }
@@ -60,41 +76,46 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   }
 
   if (data?.campaign_id) {
-    await refreshCampaignCounters(supabase, data.campaign_id);
+    await refreshCampaignCounters(auth.supabase, data.campaign_id);
   }
 
   return NextResponse.json({ lead: data });
 }
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requireUser();
+  if (!auth.ok) return auth.response;
+
+  const rl = checkRateLimit(req, 'leads_delete', 30, 60_000);
+  if (!rl.ok) return rateLimitResponse(rl.retryAfterSec);
+
   const { id } = await params;
-  const supabase = getSupabaseAdmin();
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  if (!UUID_RE.test(id)) {
+    return NextResponse.json({ success: false, error: 'Invalid lead id.' }, { status: 400 });
+  }
 
-  if (supabase && isUuid) {
-    // 1. Get campaign_id before deleting so we can refresh counters
-    const { data: lead } = await supabase.from('leads').select('campaign_id').eq('id', id).single();
+  // 1. Get campaign_id before deleting so we can refresh counters (own row only).
+  const { data: lead } = await auth.supabase.from('leads').select('campaign_id').eq('id', id).single();
 
-    // 2. Cascade delete outreach events
-    await supabase.from('outreach_events').delete().eq('lead_id', id);
+  // 2. Cascade delete outreach events
+  await auth.supabase.from('outreach_events').delete().eq('lead_id', id);
 
-    // 3. Delete lead
-    const { error } = await supabase.from('leads').delete().eq('id', id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // 3. Delete lead
+  const { error } = await auth.supabase.from('leads').delete().eq('id', id);
+  if (error) {
+    logError('DELETE /api/leads/[id]', error, { leadId: id });
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
-    // 4. Refresh campaign counters
-    if (lead?.campaign_id) {
-      await refreshCampaignCounters(supabase, lead.campaign_id);
-    }
+  // 4. Refresh campaign counters
+  if (lead?.campaign_id) {
+    await refreshCampaignCounters(auth.supabase, lead.campaign_id);
   }
 
   return NextResponse.json({ success: true, deletedId: id });
 }
 
-async function refreshCampaignCounters(
-  supabase: NonNullable<ReturnType<typeof getSupabaseAdmin>>,
-  campaignId: string
-) {
+async function refreshCampaignCounters(supabase: SupabaseClient, campaignId: string) {
   const { data: leads } = await supabase
     .from('leads')
     .select('status')

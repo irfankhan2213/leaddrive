@@ -33,7 +33,8 @@ import {
 } from 'lucide-react';
 import { sampleCampaign, sampleLeads } from '@/lib/mock-data';
 import type { AppSettings, Campaign, CampaignInput, Lead, OutreachChannel } from '@/lib/types';
-import { defaultSettings, getStoredSettings, saveStoredSettings } from '@/lib/settings';
+import type { PublicSettings } from '@/lib/settings';
+import { defaultSettings } from '@/lib/settings';
 
 import { Sidebar, NavTab } from '@/components/sidebar';
 import { Header } from '@/components/header';
@@ -51,7 +52,7 @@ function formatProviderLabel(provider?: string) {
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
-  const [settings, setSettings] = useState<AppSettings>(defaultSettings);
+  const [settings, setSettings] = useState<PublicSettings>({ ...defaultSettings, configured: {} });
   const [campaign, setCampaign] = useState<Campaign>({
     ...sampleCampaign,
     keywords: []
@@ -72,8 +73,20 @@ export default function Home() {
   const [notice, setNotice] = useState<{ type: 'success' | 'error' | 'info'; text: string } | null>(null);
 
   useEffect(() => {
-    const loadedSettings = getStoredSettings();
-    setSettings(loadedSettings);
+    // Settings (incl. which provider credentials are configured) live
+    // server-side; secrets never reach the browser.
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        if (res.ok) {
+          const data = (await res.json()) as { settings?: PublicSettings };
+          if (data.settings) setSettings(data.settings);
+        }
+      } catch {
+        // Keep defaults until settings load.
+      }
+    }
+    loadSettings();
 
     async function loadInitialData() {
       try {
@@ -94,19 +107,29 @@ export default function Home() {
     loadInitialData();
   }, []);
 
-  function handleSaveSettings(updated: AppSettings) {
-    setSettings(updated);
-    saveStoredSettings(updated);
-    const providerName =
-      updated.aiProvider === 'vertex'
-        ? 'Google Cloud Vertex AI'
-        : updated.aiProvider === 'gemini'
-        ? 'Google Gemini'
-        : 'Anthropic Claude';
-    setNotice({
-      type: 'success',
-      text: `Updated settings! Active AI provider set to ${providerName} (${updated.aiModel || updated.vertexModel || 'gemini-2.5-flash'}).`
-    });
+  async function handleSaveSettings(updated: Partial<AppSettings>) {
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated)
+      });
+      const data = (await res.json()) as { settings?: PublicSettings; error?: string };
+      if (!res.ok || !data.settings) throw new Error(data.error || 'Failed to save settings.');
+      setSettings(data.settings);
+      const providerName =
+        data.settings.aiProvider === 'vertex'
+          ? 'Google Cloud Vertex AI'
+          : data.settings.aiProvider === 'gemini'
+          ? 'Google Gemini'
+          : 'Anthropic Claude';
+      setNotice({
+        type: 'success',
+        text: `Updated settings! Active AI provider set to ${providerName} (${data.settings.aiModel || 'gemini-2.5-flash'}).`
+      });
+    } catch (err) {
+      setNotice({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save settings.' });
+    }
   }
 
   const selectedLead = useMemo(
@@ -160,7 +183,7 @@ export default function Home() {
       const res = await fetch('/api/campaigns', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...input, settings })
+        body: JSON.stringify({ ...input })
       });
       const data = (await res.json()) as { campaign: Campaign; leads: Lead[]; error?: string };
       if (data.error) throw new Error(data.error);
@@ -193,10 +216,7 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          lead: targetLead,
-          settings,
-          demoQuality: 'low',
-          demoProvider: settings.demoProvider || 'agentic'
+          lead: { id: targetLead.id }
         })
       });
       const data = (await res.json()) as {
@@ -216,14 +236,14 @@ export default function Home() {
                 status: 'demo_ready' as const,
                 demo_url: data.demoUrl,
                 demo_quality: 'low' as const,
-                demo_provider: (data.provider as Lead['demo_provider']) || settings.demoProvider || 'agentic'
+                demo_provider: (data.provider as Lead['demo_provider']) || 'v0'
               }
             : l
         );
         setLeads(updatedLeads);
         setNotice({
           type: 'success',
-          text: `${formatProviderLabel(data.provider || settings.demoProvider)} demo generated for ${targetLead.company_name}!`
+          text: `${formatProviderLabel(data.provider)} demo generated for ${targetLead.company_name}!`
         });
       }
     } catch (err) {
@@ -247,7 +267,7 @@ export default function Home() {
     setBatchDemoLoading(true);
     setNotice({
       type: 'info',
-      text: `Auto-generating ${formatProviderLabel(settings.demoProvider)} demos for ${pendingLeads.length} leads in background...`
+      text: `Auto-generating ${formatProviderLabel('v0')} demos for ${pendingLeads.length} leads in background...`
     });
 
     let successCount = 0;
@@ -259,10 +279,7 @@ export default function Home() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            lead,
-            settings,
-            demoQuality: 'low',
-            demoProvider: settings.demoProvider || 'agentic'
+            lead: { id: lead.id }
           })
         });
         const data = (await res.json()) as { demoUrl?: string; status?: string; provider?: string };
@@ -274,7 +291,7 @@ export default function Home() {
               ...currentLeads[idx],
               status: 'demo_ready',
               demo_url: data.demoUrl,
-              demo_provider: (data.provider as Lead['demo_provider']) || settings.demoProvider || 'agentic',
+              demo_provider: (data.provider as Lead['demo_provider']) || 'v0',
               demo_quality: 'low'
             };
             setLeads([...currentLeads]);
@@ -300,9 +317,8 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          lead: targetLead,
-          channel,
-          settings
+          leadId: targetLead.id,
+          channel
         })
       });
       const data = (await res.json()) as {
@@ -353,9 +369,8 @@ export default function Home() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          leads: readyLeads,
-          channel,
-          settings
+          leadIds: readyLeads.map((l) => l.id),
+          channel
         })
       });
 

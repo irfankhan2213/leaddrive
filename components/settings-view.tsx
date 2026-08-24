@@ -7,31 +7,35 @@ import {
   Cpu,
   Eye,
   EyeOff,
-  Key,
   Layers,
   Lock,
   Mail,
   MessageSquare,
-  Phone,
   Save,
   ShieldCheck,
-  Sparkles,
-  Zap
+  Sparkles
 } from 'lucide-react';
 import type { AppSettings } from '@/lib/types';
+import type { PublicSettings } from '@/lib/settings';
 
 interface SettingsViewProps {
-  settings: AppSettings;
-  onSave: (updated: AppSettings) => void;
+  settings: PublicSettings;
+  onSave: (updated: Partial<AppSettings>) => void | Promise<void>;
 }
 
-export function SettingsView({ settings: initialSettings, onSave }: SettingsViewProps) {
-  const [form, setForm] = useState<AppSettings>(initialSettings);
+export function SettingsView({ settings, onSave }: SettingsViewProps) {
+  // Secret fields start empty: the server never returns them. Submitting an
+  // empty field keeps the stored credential; typing a new one replaces it.
+  const [form, setForm] = useState<Partial<AppSettings>>({ ...settings });
+  const [configured] = useState<Record<string, boolean>>(settings.configured || {});
   const [showAiKey, setShowAiKey] = useState(false);
   const [showV0Key, setShowV0Key] = useState(false);
   const [showResendKey, setShowResendKey] = useState(false);
   const [showTwilioAuth, setShowTwilioAuth] = useState(false);
   const [savedNotice, setSavedNotice] = useState(false);
+
+  const secretPlaceholder = (key: string, hint: string) =>
+    configured[key] ? 'Configured — enter a new key to replace it' : hint;
 
   const vertexModels = [
     { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash (Active & Verified in us-central1 - Sub-Second)' },
@@ -77,7 +81,7 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSave({ ...form, demoProvider: 'v0' });
+    void onSave({ ...form, demoProvider: 'v0' });
     setSavedNotice(true);
     setTimeout(() => setSavedNotice(false), 3000);
   }
@@ -99,7 +103,7 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
         </div>
         <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 bg-gray-50/80 px-3 py-1.5 rounded-xl border border-gray-200">
           <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          <span>Encrypted Local Storage</span>
+          <span>Stored Server-Side — Keys Never Leave the Backend</span>
         </div>
       </div>
 
@@ -135,16 +139,16 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
               <label className="label flex items-center justify-between">
                 <span>v0 API Key(s) & Failover Pool</span>
                 <span className="text-[10px] text-emerald-600 font-bold">
-                  {form.v0ApiKey ? `${form.v0ApiKey.split(/[\n,;]+/).filter(Boolean).length} Custom Key(s)` : 'Cluster Pool Active'}
+                  {configured.v0ApiKey ? '✓ Configured' : 'Not Set'}
                 </span>
               </label>
               <div className="relative">
                 <input
                   type={showV0Key ? 'text' : 'password'}
-                  value={form.v0ApiKey}
+                  value={form.v0ApiKey || ''}
                   onChange={(e) => setForm({ ...form, v0ApiKey: e.target.value })}
                   className="field text-xs pr-10 font-mono"
-                  placeholder="v1:... (comma or newline separated for auto-failover)"
+                  placeholder={secretPlaceholder('v0ApiKey', 'v1:... (comma or newline separated for auto-failover)')}
                 />
                 <button
                   type="button"
@@ -155,7 +159,7 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
                 </button>
               </div>
               <p className="text-[10px] text-gray-400 mt-1">
-                Supports multiple keys. If one key runs out of credits or rate limits, it shifts to the next key automatically.
+                Supports multiple keys with automatic failover. Keys are stored server-side.
               </p>
             </div>
 
@@ -227,7 +231,7 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
               <label className="label flex items-center justify-between">
                 <span>Resend API Key</span>
                 <span className="text-[10px] text-gray-400 font-normal">
-                  {form.resendApiKey ? '✓ Configured' : 'Optional'}
+                  {configured.resendApiKey ? '✓ Configured' : 'Optional'}
                 </span>
               </label>
               <div className="relative">
@@ -236,7 +240,7 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
                   value={form.resendApiKey || ''}
                   onChange={(e) => setForm({ ...form, resendApiKey: e.target.value })}
                   className="field text-xs pr-10 font-mono"
-                  placeholder="re_..."
+                  placeholder={secretPlaceholder('resendApiKey', 're_...')}
                 />
                 <button
                   type="button"
@@ -292,7 +296,7 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
                 value={form.twilioAccountSid || ''}
                 onChange={(e) => setForm({ ...form, twilioAccountSid: e.target.value })}
                 className="field text-xs font-mono"
-                placeholder="AC..."
+                placeholder={secretPlaceholder('twilioAccountSid', 'AC...')}
               />
             </div>
 
@@ -304,7 +308,7 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
                   value={form.twilioAuthToken || ''}
                   onChange={(e) => setForm({ ...form, twilioAuthToken: e.target.value })}
                   className="field text-xs pr-10 font-mono"
-                  placeholder="auth_token..."
+                  placeholder={secretPlaceholder('twilioAuthToken', 'auth_token...')}
                 />
                 <button
                   type="button"
@@ -415,10 +419,10 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
                   <label className="label">GCP Project ID</label>
                   <input
                     type="text"
-                    value={form.gcpProjectId || 'skillful-fx-467601-h4'}
+                    value={form.gcpProjectId || ''}
                     onChange={(e) => setForm({ ...form, gcpProjectId: e.target.value })}
                     className="field text-xs font-mono bg-gray-50"
-                    placeholder="project-id..."
+                    placeholder={form.gcpProjectId ? 'project-id...' : 'Uses server default (GCP_PROJECT_ID) when empty'}
                   />
                 </div>
 
@@ -535,20 +539,19 @@ export function SettingsView({ settings: initialSettings, onSave }: SettingsView
                 <label className="label flex items-center justify-between">
                   <span>{form.aiProvider === 'gemini' ? 'Gemini API Key' : 'Anthropic API Key'}</span>
                   <span className="text-[10px] text-gray-400 font-normal">
-                    {form.aiApiKey ? '✓ Key Entered' : 'Required for direct API mode'}
+                    {configured.aiApiKey ? '✓ Configured' : 'Required for direct API mode'}
                   </span>
                 </label>
                 <div className="relative">
                   <input
                     type={showAiKey ? 'text' : 'password'}
-                    value={form.aiApiKey}
+                    value={form.aiApiKey || ''}
                     onChange={(e) => setForm({ ...form, aiApiKey: e.target.value })}
                     className="field text-xs pr-10 font-mono"
-                    placeholder={
-                      form.aiProvider === 'gemini'
-                        ? 'AIzaSy...'
-                        : 'sk-ant-api03-...'
-                    }
+                    placeholder={secretPlaceholder(
+                      'aiApiKey',
+                      form.aiProvider === 'gemini' ? 'AIzaSy...' : 'sk-ant-api03-...'
+                    )}
                   />
                   <button
                     type="button"

@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '@/lib/http';
 import type { Lead } from '@/lib/types';
 
 export async function generateCampaignKeywords(
@@ -35,7 +36,7 @@ Return ONLY a JSON array of 5 to 8 string search queries:
 
   for (const model of [...new Set(models)]) {
     try {
-      const res = await fetch(
+      const res = await fetchWithTimeout(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
         {
           method: 'POST',
@@ -47,7 +48,8 @@ Return ONLY a JSON array of 5 to 8 string search queries:
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             generationConfig: { temperature: 0.4, responseMimeType: 'application/json' }
           })
-        }
+        },
+        30_000
       );
 
       if (!res.ok) continue;
@@ -112,7 +114,7 @@ ${JSON.stringify(lead, null, 2)}`;
 
   let lastError = '';
   for (const model of [...new Set(models)]) {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
         method: 'POST',
@@ -124,7 +126,8 @@ ${JSON.stringify(lead, null, 2)}`;
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0.35, responseMimeType: 'application/json' }
         })
-      }
+      },
+      30_000
     );
 
     if (!res.ok) {

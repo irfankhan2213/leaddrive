@@ -23,6 +23,9 @@ export async function createDemoForLead(
   );
 }
 
-export function resolveDemoProvider(provider?: DemoProvider, settings?: AppSettings): DemoProvider {
+// The agentic/hybrid engines were retired; v0 is the only demo provider.
+export function resolveDemoProvider(_provider?: DemoProvider, _settings?: AppSettings): DemoProvider {
+  void _provider;
+  void _settings;
   return 'v0';
 }

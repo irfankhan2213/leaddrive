@@ -147,22 +147,72 @@ for all
 using (auth.role() = 'service_role')
 with check (auth.role() = 'service_role');
 
--- Authenticated User Multi-Tenant Policies
+-- Authenticated User Multi-Tenant Policies (strict ownership)
+drop policy if exists "users can manage own campaigns" on public.campaigns;
 create policy "users can manage own campaigns"
 on public.campaigns
 for all
-using (auth.uid() = user_id or user_id is null or auth.role() = 'service_role')
-with check (auth.uid() = user_id or user_id is null or auth.role() = 'service_role');
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
 
+drop policy if exists "users can manage own leads" on public.leads;
 create policy "users can manage own leads"
 on public.leads
 for all
-using (auth.uid() = user_id or user_id is null or auth.role() = 'service_role')
-with check (auth.uid() = user_id or user_id is null or auth.role() = 'service_role');
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
 
+drop policy if exists "users can manage own outreach events" on public.outreach_events;
 create policy "users can manage own outreach events"
 on public.outreach_events
 for all
-using (auth.role() = 'service_role' or auth.uid() is not null)
-with check (auth.role() = 'service_role' or auth.uid() is not null);
+using (
+  auth.role() = 'service_role'
+  or exists (
+    select 1 from public.leads l
+    where l.id = lead_id and l.user_id = auth.uid()
+  )
+)
+with check (
+  auth.role() = 'service_role'
+  or exists (
+    select 1 from public.leads l
+    where l.id = lead_id and l.user_id = auth.uid()
+  )
+);
+
+alter table public.leads add column if not exists suppressed boolean not null default false;
+
+create index if not exists leads_user_id_idx on public.leads(user_id);
+
+-- Per-user settings storage (server-side secrets)
+create table if not exists public.app_settings (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  settings jsonb not null default '{}'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.app_settings enable row level security;
+
+create policy "users can manage own settings"
+on public.app_settings
+for all
+using (auth.uid() = user_id)
+with check (auth.uid() = user_id);
+
+-- Outreach event types now include unsubscribe
+alter table public.outreach_events drop constraint if exists outreach_events_event_type_check;
+alter table public.outreach_events add constraint outreach_events_event_type_check
+  check (event_type in ('sent', 'opened', 'clicked', 'replied', 'bounced', 'converted', 'unsubscribed'));
+
+-- Open/click de-duplication: at most one opened/clicked event per lead per day.
+alter table public.outreach_events add column if not exists event_day date
+  generated always as ((created_at at time zone 'UTC')::date) stored;
+
+create unique index if not exists outreach_events_daily_dedupe_idx
+  on public.outreach_events (lead_id, event_type, event_day)
+  where event_type in ('opened', 'clicked');
+
+-- Unsubscribe token secret (generate with: openssl rand -hex 32)
+-- Required in production: UNSUBSCRIBE_SECRET
 

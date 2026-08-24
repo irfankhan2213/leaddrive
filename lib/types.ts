@@ -87,6 +87,7 @@ export interface Lead {
   opens: number;
   clicks: number;
   replies: number;
+  suppressed?: boolean;
   created_at: string;
 }
 

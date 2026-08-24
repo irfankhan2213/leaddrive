@@ -2,6 +2,7 @@ node_modules
 .next
 out
 .vercel
+.data
 .env
 .env.local
 .env*.local
@@ -11,3 +12,4 @@ dist
 *service-account*.json
 gcp-key*.json
 gcp-service-account.json
+tsconfig.tsbuildinfo

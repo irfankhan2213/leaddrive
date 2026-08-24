@@ -1,9 +1,17 @@
+import { timingSafeEqual } from 'crypto';
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
 
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const live = url.searchParams.get('live') === '1';
+  const authorized = isAuthorized(req);
+
+  // Unauthenticated callers get only an opaque liveness signal — no
+  // project IDs, provider names, or error details.
+  if (!authorized) {
+    return NextResponse.json({ app: 'ok' });
+  }
 
   const status = {
     app: 'ok',
@@ -118,4 +126,13 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json(status);
+}
+
+function isAuthorized(req: Request): boolean {
+  const token = process.env.HEALTH_CHECK_TOKEN;
+  if (!token) return true; // No token configured → behave like before.
+  const provided = req.headers.get('x-health-token') || '';
+  const expected = Buffer.from(token);
+  const actual = Buffer.from(provided);
+  return expected.length === actual.length && timingSafeEqual(expected, actual);
 }

@@ -1,3 +1,4 @@
+import { fetchWithTimeout } from '@/lib/http';
 import type { Lead } from '@/lib/types';
 
 export async function generateCampaignKeywordsAnthropic(
@@ -27,19 +28,23 @@ Return ONLY a JSON array of 5 to 8 string search queries:
 ["query 1", "query 2", "query 3", "query 4", "query 5"]`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'Content-Type': 'application/json'
+    const res = await fetchWithTimeout(
+      'https://api.anthropic.com/v1/messages',
+      {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: model || 'claude-3-5-haiku-20241022',
+          max_tokens: 512,
+          messages: [{ role: 'user', content: prompt }]
+        })
       },
-      body: JSON.stringify({
-        model: model || 'claude-3-5-haiku-20241022',
-        max_tokens: 512,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
+      30_000
+    );
 
     if (!res.ok) return [];
 
@@ -94,19 +99,23 @@ Prospect:
 ${JSON.stringify(lead, null, 2)}`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'Content-Type': 'application/json'
+    const res = await fetchWithTimeout(
+      'https://api.anthropic.com/v1/messages',
+      {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: model || 'claude-3-5-haiku-20241022',
+          max_tokens: 800,
+          messages: [{ role: 'user', content: prompt }]
+        })
       },
-      body: JSON.stringify({
-        model: model || 'claude-3-5-haiku-20241022',
-        max_tokens: 800,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
+      45_000
+    );
 
     if (!res.ok) return {};
 
